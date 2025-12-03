@@ -43,4 +43,4 @@ export const updateParent = async (id: string, data: Partial<ParentDoc>) => {
 export const deleteParent = async (id: string) => {
     const parentRef = doc(db, "parents", id);
     await deleteDoc(parentRef);
-}
+};
