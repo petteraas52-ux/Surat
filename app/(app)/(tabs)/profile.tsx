@@ -21,7 +21,7 @@ export default function ProfileScreen() {
 
       <Image
         style={styles.image}
-        source={{ uri: "https://randomuser.me/api/portraits/men/69.jpg" }}
+        source={{ uri: "https://randomuser.me/api/portraits/men/67.jpg" }}
       />
 
       {/* Navn */}
@@ -117,7 +117,6 @@ const styles = StyleSheet.create({
     fontSize: 16,
     backgroundColor: "#f0f0f0",
     borderRadius: 10,
-    borderColor: "#ddd",
   },
   input: {
     width: "80%",
