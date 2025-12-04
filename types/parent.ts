@@ -5,5 +5,5 @@ export interface ParentProps {
   eMail: string;
   phone: string;
   imageUri: string;
-  child: string[];
+  children: string[];
 }
