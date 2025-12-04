@@ -1,13 +1,13 @@
 
 import { MaterialIcons } from "@expo/vector-icons";
 import { useState } from "react";
-import { Image, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
+import { Image, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function ProfileScreen() {
   const [name, setName] = useState("Ola Nordmann");
   const [phone, setPhone] = useState("+47 111 22 333");
   const [email, setEmail] = useState("ola@nordmann.no");
-
   const [isEditing, setIsEditing] = useState(false);
 
   const handleSave = () => {
@@ -16,79 +16,70 @@ export default function ProfileScreen() {
   };
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>PROFIL</Text>
+    <SafeAreaView style={styles.safe}>
+      <ScrollView contentContainerStyle={styles.container}>
+        <Text style={styles.title}>Min profil</Text>
 
-      <Image
-        style={styles.image}
-        source={{ uri: "https://randomuser.me/api/portraits/men/67.jpg" }}
-      />
+        <Image style={styles.image} source={{ uri: "https://randomuser.me/api/portraits/men/67.jpg" }} />
 
-      {/* Navn */}
-      <View style={styles.row}>
-        <Text style={styles.label}>Navn</Text>
-        {isEditing && <MaterialIcons name="edit" size={20} color="#5c578f" />}
-      </View>
-      {isEditing ? (
-        <TextInput style={styles.input} value={name} onChangeText={setName} />
-      ) : (
-        <Text style={styles.value}>{name}</Text>
-      )}
+        {/* Navn */}
+        <View style={styles.row}>
+          <Text style={styles.label}>Navn</Text>
+          {isEditing && <MaterialIcons name="edit" size={20} color="#5c578f" />}
+        </View>
+        {isEditing ? (
+          <TextInput style={styles.input} value={name} onChangeText={setName} />
+        ) : (
+          <Text style={styles.value}>{name}</Text>
+        )}
 
-      {/* Telefonnummer */}
-      <View style={styles.row}>
-        <Text style={styles.label}>Telefonnummer</Text>
-        {isEditing && <MaterialIcons name="edit" size={20} color="#5c578f" />}
-      </View>
-      {isEditing ? (
-        <TextInput
-          style={styles.input}
-          value={phone}
-          onChangeText={setPhone}
-          keyboardType="phone-pad"
-        />
-      ) : (
-        <Text style={styles.value}>{phone}</Text>
-      )}
+        {/* Telefonnummer */}
+        <View style={styles.row}>
+          <Text style={styles.label}>Telefonnummer</Text>
+          {isEditing && <MaterialIcons name="edit" size={20} color="#5c578f" />}
+        </View>
+        {isEditing ? (
+          <TextInput style={styles.input} value={phone} onChangeText={setPhone} keyboardType="phone-pad" />
+        ) : (
+          <Text style={styles.value}>{phone}</Text>
+        )}
 
-      {/* E-post */}
-      <View style={styles.row}>
-        <Text style={styles.label}>E-post</Text>
-        {isEditing && <MaterialIcons name="edit" size={20} color="#5c578f" />}
-      </View>
-      {isEditing ? (
-        <TextInput
-          style={styles.input}
-          value={email}
-          onChangeText={setEmail}
-          keyboardType="email-address"
-        />
-      ) : (
-        <Text style={styles.value}>{email}</Text>
-      )}
+        {/* E-post */}
+        <View style={styles.row}>
+          <Text style={styles.label}>E-post</Text>
+          {isEditing && <MaterialIcons name="edit" size={20} color="#5c578f" />}
+        </View>
+        {isEditing ? (
+          <TextInput style={styles.input} value={email} onChangeText={setEmail} keyboardType="email-address" />
+        ) : (
+          <Text style={styles.value}>{email}</Text>
+        )}
 
-      <TouchableOpacity
-        style={styles.button}
-        onPress={() => (isEditing ? handleSave() : setIsEditing(true))}
-      >
-        <Text style={styles.buttonText}>{isEditing ? "Lagre" : "Rediger"}</Text>
-      </TouchableOpacity>
-    </View>
+        <TouchableOpacity style={styles.button} onPress={() => (isEditing ? handleSave() : setIsEditing(true))}>
+          <Text style={styles.buttonText}>{isEditing ? "Lagre" : "Rediger"}</Text>
+        </TouchableOpacity>
+      </ScrollView>
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
+  safe: {
     flex: 1,
-    paddingTop: 60,
+    backgroundColor: "#FFF",
+  },
+  container: {
+    padding: 24,
+    paddingBottom: 40,
     alignItems: "center",
-    backgroundColor: "#fdfdfd",
   },
   title: {
     fontSize: 30,
     fontWeight: "700",
-    marginBottom: 20,
+    textAlign: "center",
+    marginBottom: 25,
   },
+
   image: {
     width: 160,
     height: 160,
@@ -105,9 +96,6 @@ const styles = StyleSheet.create({
   label: {
     fontSize: 16,
     fontWeight: "600",
-  },
-  icon: {
-    marginLeft: 10,
   },
   value: {
     width: "80%",
