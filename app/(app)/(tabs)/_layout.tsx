@@ -25,6 +25,16 @@ export default function TabBar() {
           ),
         }}
       />
+      <Tabs.Screen
+        name="test-screen"
+        options={{
+          title: "TEST",
+          tabBarIcon: () => (
+            <Ionicons name="warning-outline" size={24} color="purple" />
+          ),
+        }}
+      />
     </Tabs>
+    
   );
 }
