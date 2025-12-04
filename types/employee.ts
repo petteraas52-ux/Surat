@@ -2,7 +2,7 @@ export interface EmployeeProps{
     id: string
     firstName: string
     lastName: string
-    eMail: string
+    email: string
     phone: string
     imageUri: string
     child: string[]
