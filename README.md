@@ -1,6 +1,4 @@
-# Welcome to your Expo app 👋
-
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+# Welcome to our children check-in app ! 👋
 
 ## Get started
 
@@ -16,35 +14,50 @@ This is an [Expo](https://expo.dev) project created with [`create-expo-app`](htt
    npx expo start
    ```
 
-In the output, you'll find options to open the app in a
+   For IOS
 
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
+   ```bash
+   npm run ios
+   ```
 
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
+   ## Test-user
 
-## Get a fresh project
+   Dere kan finne test bruker info inne på kunngjøringer på scrumwise, eller opprett en ny bruker i firebase
 
-When you're ready, run:
+   ## GitHub pull rutiner
 
-```bash
-npm run reset-project
-```
+   skal dere måtte lage en ny branch kjør:
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+   ```bash
+   git checkout "deres branch navn"
+   ```
 
-## Learn more
+   ```bash
+   git remote add upstream https://github.com/petteraas52-ux/Surat.git
+   ```
 
-To learn more about developing your project with Expo, look at the following resources:
+   Deretter hver gang dere skal hente nyeste endringer
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
+   ```bash
+   git checkout "deres branch navn"
+   ```
 
-## Join the community
+   ```bash
+   git fetch upstream
+   ```
 
-Join our community of developers creating universal apps.
+   ```bash
+   git merge upstream/main
+   ```
 
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+   ## GitHub merge rutiner
+
+   1. Gå inn på stage changes tabben på venstre siden av VSCODE
+
+   2. Trykk på + tegnet ved "Changes". Når denne blir hovret over skal det stå stage all changes
+
+   3. Deretter commit deres endringer til branchen deres
+
+   4. Gå inn på github, på start siden av våres prosjekt vil dere nå se en create merge request knapp som er grønn
+
+   5. Gå inn på den grønne knappet, skriv en kommentar på hva requesten er og opprett den, Da er alt i boks! ikke godkjenn requesten selv
