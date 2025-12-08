@@ -1,4 +1,5 @@
 
+import ProfilePicture from "@/components/image/ProfilePicture";
 import { MaterialIcons } from "@expo/vector-icons";
 import { useState } from "react";
 import { Image, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
@@ -20,8 +21,8 @@ export default function ProfileScreen() {
       <ScrollView contentContainerStyle={styles.container}>
         <Text style={styles.title}>Min profil</Text>
 
-        <Image style={styles.image} source={{ uri: "https://randomuser.me/api/portraits/men/67.jpg" }} />
-
+        <ProfilePicture showEdit={isEditing} />
+        
         {/* Navn */}
         <View style={styles.row}>
           <Text style={styles.label}>Navn</Text>

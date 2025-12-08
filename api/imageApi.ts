@@ -1,6 +1,5 @@
-import { getStorageRef} from "@/firebaseConfig";
+import { getStorageRef } from "@/firebaseConfig";
 import { uploadBytesResumable } from "firebase/storage";
-import { FlipType, SaveFormat, useImageManipulator } from 'expo-image-manipulator';
 /*  
     Mer eller mindre basert på kode fra kryssplattform
     https://github.com/studBrage/Kryssplattform-HK-H25/blob/main/api/imageApi.ts  
@@ -13,25 +12,23 @@ import { FlipType, SaveFormat, useImageManipulator } from 'expo-image-manipulato
 */
 
 export async function uploadImageToFirebase(uri: string) {
+  const fetchResponse = await fetch(uri);
+  const blob = await fetchResponse.blob();
 
-    const fetchResponse = await fetch(uri);
-    const blob = await fetchResponse.blob();
+  const imageName = uri.split("/").pop()?.split(".")[0] ?? "AnonymtBilde";
+  const uploadPath = `images/${imageName}`;
+  const imageRef = await getStorageRef(uploadPath);
 
-    const imageName = uri.split("/").pop()?.split(".")[0] ?? "AnonymtBilde";
-    const uploadPath = `images/${imageName}`;
-    const imageRef = await getStorageRef(uploadPath);
-
-    try{
-        console.log("Starting upload");
-        await uploadBytesResumable(imageRef, blob);
-        console.log("Image uploaded to firebase");
-        return uploadPath;
-    }catch( e ){
-        console.error("Error uploading image to firebase", e);
-        return null;
-    }
+  try {
+    console.log("Starting upload");
+    await uploadBytesResumable(imageRef, blob);
+    console.log("Image uploaded to firebase");
+    return uploadPath;
+  } catch (e) {
+    console.error("Error uploading image to firebase", e);
+    return null;
+  }
 }
-
 
 
 // EKSEMPEL PÅ implementasjon

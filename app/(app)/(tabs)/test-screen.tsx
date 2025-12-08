@@ -30,6 +30,9 @@ import {
 import { uploadImageToFirebase } from '@/api/imageApi';
 import { ChildProps } from '@/types/child';
 import { ParentProps } from '@/types/parent';
+import AddImageButtonSmall from '@/components/image/AddImageButtonSmall';
+import ProfilePicture from '@/components/image/ProfilePicture';
+import SelectImageModal from '@/components/image/SelectImageModal';
 
 export default function TestScreen() {
   // Parent states
@@ -271,7 +274,7 @@ export default function TestScreen() {
       <Text style={styles.header}>🧪 API Test Skjerm</Text>
 
       {/* Image Section - Moved to top */}
-      <View style={styles.section}>
+      {/* <View style={styles.section}>
         <Text style={styles.sectionTitle}>🖼️ Bilde API</Text>
         
         <View style={styles.buttonRow}>
@@ -315,6 +318,14 @@ export default function TestScreen() {
             </Text>
           </View>
         )}
+      </View> */}
+
+      <View>
+        <AddImageButtonSmall/>
+      </View>
+      <View>
+        <ProfilePicture/>
+        
       </View>
 
       {/* Parent Section */}
