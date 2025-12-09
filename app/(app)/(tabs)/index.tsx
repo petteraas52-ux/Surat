@@ -1,5 +1,13 @@
 import { useState } from "react";
-import { Modal, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
+import {
+  Modal,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  View,
+} from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 type Child = {
@@ -17,6 +25,10 @@ export default function Index() {
 
   const [overlayVisible, setOverlayVisible] = useState(false);
   const [overlayChildId, setOverlayChildId] = useState<number | null>(null);
+  const [guestLinkVisible, setGuestLinkVisible] = useState(false);
+
+  const [guestName, setGuestName] = useState("");
+  const [guestPhone, setGuestPhone] = useState("");
 
   const openOverlay = (childId: number) => {
     setOverlayChildId(childId);
@@ -26,6 +38,17 @@ export default function Index() {
   const closeOverlay = () => {
     setOverlayVisible(false);
     setOverlayChildId(null);
+  };
+
+  const openGuestLinkModal = () => {
+    setOverlayVisible(false);
+    setGuestLinkVisible(true);
+  };
+
+  const closeGuestLinkModal = () => {
+    setGuestLinkVisible(false);
+    setGuestName("");
+    setGuestPhone("");
   };
 
   const toggleSelect = (id: number) => {
@@ -122,15 +145,20 @@ export default function Index() {
         </Pressable>
       </ScrollView>
 
-      {/* MODAL */}
+      {/* MODAL - Barn detaljer */}
       <Modal visible={overlayVisible} transparent animationType="fade">
         <View style={styles.overlayBackdrop}>
           <Pressable style={StyleSheet.absoluteFill} onPress={closeOverlay} />
 
           <View style={styles.overlayCard}>
+             <Pressable
+              style={styles.backButton}
+              onPress={closeOverlay}
+            >
+              <Text style={styles.backButtonText}>Tilbake</Text>
+            </Pressable>
             {activeChild && (
               <>
-                {/* Profilkort */}
                 <View style={styles.profileCard}>
                   <View style={styles.profileRow}>
                     <View style={styles.profileAvatar}>
@@ -138,19 +166,24 @@ export default function Index() {
                     </View>
 
                     <View style={{ flex: 1 }}>
-                      <Text style={styles.profileName}>{activeChild.name}</Text>
+                      <Text style={styles.profileName}>
+                        {activeChild.name}
+                      </Text>
                       <Text style={styles.profileStatusText}>
                         {activeChild.checkedIn ? "Sjekket inn" : "Sjekket ut"}
                       </Text>
                     </View>
-
                   </View>
                 </View>
 
-                {/* Bunnknapper */}
                 <View style={styles.bottomButtons}>
-                  <Pressable style={styles.purpleButton}>
-                    <Text style={styles.purpleButtonText}>Opprett gjest-linke</Text>
+                  <Pressable
+                    style={styles.purpleButton}
+                    onPress={openGuestLinkModal}
+                  >
+                    <Text style={styles.purpleButtonText}>
+                      Opprett gjest-linke
+                    </Text>
                   </Pressable>
 
                   <Pressable
@@ -167,26 +200,81 @@ export default function Index() {
           </View>
         </View>
       </Modal>
+
+      {/* MODAL - Hentebarn */}
+      <Modal visible={guestLinkVisible} transparent animationType="slide">
+        <View style={styles.overlayBackdrop}>
+          <View style={[styles.overlayCard, { alignItems: "center" }]}>
+            <Pressable
+              style={styles.backButton}
+              onPress={closeGuestLinkModal}
+            >
+              <Text style={styles.backButtonText}>Tilbake</Text>
+            </Pressable>
+
+            <Text style={styles.fetchTitle}>{activeChild?.name}</Text>
+
+            <View style={styles.fetchAvatar}>
+              <Text style={{ fontSize: 36 }}>👶</Text>
+            </View>
+
+            <Text style={styles.fetchSubtitle}>
+              Fyll inn hvem som skal hente
+            </Text>
+
+            <Text style={styles.inputLabel}>Navn:</Text>
+            <TextInput
+              style={styles.input}
+              value={guestName}
+              onChangeText={setGuestName}
+              placeholder="Skriv navn"
+              placeholderTextColor="#999"
+            />
+
+            <Text style={styles.inputLabel}>Telefonnummer:</Text>
+            <TextInput
+              style={styles.input}
+              value={guestPhone}
+              onChangeText={setGuestPhone}
+              placeholder="Skriv telefonnummer"
+              placeholderTextColor="#999"
+              keyboardType="phone-pad"
+            />
+
+            <Pressable
+              style={[
+                styles.purpleButton,
+                { marginTop: 24, flex: undefined, alignSelf: "stretch" }
+              ]}
+            >
+              <Text style={{ color: "#fff", fontWeight: "700", fontSize: 16 }}>
+                Send hentemelding
+              </Text>
+            </Pressable>
+
+          </View>
+        </View>
+      </Modal>
     </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  safe: { 
-    flex: 1, 
-    backgroundColor: "#ffff" 
+  safe: {
+    flex: 1,
+    backgroundColor: "#ffff",
   },
 
-  container: { 
-    padding: 24, 
-    paddingBottom: 40 
+  container: {
+    padding: 24,
+    paddingBottom: 40,
   },
 
-  title: { 
-    fontSize: 30, 
-    fontWeight: "700", 
-    textAlign: "center", 
-    marginBottom: 40 
+  title: {
+    fontSize: 30,
+    fontWeight: "700",
+    textAlign: "center",
+    marginBottom: 40,
   },
 
   childCard: {
@@ -198,63 +286,69 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     marginBottom: 24,
   },
+
   avatarPlaceholder: {
-    width: 64, height: 64, borderRadius: 32,
-    backgroundColor: "#403A63", 
-    alignItems: "center", 
+    width: 64,
+    height: 64,
+    borderRadius: 32,
+    backgroundColor: "#403A63",
+    alignItems: "center",
     justifyContent: "center",
     marginRight: 16,
   },
+
   childInfo: { flex: 1 },
 
-  childName: { 
-    color: "white", 
-    fontSize: 20, 
-    fontWeight: "700" 
+  childName: {
+    color: "white",
+    fontSize: 20,
+    fontWeight: "700",
   },
 
-  childStatus: { 
-    fontSize: 16, 
-    fontWeight: "600", 
-    marginTop: 2 
+  childStatus: {
+    fontSize: 16,
+    fontWeight: "600",
+    marginTop: 2,
   },
 
   statusIn: { color: "#00C853" },
-
   statusOut: { color: "#FF5252" },
 
   circle: {
-    width: 36, height: 36, 
+    width: 36,
+    height: 36,
     borderRadius: 18,
-    backgroundColor: "white", 
-    alignItems: "center", 
+    backgroundColor: "white",
+    alignItems: "center",
     justifyContent: "center",
   },
 
   circleSelected: { backgroundColor: "#BCA9FF" },
 
-  checkmark: { 
-    color: "white", 
-    fontSize: 20, 
-    fontWeight: "700" 
+  checkmark: {
+    color: "white",
+    fontSize: 20,
+    fontWeight: "700",
   },
 
-  checkoutWrapper: { 
-    alignItems: "center", 
-    marginTop: 16 
+  checkoutWrapper: {
+    alignItems: "center",
+    marginTop: 16,
   },
 
   checkoutButton: {
     backgroundColor: "#57507F",
     paddingVertical: 16,
     paddingHorizontal: 32,
-    borderRadius: 50, width: "80%", alignItems: "center",
+    borderRadius: 50,
+    width: "80%",
+    alignItems: "center",
   },
 
-  checkoutText: { 
-    color: "white", 
-    fontSize: 18, 
-    fontWeight: "700" 
+  checkoutText: {
+    color: "white",
+    fontSize: 18,
+    fontWeight: "700",
   },
 
   overlayBackdrop: {
@@ -264,6 +358,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     paddingHorizontal: 24,
   },
+
   overlayCard: {
     width: "100%",
     backgroundColor: "white",
@@ -278,10 +373,12 @@ const styles = StyleSheet.create({
     padding: 16,
     marginBottom: 16,
   },
+
   profileRow: {
     flexDirection: "row",
     alignItems: "center",
   },
+
   profileAvatar: {
     width: 64,
     height: 64,
@@ -291,22 +388,25 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     marginRight: 12,
   },
+
   profileName: {
     fontSize: 20,
     fontWeight: "700",
     color: "#fff",
   },
+
   profileStatusText: {
     fontSize: 14,
     color: "#f2f2f2",
     marginTop: 2,
   },
-  
+
   bottomButtons: {
     flexDirection: "row",
     justifyContent: "space-between",
     marginTop: 10,
   },
+
   purpleButton: {
     flex: 1,
     backgroundColor: "#57507F",
@@ -315,8 +415,61 @@ const styles = StyleSheet.create({
     borderRadius: 30,
     alignItems: "center",
   },
+
   purpleButtonText: {
     color: "#fff",
     fontWeight: "700",
+  },
+
+  backButton: {
+    alignSelf: "flex-start",
+    backgroundColor: "#57507F",
+    paddingVertical: 8,
+    paddingHorizontal: 16,
+    borderRadius: 20,
+    marginBottom: 16,
+  },
+
+  backButtonText: {
+    color: "#fff",
+    fontWeight: "600",
+  },
+
+  fetchTitle: {
+    fontSize: 26,
+    fontWeight: "700",
+    marginBottom: 12,
+  },
+
+  fetchAvatar: {
+    width: 140,
+    height: 140,
+    borderRadius: 70,
+    backgroundColor: "#eaeaea",
+    alignItems: "center",
+    justifyContent: "center",
+    marginBottom: 20,
+  },
+
+  fetchSubtitle: {
+    fontSize: 16,
+    fontWeight: "600",
+    marginBottom: 16,
+  },
+
+  inputLabel: {
+    alignSelf: "flex-start",
+    fontSize: 16,
+    fontWeight: "600",
+    marginTop: 12,
+    marginBottom: 6,
+  },
+
+  input: {
+    width: "100%",
+    backgroundColor: "#f1f1f1",
+    borderRadius: 14,
+    padding: 12,
+    fontSize: 16,
   },
 });
