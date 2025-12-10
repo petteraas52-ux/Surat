@@ -46,23 +46,41 @@ export const deleteParent = async (id: string) => {
 }; */
 
 // @/api/parents.ts
-import { db } from "@/firebaseConfig";
+import { auth, db } from "@/firebaseConfig";
 import { ParentProps } from "@/types/parent";
+import { createUserWithEmailAndPassword } from "firebase/auth";
 import {
   collection,
-  addDoc,
-  getDoc,
-  getDocs,
-  updateDoc,
   deleteDoc,
   doc,
+  getDoc,
+  getDocs,
+  setDoc,
+  updateDoc,
 } from "firebase/firestore";
 
 const parentsCol = collection(db, "parents");
 
-export const createParent = async (data: Omit<ParentProps, "id">) => {
-  const docRef = await addDoc(parentsCol, data);
-  return docRef.id;
+export const createParent = async (
+  email: string,
+  temporaryPassword: string,
+  data: Omit<ParentProps, "id">
+): Promise<string> => {
+  const { user } = await createUserWithEmailAndPassword(
+    auth,
+    email,
+    temporaryPassword
+  );
+
+  const uid = user.uid;
+
+  await setDoc(doc(db, "parents", uid), {
+    ...data,
+    eMail: email,
+    children: [],
+  });
+
+  return uid;
 };
 
 export const getParent = async (id: string): Promise<ParentProps | null> => {
