@@ -1,7 +1,3 @@
-<<<<<<< HEAD
-import { useState } from "react";
-import {
-=======
 import { db } from "@/firebaseConfig";
 import { ChildProps } from "@/types/child";
 import { getAuth } from "firebase/auth";
@@ -16,16 +12,12 @@ import {
 import { useEffect, useState } from "react";
 import {
   ActivityIndicator,
->>>>>>> upstream/main
   Modal,
   Pressable,
   ScrollView,
   StyleSheet,
   Text,
-<<<<<<< HEAD
   TextInput,
-=======
->>>>>>> upstream/main
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -40,15 +32,11 @@ export default function Index() {
   const [loading, setLoading] = useState(true);
 
   const [overlayVisible, setOverlayVisible] = useState(false);
-<<<<<<< HEAD
-  const [overlayChildId, setOverlayChildId] = useState<number | null>(null);
+  const [overlayChildId, setOverlayChildId] = useState<string | null>(null);
   const [guestLinkVisible, setGuestLinkVisible] = useState(false);
 
   const [guestName, setGuestName] = useState("");
   const [guestPhone, setGuestPhone] = useState("");
-=======
-  const [overlayChildId, setOverlayChildId] = useState<string | null>(null);
->>>>>>> upstream/main
 
   useEffect(() => {
     if (!uid) return;
@@ -89,7 +77,6 @@ export default function Index() {
     setOverlayChildId(null);
   };
 
-<<<<<<< HEAD
   const openGuestLinkModal = () => {
     setOverlayVisible(false);
     setGuestLinkVisible(true);
@@ -101,10 +88,7 @@ export default function Index() {
     setGuestPhone("");
   };
 
-  const toggleSelect = (id: number) => {
-=======
   const toggleSelect = (id: string) => {
->>>>>>> upstream/main
     setChildren((prev) =>
       prev.map((child) =>
         child.id === id ? { ...child, selected: !child.selected } : child
@@ -226,21 +210,15 @@ export default function Index() {
         </Pressable>
       </ScrollView>
 
-<<<<<<< HEAD
-      {/* MODAL - Barn detaljer */}
-=======
->>>>>>> upstream/main
       <Modal visible={overlayVisible} transparent animationType="fade">
         <View style={styles.overlayBackdrop}>
           <Pressable style={StyleSheet.absoluteFill} onPress={closeOverlay} />
 
           <View style={styles.overlayCard}>
-             <Pressable
-              style={styles.backButton}
-              onPress={closeOverlay}
-            >
+            <Pressable style={styles.backButton} onPress={closeOverlay}>
               <Text style={styles.backButtonText}>Tilbake</Text>
             </Pressable>
+
             {activeChild && (
               <>
                 <View style={styles.profileCard}>
@@ -251,11 +229,7 @@ export default function Index() {
 
                     <View style={{ flex: 1 }}>
                       <Text style={styles.profileName}>
-<<<<<<< HEAD
-                        {activeChild.name}
-=======
                         {activeChild.firstName} {activeChild.lastName}
->>>>>>> upstream/main
                       </Text>
                       <Text style={styles.profileStatusText}>
                         {activeChild.checkedIn ? "Sjekket inn" : "Sjekket ut"}
@@ -263,17 +237,12 @@ export default function Index() {
                     </View>
                   </View>
                 </View>
-<<<<<<< HEAD
 
                 <View style={styles.bottomButtons}>
                   <Pressable
                     style={styles.purpleButton}
                     onPress={openGuestLinkModal}
                   >
-=======
-                <View style={styles.bottomButtons}>
-                  <Pressable style={styles.purpleButton}>
->>>>>>> upstream/main
                     <Text style={styles.purpleButtonText}>
                       Opprett gjest-linke
                     </Text>
@@ -294,26 +263,22 @@ export default function Index() {
         </View>
       </Modal>
 
-      {/* MODAL - Hentebarn */}
       <Modal visible={guestLinkVisible} transparent animationType="slide">
         <View style={styles.overlayBackdrop}>
           <View style={[styles.overlayCard, { alignItems: "center" }]}>
-            <Pressable
-              style={styles.backButton}
-              onPress={closeGuestLinkModal}
-            >
+            <Pressable style={styles.backButton} onPress={closeGuestLinkModal}>
               <Text style={styles.backButtonText}>Tilbake</Text>
             </Pressable>
 
-            <Text style={styles.fetchTitle}>{activeChild?.name}</Text>
+            <Text style={styles.fetchTitle}>
+              {activeChild ? `${activeChild.firstName} ${activeChild.lastName}` : "Hentebarn"}
+            </Text>
 
             <View style={styles.fetchAvatar}>
               <Text style={{ fontSize: 36 }}>👶</Text>
             </View>
 
-            <Text style={styles.fetchSubtitle}>
-              Fyll inn hvem som skal hente
-            </Text>
+            <Text style={styles.fetchSubtitle}>Fyll inn hvem som skal hente</Text>
 
             <Text style={styles.inputLabel}>Navn:</Text>
             <TextInput
@@ -337,14 +302,13 @@ export default function Index() {
             <Pressable
               style={[
                 styles.purpleButton,
-                { marginTop: 24, flex: undefined, alignSelf: "stretch" }
+                { marginTop: 24, flex: undefined, alignSelf: "stretch" },
               ]}
             >
               <Text style={{ color: "#fff", fontWeight: "700", fontSize: 16 }}>
                 Send hentemelding
               </Text>
             </Pressable>
-
           </View>
         </View>
       </Modal>
@@ -353,25 +317,6 @@ export default function Index() {
 }
 
 const styles = StyleSheet.create({
-<<<<<<< HEAD
-  safe: {
-    flex: 1,
-    backgroundColor: "#ffff",
-  },
-
-  container: {
-    padding: 24,
-    paddingBottom: 40,
-  },
-
-  title: {
-    fontSize: 30,
-    fontWeight: "700",
-    textAlign: "center",
-    marginBottom: 40,
-  },
-
-=======
   safe: { flex: 1, backgroundColor: "#ffff" },
   container: { padding: 24, paddingBottom: 40 },
   title: {
@@ -380,7 +325,6 @@ const styles = StyleSheet.create({
     textAlign: "center",
     marginBottom: 40,
   },
->>>>>>> upstream/main
   childCard: {
     backgroundColor: "#57507F",
     borderRadius: 50,
@@ -390,7 +334,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     marginBottom: 24,
   },
-
   avatarPlaceholder: {
     width: 64,
     height: 64,
@@ -400,26 +343,9 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     marginRight: 16,
   },
-
   childInfo: { flex: 1 },
-<<<<<<< HEAD
-
-  childName: {
-    color: "white",
-    fontSize: 20,
-    fontWeight: "700",
-  },
-
-  childStatus: {
-    fontSize: 16,
-    fontWeight: "600",
-    marginTop: 2,
-  },
-
-=======
   childName: { color: "white", fontSize: 20, fontWeight: "700" },
   childStatus: { fontSize: 16, fontWeight: "600", marginTop: 2 },
->>>>>>> upstream/main
   statusIn: { color: "#00C853" },
   statusOut: { color: "#FF5252" },
   circle: {
@@ -431,23 +357,8 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   circleSelected: { backgroundColor: "#BCA9FF" },
-<<<<<<< HEAD
-
-  checkmark: {
-    color: "white",
-    fontSize: 20,
-    fontWeight: "700",
-  },
-
-  checkoutWrapper: {
-    alignItems: "center",
-    marginTop: 16,
-  },
-
-=======
   checkmark: { color: "white", fontSize: 20, fontWeight: "700" },
   checkoutWrapper: { alignItems: "center", marginTop: 16 },
->>>>>>> upstream/main
   checkoutButton: {
     backgroundColor: "#57507F",
     paddingVertical: 16,
@@ -456,17 +367,7 @@ const styles = StyleSheet.create({
     width: "80%",
     alignItems: "center",
   },
-<<<<<<< HEAD
-
-  checkoutText: {
-    color: "white",
-    fontSize: 18,
-    fontWeight: "700",
-  },
-
-=======
   checkoutText: { color: "white", fontSize: 18, fontWeight: "700" },
->>>>>>> upstream/main
   overlayBackdrop: {
     flex: 1,
     backgroundColor: "rgba(0,0,0,0.35)",
@@ -474,7 +375,6 @@ const styles = StyleSheet.create({
     alignItems: "center",
     paddingHorizontal: 24,
   },
-
   overlayCard: {
     width: "100%",
     backgroundColor: "white",
@@ -488,16 +388,7 @@ const styles = StyleSheet.create({
     padding: 16,
     marginBottom: 16,
   },
-<<<<<<< HEAD
-
-  profileRow: {
-    flexDirection: "row",
-    alignItems: "center",
-  },
-
-=======
   profileRow: { flexDirection: "row", alignItems: "center" },
->>>>>>> upstream/main
   profileAvatar: {
     width: 64,
     height: 64,
@@ -507,30 +398,13 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     marginRight: 12,
   },
-<<<<<<< HEAD
-
-  profileName: {
-    fontSize: 20,
-    fontWeight: "700",
-    color: "#fff",
-  },
-
-  profileStatusText: {
-    fontSize: 14,
-    color: "#f2f2f2",
-    marginTop: 2,
-  },
-
-=======
   profileName: { fontSize: 20, fontWeight: "700", color: "#fff" },
   profileStatusText: { fontSize: 14, color: "#f2f2f2", marginTop: 2 },
->>>>>>> upstream/main
   bottomButtons: {
     flexDirection: "row",
     justifyContent: "space-between",
     marginTop: 10,
   },
-
   purpleButton: {
     flex: 1,
     backgroundColor: "#57507F",
@@ -539,13 +413,7 @@ const styles = StyleSheet.create({
     borderRadius: 30,
     alignItems: "center",
   },
-<<<<<<< HEAD
-
-  purpleButtonText: {
-    color: "#fff",
-    fontWeight: "700",
-  },
-
+  purpleButtonText: { color: "#fff", fontWeight: "700" },
   backButton: {
     alignSelf: "flex-start",
     backgroundColor: "#57507F",
@@ -554,18 +422,12 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     marginBottom: 16,
   },
-
-  backButtonText: {
-    color: "#fff",
-    fontWeight: "600",
-  },
-
+  backButtonText: { color: "#fff", fontWeight: "600" },
   fetchTitle: {
     fontSize: 26,
     fontWeight: "700",
     marginBottom: 12,
   },
-
   fetchAvatar: {
     width: 140,
     height: 140,
@@ -575,13 +437,11 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     marginBottom: 20,
   },
-
   fetchSubtitle: {
     fontSize: 16,
     fontWeight: "600",
     marginBottom: 16,
   },
-
   inputLabel: {
     alignSelf: "flex-start",
     fontSize: 16,
@@ -589,7 +449,6 @@ const styles = StyleSheet.create({
     marginTop: 12,
     marginBottom: 6,
   },
-
   input: {
     width: "100%",
     backgroundColor: "#f1f1f1",
@@ -597,7 +456,4 @@ const styles = StyleSheet.create({
     padding: 12,
     fontSize: 16,
   },
-=======
-  purpleButtonText: { color: "#fff", fontWeight: "700" },
->>>>>>> upstream/main
 });
