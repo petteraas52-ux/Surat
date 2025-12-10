@@ -14,12 +14,10 @@ import {
 
 const childrenCol = collection(db, "children");
 
-
 export const createChild = async (data: Omit<ChildProps, "id">) => {
   const docRef = await addDoc(childrenCol, data);
   return docRef.id;
 };
-
 
 export const getChild = async (id: string): Promise<ChildProps | null> => {
   const snap = await getDoc(doc(db, "children", id));
@@ -31,7 +29,6 @@ export const getChild = async (id: string): Promise<ChildProps | null> => {
   };
 };
 
-
 export const getAllChildren = async (): Promise<ChildProps[]> => {
   const snap = await getDocs(childrenCol);
   return snap.docs.map((d) => ({
@@ -39,7 +36,6 @@ export const getAllChildren = async (): Promise<ChildProps[]> => {
     ...(d.data() as Omit<ChildProps, "id">),
   }));
 };
-
 
 export const getChildrenForParent = async (
   parentId: string
@@ -53,7 +49,6 @@ export const getChildrenForParent = async (
   }));
 };
 
-
 export const updateChild = async (
   id: string,
   data: Partial<Omit<ChildProps, "id">>
@@ -61,7 +56,6 @@ export const updateChild = async (
   const childRef = doc(db, "children", id);
   await updateDoc(childRef, data);
 };
-
 
 export const deleteChild = async (id: string) => {
   const childRef = doc(db, "children", id);

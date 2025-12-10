@@ -1,36 +1,85 @@
+<<<<<<< HEAD
 import { useState } from "react";
 import {
+=======
+import { db } from "@/firebaseConfig";
+import { ChildProps } from "@/types/child";
+import { getAuth } from "firebase/auth";
+import {
+  collection,
+  doc,
+  getDocs,
+  query,
+  updateDoc,
+  where,
+} from "firebase/firestore";
+import { useEffect, useState } from "react";
+import {
+  ActivityIndicator,
+>>>>>>> upstream/main
   Modal,
   Pressable,
   ScrollView,
   StyleSheet,
   Text,
+<<<<<<< HEAD
   TextInput,
+=======
+>>>>>>> upstream/main
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
-type Child = {
-  id: number;
-  name: string;
-  checkedIn: boolean;
-  selected: boolean;
-};
+type UIChild = ChildProps & { selected?: boolean };
 
 export default function Index() {
-  const [children, setChildren] = useState<Child[]>([
-    { id: 1, name: "Roar Johnny", checkedIn: false, selected: false },
-    { id: 2, name: "Andrefødte", checkedIn: false, selected: false },
-  ]);
+  const auth = getAuth();
+  const uid = auth.currentUser?.uid;
+
+  const [children, setChildren] = useState<UIChild[]>([]);
+  const [loading, setLoading] = useState(true);
 
   const [overlayVisible, setOverlayVisible] = useState(false);
+<<<<<<< HEAD
   const [overlayChildId, setOverlayChildId] = useState<number | null>(null);
   const [guestLinkVisible, setGuestLinkVisible] = useState(false);
 
   const [guestName, setGuestName] = useState("");
   const [guestPhone, setGuestPhone] = useState("");
+=======
+  const [overlayChildId, setOverlayChildId] = useState<string | null>(null);
+>>>>>>> upstream/main
 
-  const openOverlay = (childId: number) => {
+  useEffect(() => {
+    if (!uid) return;
+
+    const loadChildren = async () => {
+      try {
+        const childrenCol = collection(db, "children");
+        const q = query(childrenCol, where("parents", "array-contains", uid));
+        const snap = await getDocs(q);
+
+        const data: UIChild[] = snap.docs.map((doc) => {
+          const d = doc.data() as Omit<ChildProps, "id">;
+          return {
+            id: doc.id,
+            ...d,
+            selected: false,
+          };
+        });
+
+        setChildren(data);
+      } catch (err) {
+        console.error("Failed to load children:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadChildren();
+  }, [uid]);
+
+  const openOverlay = (childId: string) => {
     setOverlayChildId(childId);
     setOverlayVisible(true);
   };
@@ -40,6 +89,7 @@ export default function Index() {
     setOverlayChildId(null);
   };
 
+<<<<<<< HEAD
   const openGuestLinkModal = () => {
     setOverlayVisible(false);
     setGuestLinkVisible(true);
@@ -52,6 +102,9 @@ export default function Index() {
   };
 
   const toggleSelect = (id: number) => {
+=======
+  const toggleSelect = (id: string) => {
+>>>>>>> upstream/main
     setChildren((prev) =>
       prev.map((child) =>
         child.id === id ? { ...child, selected: !child.selected } : child
@@ -71,30 +124,42 @@ export default function Index() {
     return "Oppdater status";
   };
 
-  const applyCheckInOut = () => {
+  const applyCheckInOut = async () => {
     const selected = children.filter((c) => c.selected);
     if (selected.length === 0) return;
 
     const allCheckedIn = selected.every((c) => c.checkedIn);
 
-    setChildren((prev) =>
-      prev.map((child) =>
-        child.selected
-          ? { ...child, checkedIn: !allCheckedIn, selected: false }
-          : child
-      )
+    const updatedChildren = children.map((child) =>
+      child.selected
+        ? { ...child, checkedIn: !allCheckedIn, selected: false }
+        : child
     );
+
+    setChildren(updatedChildren);
+
+    for (const child of selected) {
+      const childRef = doc(db, "children", child.id);
+      await updateDoc(childRef, { checkedIn: !allCheckedIn });
+    }
   };
 
-  const toggleOverlayChildCheckIn = () => {
-    if (overlayChildId == null) return;
+  const toggleOverlayChildCheckIn = async () => {
+    if (!overlayChildId) return;
+
+    const child = children.find((c) => c.id === overlayChildId);
+    if (!child) return;
+
+    const newStatus = !child.checkedIn;
     setChildren((prev) =>
-      prev.map((child) =>
-        child.id === overlayChildId
-          ? { ...child, checkedIn: !child.checkedIn }
-          : child
+      prev.map((c) =>
+        c.id === overlayChildId ? { ...c, checkedIn: newStatus } : c
       )
     );
+
+    await updateDoc(doc(db, "children", overlayChildId), {
+      checkedIn: newStatus,
+    });
   };
 
   const activeChild =
@@ -102,41 +167,57 @@ export default function Index() {
       ? children.find((c) => c.id === overlayChildId)
       : undefined;
 
+  if (loading) {
+    return (
+      <SafeAreaView style={styles.safe}>
+        <ActivityIndicator size="large" />
+      </SafeAreaView>
+    );
+  }
+
   return (
     <SafeAreaView style={styles.safe}>
       <ScrollView contentContainerStyle={styles.container}>
         <Text style={styles.title}>Mine barn</Text>
 
-        {children.map((child) => (
-          <Pressable
-            key={child.id}
-            onPress={() => openOverlay(child.id)}
-            style={styles.childCard}
-          >
-            <View style={styles.avatarPlaceholder}>
-              <Text style={{ fontSize: 28 }}>🙋‍♂️</Text>
-            </View>
-
-            <View style={styles.childInfo}>
-              <Text style={styles.childName}>{child.name}</Text>
-              <Text
-                style={[
-                  styles.childStatus,
-                  child.checkedIn ? styles.statusIn : styles.statusOut,
-                ]}
-              >
-                {child.checkedIn ? "Sjekket inn" : "Sjekket ut"}
-              </Text>
-            </View>
-
+        {children.length === 0 ? (
+          <Text style={{ textAlign: "center", marginTop: 50, fontSize: 18 }}>
+            Ingen barn registrert
+          </Text>
+        ) : (
+          children.map((child) => (
             <Pressable
-              onPress={() => toggleSelect(child.id)}
-              style={[styles.circle, child.selected && styles.circleSelected]}
+              key={child.id}
+              onPress={() => openOverlay(child.id)}
+              style={styles.childCard}
             >
-              {child.selected && <Text style={styles.checkmark}>✓</Text>}
+              <View style={styles.avatarPlaceholder}>
+                <Text style={{ fontSize: 28 }}>🙋‍♂️</Text>
+              </View>
+
+              <View style={styles.childInfo}>
+                <Text style={styles.childName}>
+                  {child.firstName} {child.lastName}
+                </Text>
+                <Text
+                  style={[
+                    styles.childStatus,
+                    child.checkedIn ? styles.statusIn : styles.statusOut,
+                  ]}
+                >
+                  {child.checkedIn ? "Sjekket inn" : "Sjekket ut"}
+                </Text>
+              </View>
+
+              <Pressable
+                onPress={() => toggleSelect(child.id)}
+                style={[styles.circle, child.selected && styles.circleSelected]}
+              >
+                {child.selected && <Text style={styles.checkmark}>✓</Text>}
+              </Pressable>
             </Pressable>
-          </Pressable>
-        ))}
+          ))
+        )}
 
         <Pressable style={styles.checkoutWrapper} onPress={applyCheckInOut}>
           <View style={styles.checkoutButton}>
@@ -145,7 +226,10 @@ export default function Index() {
         </Pressable>
       </ScrollView>
 
+<<<<<<< HEAD
       {/* MODAL - Barn detaljer */}
+=======
+>>>>>>> upstream/main
       <Modal visible={overlayVisible} transparent animationType="fade">
         <View style={styles.overlayBackdrop}>
           <Pressable style={StyleSheet.absoluteFill} onPress={closeOverlay} />
@@ -167,7 +251,11 @@ export default function Index() {
 
                     <View style={{ flex: 1 }}>
                       <Text style={styles.profileName}>
+<<<<<<< HEAD
                         {activeChild.name}
+=======
+                        {activeChild.firstName} {activeChild.lastName}
+>>>>>>> upstream/main
                       </Text>
                       <Text style={styles.profileStatusText}>
                         {activeChild.checkedIn ? "Sjekket inn" : "Sjekket ut"}
@@ -175,12 +263,17 @@ export default function Index() {
                     </View>
                   </View>
                 </View>
+<<<<<<< HEAD
 
                 <View style={styles.bottomButtons}>
                   <Pressable
                     style={styles.purpleButton}
                     onPress={openGuestLinkModal}
                   >
+=======
+                <View style={styles.bottomButtons}>
+                  <Pressable style={styles.purpleButton}>
+>>>>>>> upstream/main
                     <Text style={styles.purpleButtonText}>
                       Opprett gjest-linke
                     </Text>
@@ -260,6 +353,7 @@ export default function Index() {
 }
 
 const styles = StyleSheet.create({
+<<<<<<< HEAD
   safe: {
     flex: 1,
     backgroundColor: "#ffff",
@@ -277,6 +371,16 @@ const styles = StyleSheet.create({
     marginBottom: 40,
   },
 
+=======
+  safe: { flex: 1, backgroundColor: "#ffff" },
+  container: { padding: 24, paddingBottom: 40 },
+  title: {
+    fontSize: 30,
+    fontWeight: "700",
+    textAlign: "center",
+    marginBottom: 40,
+  },
+>>>>>>> upstream/main
   childCard: {
     backgroundColor: "#57507F",
     borderRadius: 50,
@@ -298,6 +402,7 @@ const styles = StyleSheet.create({
   },
 
   childInfo: { flex: 1 },
+<<<<<<< HEAD
 
   childName: {
     color: "white",
@@ -311,9 +416,12 @@ const styles = StyleSheet.create({
     marginTop: 2,
   },
 
+=======
+  childName: { color: "white", fontSize: 20, fontWeight: "700" },
+  childStatus: { fontSize: 16, fontWeight: "600", marginTop: 2 },
+>>>>>>> upstream/main
   statusIn: { color: "#00C853" },
   statusOut: { color: "#FF5252" },
-
   circle: {
     width: 36,
     height: 36,
@@ -322,8 +430,8 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
   },
-
   circleSelected: { backgroundColor: "#BCA9FF" },
+<<<<<<< HEAD
 
   checkmark: {
     color: "white",
@@ -336,6 +444,10 @@ const styles = StyleSheet.create({
     marginTop: 16,
   },
 
+=======
+  checkmark: { color: "white", fontSize: 20, fontWeight: "700" },
+  checkoutWrapper: { alignItems: "center", marginTop: 16 },
+>>>>>>> upstream/main
   checkoutButton: {
     backgroundColor: "#57507F",
     paddingVertical: 16,
@@ -344,6 +456,7 @@ const styles = StyleSheet.create({
     width: "80%",
     alignItems: "center",
   },
+<<<<<<< HEAD
 
   checkoutText: {
     color: "white",
@@ -351,6 +464,9 @@ const styles = StyleSheet.create({
     fontWeight: "700",
   },
 
+=======
+  checkoutText: { color: "white", fontSize: 18, fontWeight: "700" },
+>>>>>>> upstream/main
   overlayBackdrop: {
     flex: 1,
     backgroundColor: "rgba(0,0,0,0.35)",
@@ -366,19 +482,22 @@ const styles = StyleSheet.create({
     padding: 20,
     elevation: 6,
   },
-
   profileCard: {
     backgroundColor: "#9A96FF",
     borderRadius: 20,
     padding: 16,
     marginBottom: 16,
   },
+<<<<<<< HEAD
 
   profileRow: {
     flexDirection: "row",
     alignItems: "center",
   },
 
+=======
+  profileRow: { flexDirection: "row", alignItems: "center" },
+>>>>>>> upstream/main
   profileAvatar: {
     width: 64,
     height: 64,
@@ -388,6 +507,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     marginRight: 12,
   },
+<<<<<<< HEAD
 
   profileName: {
     fontSize: 20,
@@ -401,6 +521,10 @@ const styles = StyleSheet.create({
     marginTop: 2,
   },
 
+=======
+  profileName: { fontSize: 20, fontWeight: "700", color: "#fff" },
+  profileStatusText: { fontSize: 14, color: "#f2f2f2", marginTop: 2 },
+>>>>>>> upstream/main
   bottomButtons: {
     flexDirection: "row",
     justifyContent: "space-between",
@@ -415,6 +539,7 @@ const styles = StyleSheet.create({
     borderRadius: 30,
     alignItems: "center",
   },
+<<<<<<< HEAD
 
   purpleButtonText: {
     color: "#fff",
@@ -472,4 +597,7 @@ const styles = StyleSheet.create({
     padding: 12,
     fontSize: 16,
   },
+=======
+  purpleButtonText: { color: "#fff", fontWeight: "700" },
+>>>>>>> upstream/main
 });

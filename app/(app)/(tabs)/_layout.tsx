@@ -26,15 +26,23 @@ export default function TabBar() {
         }}
       />
       <Tabs.Screen
-        name="test-screen"
+        name="create-parent"
         options={{
-          title: "TEST",
+          title: "ParentCreation",
+          tabBarIcon: () => (
+            <Ionicons name="warning-outline" size={24} color="purple" />
+          ),
+        }}
+      />
+      <Tabs.Screen
+        name="create-child"
+        options={{
+          title: "ChildCreation",
           tabBarIcon: () => (
             <Ionicons name="warning-outline" size={24} color="purple" />
           ),
         }}
       />
     </Tabs>
-    
   );
 }
