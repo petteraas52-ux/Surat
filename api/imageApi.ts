@@ -30,7 +30,6 @@ export async function uploadImageToFirebase(uri: string) {
   }
 }
 
-
 // EKSEMPEL PÅ implementasjon
 
 /* export default function TEST() {

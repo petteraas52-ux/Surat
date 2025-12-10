@@ -50,6 +50,7 @@ import { auth, db } from "@/firebaseConfig";
 import { ParentProps } from "@/types/parent";
 import { createUserWithEmailAndPassword } from "firebase/auth";
 import {
+  arrayUnion,
   collection,
   deleteDoc,
   doc,
@@ -91,6 +92,13 @@ export const getParent = async (id: string): Promise<ParentProps | null> => {
     id: snap.id,
     ...(snap.data() as Omit<ParentProps, "id">),
   };
+};
+
+export const addChildToParent = async (parentUid: string, childUid: string) => {
+  const parentRef = doc(db, "parents", parentUid);
+  await updateDoc(parentRef, {
+    children: arrayUnion(childUid),
+  });
 };
 
 export const getAllParents = async (): Promise<ParentProps[]> => {
