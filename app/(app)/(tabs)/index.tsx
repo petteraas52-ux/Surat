@@ -1,4 +1,5 @@
 
+import { useRouter } from "expo-router"; 
 import { useState } from "react";
 import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { Calendar, DateData } from "react-native-calendars"; // 👈 legg til
@@ -12,6 +13,8 @@ type Child = {
 };
 
 export default function Index() {
+  const router = useRouter(); 
+
   const [children, setChildren] = useState<Child[]>([
     { id: 1, name: "Roar Johnny", checkedIn: false, selected: false },
     { id: 2, name: "Andrefødte", checkedIn: false, selected: false },
@@ -81,7 +84,13 @@ export default function Index() {
         <Text style={styles.title}>Mine barn</Text>
 
         {children.map((child) => (
-          <View key={child.id} style={styles.childCard}>
+          <Pressable
+          key={child.id}
+          style={styles.childCard}
+          onPress={() => router.push(`/children/${child.id}`)
+        }
+          >
+
             <View style={styles.avatarPlaceholder}>
               <Text style={{ fontSize: 28 }}>🙋‍♂️</Text>
             </View>
@@ -105,10 +114,11 @@ export default function Index() {
               accessibilityState={{ checked: child.selected }}
               accessibilityLabel={`Velg ${child.name}`}
               hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+              onPressIn={(e) => e.stopPropagation()}
             >
               {child.selected && <Text style={styles.checkmark}>✓</Text>}
             </Pressable>
-          </View>
+            </Pressable>
         ))}
 
         <Pressable style={styles.checkoutWrapper} onPress={applyCheckInOut}>
