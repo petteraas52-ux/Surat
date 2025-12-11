@@ -11,6 +11,7 @@ import {
   updateDoc,
   where,
 } from "firebase/firestore";
+import { uploadImageToFirebase } from "./imageApi";
 
 const childrenCol = collection(db, "children");
 
@@ -60,4 +61,22 @@ export const updateChild = async (
 export const deleteChild = async (id: string) => {
   const childRef = doc(db, "children", id);
   await deleteDoc(childRef);
+};
+
+
+export const updateChildProfileImage = async (
+  childId: string,
+  imageUri: string
+): Promise<boolean> => {
+  try {
+    const storagePath = await uploadImageToFirebase(imageUri);
+    if (!storagePath) return false;
+
+    await updateChild(childId, { imageUri: storagePath });
+    console.log("Child profile image updated successfully");
+    return true;
+  } catch (e) {
+    console.error("Error updating child profile image:", e);
+    return false;
+  }
 };

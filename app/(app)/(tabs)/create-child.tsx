@@ -26,7 +26,6 @@ export default function CreateChildScreen() {
   const [loading, setLoading] = useState(false);
   const [loadingParents, setLoadingParents] = useState(true);
 
-  // Load all parents for dropdown
   useEffect(() => {
     const loadParents = async () => {
       try {
@@ -53,24 +52,21 @@ export default function CreateChildScreen() {
     try {
       setLoading(true);
 
-      // 1️⃣ Create child
       const childUid = await createChild({
         firstName,
         lastName,
         dateOfBirth,
         allergies: [],
         imageUri: "",
-        parents: [selectedParent], // link to parent
+        parents: [selectedParent],
         checkedIn: false,
         department,
       });
 
-      // 2️⃣ Update parent to include this child
       await addChildToParent(selectedParent, childUid);
 
       Alert.alert("Success", "Child created successfully");
 
-      // Reset form
       setFirstName("");
       setLastName("");
       setDateOfBirth("");

@@ -11,6 +11,7 @@ import {
   setDoc,
   updateDoc,
 } from "firebase/firestore";
+import { uploadImageToFirebase } from "./imageApi";
 
 const parentsCol = collection(db, "parents");
 
@@ -72,4 +73,22 @@ export const updateParent = async (
 export const deleteParent = async (id: string) => {
   const parentRef = doc(db, "parents", id);
   await deleteDoc(parentRef);
+};
+
+
+export const updateParentProfileImage = async (
+  parentId: string,
+  imageUri: string
+): Promise<boolean> => {
+  try {
+    const storagePath = await uploadImageToFirebase(imageUri);
+    if (!storagePath) return false;
+
+    await updateParent(parentId, { imageUri: storagePath });
+    console.log("Parent profile image updated successfully");
+    return true;
+  } catch (e) {
+    console.error("Error updating parent profile image:", e);
+    return false;
+  }
 };
