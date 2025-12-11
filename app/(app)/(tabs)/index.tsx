@@ -1,14 +1,18 @@
+import { getParent } from "@/api/parents";
 import { db } from "@/firebaseConfig";
 import { ChildProps } from "@/types/child";
 import { getAuth } from "firebase/auth";
 import {
+  addDoc,
   collection,
   doc,
   getDocs,
   query,
+  serverTimestamp,
   updateDoc,
   where,
 } from "firebase/firestore";
+
 import { useEffect, useMemo, useState } from "react";
 import {
   ActivityIndicator,
@@ -38,6 +42,11 @@ export default function Index() {
 
   const [guestName, setGuestName] = useState("");
   const [guestPhone, setGuestPhone] = useState("");
+
+  //Gjeste-hentere
+  const [guestSending, setGuestSending] = useState(false);
+  const [guestError, setGuestError] = useState<string | null>(null);
+
 // Kalender modal (full calendar)
 const [calendarModalVisible, setCalendarModalVisible] = useState(false);
 const [selectedDateInCalendar, setSelectedDateInCalendar] = useState<string | null>(null);
@@ -46,7 +55,7 @@ const [selectedDateInCalendar, setSelectedDateInCalendar] = useState<string | nu
 const [events, setEvents] = useState<
   Array<{
     id: string;
-    date: string; // YYYY-MM-DD
+    date: string; 
     title?: string;
     avdeling?: string;
     beskrivelse?: string;
@@ -57,7 +66,7 @@ const [events, setEvents] = useState<
   { id: "e3", date: "2026-01-05", title: "Barnehagen er stengt", avdeling: "Alle", beskrivelse: "Barnehagen er stengt grunnet planleggingsdag" },
 ]);
 
-// Hjelper: parse 'YYYY-MM-DD' til lokal Date ved midnatt
+
 const parseISODateToLocal = (iso: string): Date => {
   const [y, m, d] = iso.split("-").map((s) => parseInt(s, 10));
   // monthIndex i JS Date er 0-basert
@@ -160,6 +169,55 @@ const nextEvent = useMemo(() => {
     setGuestName("");
     setGuestPhone("");
   };
+
+  const sendGuestLink = async () => {
+    setGuestError(null);
+
+    if (!overlayChildId) {
+      setGuestError("Ingen barn valgt.");
+      return;
+    }
+    if (!guestName.trim() || !guestPhone.trim()) {
+      setGuestError("Fyll inn navn og telefonnummer.");
+      return;
+    }
+
+    setGuestSending(true);
+    try {
+      const guestColRef = collection(
+        db,
+        "children",
+        overlayChildId,
+        "guestLinks"
+      );
+
+      // Hent parent hvis uid finnes
+      let parent = null;
+      if (uid) {
+        parent = await getParent(uid);
+      }
+
+      const payload = {
+        name: guestName.trim(),
+        phone: guestPhone.trim(),
+        sentAt: serverTimestamp(),
+         // ← Dette er den nye linjen:
+        parentsId: parent?.id ?? null,
+      };
+
+      await addDoc(guestColRef, payload);
+
+      setGuestName("");
+      setGuestPhone("");
+      setGuestLinkVisible(false);
+    } catch (err) {
+      console.error("Failed to save guest link:", err);
+      setGuestError("Noe gikk galt. Prøv igjen.");
+    } finally {
+      setGuestSending(false);
+    }
+  };
+
 
   const toggleSelect = (id: string) => {
     setChildren((prev) =>
@@ -285,6 +343,12 @@ const nextEvent = useMemo(() => {
           ))
         )}
 
+        <Pressable style={styles.checkoutWrapper} onPress={applyCheckInOut}>
+          <View style={styles.checkoutButton}>
+            <Text style={styles.checkoutText}>{getButtonText()}</Text>
+          </View>
+        </Pressable>
+
         {/* --- Neste kommende hendelse - kun denne vises på hovedsiden --- */}
         <View style={{ marginTop: 12, marginBottom: 12 }}>
           <Text style={{ fontWeight: "700", marginBottom: 8 }}>Kommende hendelse</Text>
@@ -310,11 +374,7 @@ const nextEvent = useMemo(() => {
           </Pressable>
         </View>
 
-        <Pressable style={styles.checkoutWrapper} onPress={applyCheckInOut}>
-          <View style={styles.checkoutButton}>
-            <Text style={styles.checkoutText}>{getButtonText()}</Text>
-          </View>
-        </Pressable>
+    
 
         {/* Overlay/modal for barnedetaljer */}
         <Modal visible={overlayVisible} transparent animationType="fade">
@@ -442,13 +502,18 @@ const nextEvent = useMemo(() => {
               <Pressable
                 style={[
                   styles.purpleButton,
-                  { marginTop: 24, flex: undefined, alignSelf: "stretch" },
+                  { marginTop: 24, flex: undefined, alignSelf: "stretch", opacity: guestSending ? 0.7 : 1 },
                 ]}
+                onPress={sendGuestLink}
+                disabled={guestSending}
               >
                 <Text style={{ color: "#fff", fontWeight: "700", fontSize: 16 }}>
-                  Send hentemelding
+                  {guestSending ? "Sender..." : "Send hentemelding"}
                 </Text>
               </Pressable>
+
+              {guestError && <Text style={{ color: "red", marginTop: 8 }}>{guestError}</Text>}
+
             </View>
           </View>
         </Modal>
