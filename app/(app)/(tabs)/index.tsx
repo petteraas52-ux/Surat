@@ -38,17 +38,16 @@ export default function Index() {
 
   const [guestName, setGuestName] = useState("");
   const [guestPhone, setGuestPhone] = useState("");
-  // Kalender modal (full calendar)
+
   const [calendarModalVisible, setCalendarModalVisible] = useState(false);
   const [selectedDateInCalendar, setSelectedDateInCalendar] = useState<
     string | null
   >(null);
 
-  // Enkel lokal hendelsesliste (ingen DB)
   const [events, setEvents] = useState<
     Array<{
       id: string;
-      date: string; // YYYY-MM-DD
+      date: string;
       title?: string;
       avdeling?: string;
       beskrivelse?: string;
@@ -77,14 +76,11 @@ export default function Index() {
     },
   ]);
 
-  // Hjelper: parse 'YYYY-MM-DD' til lokal Date ved midnatt
   const parseISODateToLocal = (iso: string): Date => {
     const [y, m, d] = iso.split("-").map((s) => parseInt(s, 10));
-    // monthIndex i JS Date er 0-basert
     return new Date(y, m - 1, d, 0, 0, 0, 0);
   };
 
-  // Hvis flere events på samme dato, legger vi inn en count i markeringen
   const markedDates = useMemo(() => {
     const m: Record<string, any> = {};
     const counts: Record<string, number> = {};
@@ -94,11 +90,9 @@ export default function Index() {
     });
 
     events.forEach((ev) => {
-      // enkel markering — viser dot og antall som ekstra meta
       m[ev.date] = {
         marked: true,
         dotColor: "#57507F",
-        // legg på count hvis nødvendig (du kan bruke dette i din render)
         eventCount: counts[ev.date],
       };
     });
@@ -114,13 +108,11 @@ export default function Index() {
     return m;
   }, [events, selectedDateInCalendar]);
 
-  // Finn neste kommende hendelse (dato >= i dag)
-  // Bruker parseISODateToLocal for å unngå tidssoneproblemer
   const nextEvent = useMemo(() => {
     if (events.length === 0) return null;
 
     const today = new Date();
-    today.setHours(0, 0, 0, 0); // lokal midnatt i dag
+    today.setHours(0, 0, 0, 0);
 
     const future = events
       .map((ev) => ({ ...ev, time: parseISODateToLocal(ev.date) }))
@@ -304,7 +296,6 @@ export default function Index() {
           ))
         )}
 
-        {/* --- Neste kommende hendelse - kun denne vises på hovedsiden --- */}
         <View style={{ marginTop: 12, marginBottom: 12 }}>
           <Text style={{ fontWeight: "700", marginBottom: 8 }}>
             Kommende hendelse
@@ -313,9 +304,7 @@ export default function Index() {
           <Pressable
             style={styles.upcomingCard}
             onPress={() => {
-              // åpne full kalendermodal når kortet trykkes
               setCalendarModalVisible(true);
-              // marker også den kommende datoen i kalenderen
               if (nextEvent) setSelectedDateInCalendar(nextEvent.date);
             }}
           >
@@ -343,7 +332,6 @@ export default function Index() {
           </View>
         </Pressable>
 
-        {/* Overlay/modal for barnedetaljer */}
         <Modal visible={overlayVisible} transparent animationType="fade">
           <View style={styles.overlayBackdrop}>
             <Pressable style={StyleSheet.absoluteFill} onPress={closeOverlay} />
@@ -397,7 +385,6 @@ export default function Index() {
           </View>
         </Modal>
 
-        {/* Full kalender modal som åpnes ved trykk på kommende hendelse */}
         <Modal visible={calendarModalVisible} animationType="slide" transparent>
           <View style={styles.overlayBackdrop}>
             <View style={[styles.overlayCard, { maxHeight: "90%" }]}>
@@ -451,7 +438,6 @@ export default function Index() {
           </View>
         </Modal>
 
-        {/* Guest modal */}
         <Modal visible={guestLinkVisible} transparent animationType="slide">
           <View style={styles.overlayBackdrop}>
             <View style={[styles.overlayCard, { alignItems: "center" }]}>
@@ -656,7 +642,6 @@ const styles = StyleSheet.create({
     fontSize: 16,
   },
 
-  /* upcoming card */
   upcomingCard: {
     backgroundColor: "#FFF",
     borderRadius: 12,
@@ -665,7 +650,6 @@ const styles = StyleSheet.create({
     borderColor: "#eee",
   },
 
-  /* child-picker chip (hvis du trenger senere) */
   childChip: {
     paddingVertical: 8,
     paddingHorizontal: 12,
