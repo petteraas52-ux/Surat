@@ -38,78 +38,97 @@ export default function Index() {
 
   const [guestName, setGuestName] = useState("");
   const [guestPhone, setGuestPhone] = useState("");
-// Kalender modal (full calendar)
-const [calendarModalVisible, setCalendarModalVisible] = useState(false);
-const [selectedDateInCalendar, setSelectedDateInCalendar] = useState<string | null>(null);
+  // Kalender modal (full calendar)
+  const [calendarModalVisible, setCalendarModalVisible] = useState(false);
+  const [selectedDateInCalendar, setSelectedDateInCalendar] = useState<
+    string | null
+  >(null);
 
-// Enkel lokal hendelsesliste (ingen DB)
-const [events, setEvents] = useState<
-  Array<{
-    id: string;
-    date: string; // YYYY-MM-DD
-    title?: string;
-    avdeling?: string;
-    beskrivelse?: string;
-  }>
->([
-  { id: "e1", date: "2025-12-10", title: "Skogstur", avdeling: "Trollskogen", beskrivelse: "Vi går en tur i nærområdet og ser etter dyr." },
-  { id: "e2", date: "2025-12-20", title: "Tur til Oslo", avdeling: "Trollungene", beskrivelse: "Heldagstur til Oslo, ta med matpakke" },
-  { id: "e3", date: "2026-01-05", title: "Barnehagen er stengt", avdeling: "Alle", beskrivelse: "Barnehagen er stengt grunnet planleggingsdag" },
-]);
+  // Enkel lokal hendelsesliste (ingen DB)
+  const [events, setEvents] = useState<
+    Array<{
+      id: string;
+      date: string; // YYYY-MM-DD
+      title?: string;
+      avdeling?: string;
+      beskrivelse?: string;
+    }>
+  >([
+    {
+      id: "e1",
+      date: "2025-12-10",
+      title: "Skogstur",
+      avdeling: "Trollskogen",
+      beskrivelse: "Vi går en tur i nærområdet og ser etter dyr.",
+    },
+    {
+      id: "e2",
+      date: "2025-12-20",
+      title: "Tur til Oslo",
+      avdeling: "Trollungene",
+      beskrivelse: "Heldagstur til Oslo, ta med matpakke",
+    },
+    {
+      id: "e3",
+      date: "2026-01-05",
+      title: "Barnehagen er stengt",
+      avdeling: "Alle",
+      beskrivelse: "Barnehagen er stengt grunnet planleggingsdag",
+    },
+  ]);
 
-// Hjelper: parse 'YYYY-MM-DD' til lokal Date ved midnatt
-const parseISODateToLocal = (iso: string): Date => {
-  const [y, m, d] = iso.split("-").map((s) => parseInt(s, 10));
-  // monthIndex i JS Date er 0-basert
-  return new Date(y, m - 1, d, 0, 0, 0, 0);
-};
+  // Hjelper: parse 'YYYY-MM-DD' til lokal Date ved midnatt
+  const parseISODateToLocal = (iso: string): Date => {
+    const [y, m, d] = iso.split("-").map((s) => parseInt(s, 10));
+    // monthIndex i JS Date er 0-basert
+    return new Date(y, m - 1, d, 0, 0, 0, 0);
+  };
 
-// Hvis flere events på samme dato, legger vi inn en count i markeringen
-const markedDates = useMemo(() => {
-  const m: Record<string, any> = {};
-  const counts: Record<string, number> = {};
+  // Hvis flere events på samme dato, legger vi inn en count i markeringen
+  const markedDates = useMemo(() => {
+    const m: Record<string, any> = {};
+    const counts: Record<string, number> = {};
 
-  events.forEach((ev) => {
-    counts[ev.date] = (counts[ev.date] || 0) + 1;
-  });
+    events.forEach((ev) => {
+      counts[ev.date] = (counts[ev.date] || 0) + 1;
+    });
 
-  events.forEach((ev) => {
-    // enkel markering — viser dot og antall som ekstra meta
-    m[ev.date] = {
-      marked: true,
-      dotColor: "#57507F",
-      // legg på count hvis nødvendig (du kan bruke dette i din render)
-      eventCount: counts[ev.date],
-    };
-  });
+    events.forEach((ev) => {
+      // enkel markering — viser dot og antall som ekstra meta
+      m[ev.date] = {
+        marked: true,
+        dotColor: "#57507F",
+        // legg på count hvis nødvendig (du kan bruke dette i din render)
+        eventCount: counts[ev.date],
+      };
+    });
 
-  if (selectedDateInCalendar) {
-    m[selectedDateInCalendar] = {
-      ...(m[selectedDateInCalendar] || {}),
-      selected: true,
-      selectedColor: "#BCA9FF",
-    };
-  }
+    if (selectedDateInCalendar) {
+      m[selectedDateInCalendar] = {
+        ...(m[selectedDateInCalendar] || {}),
+        selected: true,
+        selectedColor: "#BCA9FF",
+      };
+    }
 
-  return m;
-}, [events, selectedDateInCalendar]);
+    return m;
+  }, [events, selectedDateInCalendar]);
 
-// Finn neste kommende hendelse (dato >= i dag)
-// Bruker parseISODateToLocal for å unngå tidssoneproblemer
-const nextEvent = useMemo(() => {
-  if (events.length === 0) return null;
+  // Finn neste kommende hendelse (dato >= i dag)
+  // Bruker parseISODateToLocal for å unngå tidssoneproblemer
+  const nextEvent = useMemo(() => {
+    if (events.length === 0) return null;
 
-  const today = new Date();
-  today.setHours(0, 0, 0, 0); // lokal midnatt i dag
+    const today = new Date();
+    today.setHours(0, 0, 0, 0); // lokal midnatt i dag
 
-  const future = events
-    .map((ev) => ({ ...ev, time: parseISODateToLocal(ev.date) }))
-    .filter((ev) => ev.time.getTime() >= today.getTime())
-    .sort((a, b) => a.time.getTime() - b.time.getTime());
+    const future = events
+      .map((ev) => ({ ...ev, time: parseISODateToLocal(ev.date) }))
+      .filter((ev) => ev.time.getTime() >= today.getTime())
+      .sort((a, b) => a.time.getTime() - b.time.getTime());
 
-  return future.length > 0 ? future[0] : null;
-}, [events]);
-
+    return future.length > 0 ? future[0] : null;
+  }, [events]);
 
   useEffect(() => {
     if (!uid) return;
@@ -287,7 +306,9 @@ const nextEvent = useMemo(() => {
 
         {/* --- Neste kommende hendelse - kun denne vises på hovedsiden --- */}
         <View style={{ marginTop: 12, marginBottom: 12 }}>
-          <Text style={{ fontWeight: "700", marginBottom: 8 }}>Kommende hendelse</Text>
+          <Text style={{ fontWeight: "700", marginBottom: 8 }}>
+            Kommende hendelse
+          </Text>
 
           <Pressable
             style={styles.upcomingCard}
@@ -300,9 +321,15 @@ const nextEvent = useMemo(() => {
           >
             {nextEvent ? (
               <View>
-                <Text style={{ fontWeight: "700", fontSize: 16 }}>{nextEvent.title ?? "Hendelse"}</Text>
-                <Text style={{ color: "#666", marginTop: 4 }}>{nextEvent.avdeling}</Text>
-                <Text style={{ color: "#666", marginTop: 4 }}>{nextEvent.date}</Text>
+                <Text style={{ fontWeight: "700", fontSize: 16 }}>
+                  {nextEvent.title ?? "Hendelse"}
+                </Text>
+                <Text style={{ color: "#666", marginTop: 4 }}>
+                  {nextEvent.avdeling}
+                </Text>
+                <Text style={{ color: "#666", marginTop: 4 }}>
+                  {nextEvent.date}
+                </Text>
               </View>
             ) : (
               <Text style={{ color: "#666" }}>Ingen kommende hendelser</Text>
@@ -346,11 +373,19 @@ const nextEvent = useMemo(() => {
                   </View>
 
                   <View style={styles.bottomButtons}>
-                    <Pressable style={styles.purpleButton} onPress={openGuestLinkModal}>
-                      <Text style={styles.purpleButtonText}>Opprett gjest-linke</Text>
+                    <Pressable
+                      style={styles.purpleButton}
+                      onPress={openGuestLinkModal}
+                    >
+                      <Text style={styles.purpleButtonText}>
+                        Opprett gjest-linke
+                      </Text>
                     </Pressable>
 
-                    <Pressable style={styles.purpleButton} onPress={toggleOverlayChildCheckIn}>
+                    <Pressable
+                      style={styles.purpleButton}
+                      onPress={toggleOverlayChildCheckIn}
+                    >
                       <Text style={styles.purpleButtonText}>
                         {activeChild.checkedIn ? "Sjekk ut" : "Sjekk inn"}
                       </Text>
@@ -366,7 +401,10 @@ const nextEvent = useMemo(() => {
         <Modal visible={calendarModalVisible} animationType="slide" transparent>
           <View style={styles.overlayBackdrop}>
             <View style={[styles.overlayCard, { maxHeight: "90%" }]}>
-              <Pressable style={styles.backButton} onPress={() => setCalendarModalVisible(false)}>
+              <Pressable
+                style={styles.backButton}
+                onPress={() => setCalendarModalVisible(false)}
+              >
                 <Text style={styles.backButtonText}>Lukk</Text>
               </Pressable>
 
@@ -379,23 +417,34 @@ const nextEvent = useMemo(() => {
 
               <View style={{ marginTop: 12 }}>
                 <Text style={{ fontWeight: "700", marginBottom: 6 }}>
-                  Hendelser {selectedDateInCalendar ? `– ${selectedDateInCalendar}` : ""}
+                  Hendelser{" "}
+                  {selectedDateInCalendar ? `– ${selectedDateInCalendar}` : ""}
                 </Text>
 
                 {selectedDateInCalendar ? (
                   eventsForSelectedDate.length === 0 ? (
-                    <Text style={{ color: "#666" }}>Ingen hendelser denne dagen</Text>
+                    <Text style={{ color: "#666" }}>
+                      Ingen hendelser denne dagen
+                    </Text>
                   ) : (
                     eventsForSelectedDate.map((ev) => (
                       <View key={ev.id} style={{ paddingVertical: 6 }}>
-                        <Text style={{ fontWeight: "600" }}>{ev.title ?? "Hendelse"}</Text>
-                         <Text style={{ color: "#666"}}>Avdeling: {ev.avdeling}</Text>
-                        <Text style={{ color: "#666", marginTop: 10}}>{ev.beskrivelse}</Text>
+                        <Text style={{ fontWeight: "600" }}>
+                          {ev.title ?? "Hendelse"}
+                        </Text>
+                        <Text style={{ color: "#666" }}>
+                          Avdeling: {ev.avdeling}
+                        </Text>
+                        <Text style={{ color: "#666", marginTop: 10 }}>
+                          {ev.beskrivelse}
+                        </Text>
                       </View>
                     ))
                   )
                 ) : (
-                  <Text style={{ color: "#666" }}>Velg en dato for å se hendelser</Text>
+                  <Text style={{ color: "#666" }}>
+                    Velg en dato for å se hendelser
+                  </Text>
                 )}
               </View>
             </View>
@@ -406,19 +455,26 @@ const nextEvent = useMemo(() => {
         <Modal visible={guestLinkVisible} transparent animationType="slide">
           <View style={styles.overlayBackdrop}>
             <View style={[styles.overlayCard, { alignItems: "center" }]}>
-              <Pressable style={styles.backButton} onPress={closeGuestLinkModal}>
+              <Pressable
+                style={styles.backButton}
+                onPress={closeGuestLinkModal}
+              >
                 <Text style={styles.backButtonText}>Tilbake</Text>
               </Pressable>
 
               <Text style={styles.fetchTitle}>
-                {activeChild ? `${activeChild.firstName} ${activeChild.lastName}` : "Hentebarn"}
+                {activeChild
+                  ? `${activeChild.firstName} ${activeChild.lastName}`
+                  : "Hentebarn"}
               </Text>
 
               <View style={styles.fetchAvatar}>
                 <Text style={{ fontSize: 36 }}>👶</Text>
               </View>
 
-              <Text style={styles.fetchSubtitle}>Fyll inn hvem som skal hente</Text>
+              <Text style={styles.fetchSubtitle}>
+                Fyll inn hvem som skal hente
+              </Text>
 
               <Text style={styles.inputLabel}>Navn:</Text>
               <TextInput
@@ -445,7 +501,9 @@ const nextEvent = useMemo(() => {
                   { marginTop: 24, flex: undefined, alignSelf: "stretch" },
                 ]}
               >
-                <Text style={{ color: "#fff", fontWeight: "700", fontSize: 16 }}>
+                <Text
+                  style={{ color: "#fff", fontWeight: "700", fontSize: 16 }}
+                >
                   Send hentemelding
                 </Text>
               </Pressable>

@@ -1,5 +1,6 @@
 import { getParent, updateParent } from "@/api/parents";
 import ProfilePicture from "@/components/image/ProfilePicture";
+import { ParentProps } from "@/types/parent";
 import { MaterialIcons } from "@expo/vector-icons";
 import { getAuth, signOut } from "firebase/auth";
 import { useEffect, useState } from "react";
@@ -14,7 +15,6 @@ import {
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { ParentProps } from "@/types/parent";
 
 export default function ProfileScreen() {
   const auth = getAuth();
@@ -87,7 +87,7 @@ export default function ProfileScreen() {
     );
   }
 
-   if (!uid) {
+  if (!uid) {
     return (
       <SafeAreaView style={styles.safe}>
         <View style={styles.container}>
