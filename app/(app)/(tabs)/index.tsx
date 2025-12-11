@@ -759,7 +759,7 @@ const styles = StyleSheet.create({
   },
   childCard: {
     backgroundColor: "#57507F",
-    borderRadius: 50,
+    borderRadius: 25,
     flexDirection: "row",
     alignItems: "center",
     paddingVertical: 18,
