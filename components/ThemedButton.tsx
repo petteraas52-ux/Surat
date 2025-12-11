@@ -5,7 +5,7 @@ import {
     type TouchableOpacityProps,
 } from "react-native";
 import { useThemeColor } from "@/hooks/useThemeColor";
-import { radius, spacing, text } from "@theme/tokens";
+import { radius, spacing, textStyles } from "@/theme/tokens";
 
 export type ThemedButtonProps = TouchableOpacityProps & {
     title: string;
@@ -53,6 +53,6 @@ const styles = StyleSheet.create({
 
     },
     label: {
-        ...text.bodySemiBold,
+        ...textStyles.bodySemiBold,
     },
 });

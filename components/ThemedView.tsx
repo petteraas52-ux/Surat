@@ -47,4 +47,4 @@ const styles = StyleSheet.create({
     section: {
         marginBottom: spacing.lg,
     },
-});
+})

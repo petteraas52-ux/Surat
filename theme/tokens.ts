@@ -25,10 +25,10 @@ export const textStyles = {
     },
     title: {
         fontSize: 32,
-        fontHeight: "bold" as const,
+        fontWeight: "bold" as const,
         lineHeight: 32,
     },
-    sutitle: {
+    subtitle: {
         fontSize: 20,
         fontWeight: "bold" as const,
     },
