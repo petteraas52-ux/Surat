@@ -1,5 +1,8 @@
+import { getAllEvents } from "@/api/event";
+import { getParent } from "@/api/parents";
 import { db } from "@/firebaseConfig";
 import { ChildProps } from "@/types/child";
+import { EventProps } from "@/types/event";
 import { getAuth } from "firebase/auth";
 import {
   addDoc,
@@ -35,130 +38,33 @@ type UIChild = ChildProps & {
   absenceTo?: string | null;
 };
 
-// dato-helpers
-const toDateStr = (d: Date) => d.toISOString().slice(0, 10);
-
-const getTodayStr = () => toDateStr(new Date());
-
-const addDays = (dateStr: string, days: number) => {
-  const d = new Date(dateStr + "T00:00:00");
-  d.setDate(d.getDate() + days);
-  return toDateStr(d);
-};
-
-const formatDateShort = (dateStr: string) => {
-  const d = new Date(dateStr + "T00:00:00");
-  const day = `${d.getDate()}`.padStart(2, "0");
-  const month = `${d.getMonth() + 1}`.padStart(2, "0");
-  return `${day}.${month}`;
-};
-
-const parseISODateToLocal = (iso: string): Date => {
-  const [y, m, d] = iso.split("-").map((s) => parseInt(s, 10));
-  return new Date(y, m - 1, d, 0, 0, 0, 0);
-};
-
 export default function Index() {
   const auth = getAuth();
   const uid = auth.currentUser?.uid;
 
   const [children, setChildren] = useState<UIChild[]>([]);
+  const [events, setEvents] = useState<EventProps[]>([]);
   const [loading, setLoading] = useState(true);
 
   const [overlayVisible, setOverlayVisible] = useState(false);
   const [overlayChildId, setOverlayChildId] = useState<string | null>(null);
-
   const [guestLinkVisible, setGuestLinkVisible] = useState(false);
+
   const [guestName, setGuestName] = useState("");
   const [guestPhone, setGuestPhone] = useState("");
+
+  // Gjeste-håndtering
+  const [guestSending, setGuestSending] = useState(false);
+  const [guestError, setGuestError] = useState<string | null>(null);
+
+  const [calendarModalVisible, setCalendarModalVisible] = useState(false);
+  const [selectedDateInCalendar, setSelectedDateInCalendar] =
+    useState<string | null>(null);
 
   // fravær-modal
   const [absenceModalVisible, setAbsenceModalVisible] = useState(false);
   const [vacationDays, setVacationDays] = useState<number>(7);
 
-  // kalender-modal
-  const [calendarModalVisible, setCalendarModalVisible] = useState(false);
-  const [selectedDateInCalendar, setSelectedDateInCalendar] = useState<
-    string | null
-  >(null);
-
-  // enkle lokale hendelser
-  const [events] = useState<
-    Array<{
-      id: string;
-      date: string;
-      title?: string;
-      avdeling?: string;
-      beskrivelse?: string;
-    }>
-  >([
-    {
-      id: "e1",
-      date: "2025-12-10",
-      title: "Skogstur",
-      avdeling: "Trollskogen",
-      beskrivelse: "Vi går en tur i nærområdet og ser etter dyr.",
-    },
-    {
-      id: "e2",
-      date: "2025-12-20",
-      title: "Tur til Oslo",
-      avdeling: "Trollungene",
-      beskrivelse: "Heldagstur til Oslo, ta med matpakke",
-    },
-    {
-      id: "e3",
-      date: "2026-01-05",
-      title: "Barnehagen er stengt",
-      avdeling: "Alle",
-      beskrivelse: "Barnehagen er stengt grunnet planleggingsdag",
-    },
-  ]);
-
-  // markering av kalenderdatoer
-  const markedDates = useMemo(() => {
-    const m: Record<string, any> = {};
-    const counts: Record<string, number> = {};
-
-    events.forEach((ev) => {
-      counts[ev.date] = (counts[ev.date] || 0) + 1;
-    });
-
-    events.forEach((ev) => {
-      m[ev.date] = {
-        marked: true,
-        dotColor: "#57507F",
-        eventCount: counts[ev.date],
-      };
-    });
-
-    if (selectedDateInCalendar) {
-      m[selectedDateInCalendar] = {
-        ...(m[selectedDateInCalendar] || {}),
-        selected: true,
-        selectedColor: "#BCA9FF",
-      };
-    }
-
-    return m;
-  }, [events, selectedDateInCalendar]);
-
-  // neste kommende hendelse
-  const nextEvent = useMemo(() => {
-    if (events.length === 0) return null;
-
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-
-    const future = events
-      .map((ev) => ({ ...ev, time: parseISODateToLocal(ev.date) }))
-      .filter((ev) => ev.time.getTime() >= today.getTime())
-      .sort((a, b) => a.time.getTime() - b.time.getTime());
-
-    return future.length > 0 ? future[0] : null;
-  }, [events]);
-
-  // hente barn fra Firestore
   useEffect(() => {
     if (!uid) return;
 
@@ -168,27 +74,34 @@ export default function Index() {
         const q = query(childrenCol, where("parents", "array-contains", uid));
         const snap = await getDocs(q);
 
-        const data: UIChild[] = snap.docs.map((docSnap) => {
-          const d = docSnap.data() as Omit<ChildProps, "id">;
-          return {
-            id: docSnap.id,
-            ...d,
-            selected: false,
-            absenceType: null,
-            absenceFrom: null,
-            absenceTo: null,
-          };
-        });
+        const data: UIChild[] = snap.docs.map((docSnap) => ({
+          id: docSnap.id,
+          ...(docSnap.data() as Omit<ChildProps, "id">),
+          selected: false,
+          absenceType: null,
+          absenceFrom: null,
+          absenceTo: null,
+        }));
 
         setChildren(data);
       } catch (err) {
         console.error("Failed to load children:", err);
+      }
+    };
+
+    const loadEvents = async () => {
+      try {
+        const data = await getAllEvents();
+        setEvents(data);
+      } catch (err) {
+        console.error("Failed to load events:", err);
       } finally {
         setLoading(false);
       }
     };
 
     loadChildren();
+    loadEvents();
   }, [uid]);
 
   const openOverlay = (childId: string) => {
@@ -210,6 +123,49 @@ export default function Index() {
     setGuestLinkVisible(false);
     setGuestName("");
     setGuestPhone("");
+    setGuestError(null);
+  };
+
+  const sendGuestLink = async () => {
+    setGuestError(null);
+
+    if (!overlayChildId) {
+      setGuestError("Ingen barn valgt.");
+      return;
+    }
+    if (!guestName.trim() || !guestPhone.trim()) {
+      setGuestError("Fyll inn navn og telefonnummer.");
+      return;
+    }
+
+    setGuestSending(true);
+    try {
+      const guestColRef = collection(db, "children", overlayChildId, "guestLinks");
+
+      // Hent parent hvis uid finnes
+      let parent = null;
+      if (uid) {
+        parent = await getParent(uid);
+      }
+
+      const payload = {
+        name: guestName.trim(),
+        phone: guestPhone.trim(),
+        sentAt: serverTimestamp(),
+        parentsId: parent?.id ?? null,
+      };
+
+      await addDoc(guestColRef, payload);
+
+      setGuestName("");
+      setGuestPhone("");
+      setGuestLinkVisible(false);
+    } catch (err) {
+      console.error("Failed to save guest link:", err);
+      setGuestError("Noe gikk galt. Prøv igjen.");
+    } finally {
+      setGuestSending(false);
+    }
   };
 
   const toggleSelect = (id: string) => {
@@ -248,21 +204,17 @@ export default function Index() {
             checkedIn: newCheckedIn,
             selected: false,
             ...(newCheckedIn
-              ? {
-                  absenceType: null,
-                  absenceFrom: null,
-                  absenceTo: null,
-                }
+              ? { absenceType: null, absenceFrom: null, absenceTo: null }
               : {}),
           }
         : child
     );
-
     setChildren(updatedChildren);
 
     for (const child of selected) {
-      const childRef = doc(db, "children", child.id);
-      await updateDoc(childRef, { checkedIn: newCheckedIn });
+      await updateDoc(doc(db, "children", child.id), {
+        checkedIn: newCheckedIn,
+      });
     }
   };
 
@@ -279,13 +231,7 @@ export default function Index() {
           ? {
               ...c,
               checkedIn: newStatus,
-              ...(newStatus
-                ? {
-                    absenceType: null,
-                    absenceFrom: null,
-                    absenceTo: null,
-                  }
-                : {}),
+              ...(newStatus ? { absenceType: null, absenceFrom: null, absenceTo: null } : {}),
             }
           : c
       )
@@ -296,7 +242,34 @@ export default function Index() {
     });
   };
 
-  // fravær-label
+  // --- dato/kalender helpers ---
+
+  const parseTimestampToDateString = (ts: any): string => {
+    const dateObj = ts?.toDate ? ts.toDate() : new Date(ts);
+    return dateObj.toISOString().split("T")[0];
+  };
+
+  const parseISODateToLocal = (iso: string): Date => {
+    const [y, m, d] = iso.split("-").map((s) => parseInt(s, 10));
+    return new Date(y, m - 1, d);
+  };
+
+  const toDateStr = (d: Date) => d.toISOString().slice(0, 10);
+  const getTodayStr = () => toDateStr(new Date());
+  const addDays = (dateStr: string, days: number) => {
+    const d = new Date(dateStr + "T00:00:00");
+    d.setDate(d.getDate() + days);
+    return toDateStr(d);
+  };
+  const formatDateShort = (dateStr: string) => {
+    const d = new Date(dateStr + "T00:00:00");
+    const day = `${d.getDate()}`.padStart(2, "0");
+    const month = `${d.getMonth() + 1}`.padStart(2, "0");
+    return `${day}.${month}`;
+  };
+
+  // --- fravær label ---
+
   const getAbsenceLabel = (child: UIChild) => {
     if (!child.absenceType || !child.absenceFrom || !child.absenceTo) {
       return null;
@@ -318,7 +291,8 @@ export default function Index() {
     return `Ferie ${fromStr}–${toStr}`;
   };
 
-  // fravær-modal open/close
+  // --- fraværsmodal open/close ---
+
   const openAbsenceModal = () => {
     if (!anySelected) return;
     setAbsenceModalVisible(true);
@@ -328,14 +302,13 @@ export default function Index() {
     setAbsenceModalVisible(false);
   };
 
-  // sykdom i dag for alle valgte – LAGRER I FIRESTORE
+  // sykdom i dag – lagres i subcollection "absences"
   const registerSicknessTodayForSelected = async () => {
     if (!anySelected) return;
     const today = getTodayStr();
 
     const selectedChildren = children.filter((c) => c.selected);
 
-    // Oppdater UI
     setChildren((prev) =>
       prev.map((child) =>
         child.selected
@@ -351,7 +324,6 @@ export default function Index() {
       )
     );
 
-    // Lagre i Firestore
     for (const child of selectedChildren) {
       const absRef = collection(db, "children", child.id, "absences");
       await addDoc(absRef, {
@@ -361,7 +333,6 @@ export default function Index() {
         createdAt: serverTimestamp(),
       });
 
-      // Sjekk ut barnet samtidig
       await updateDoc(doc(db, "children", child.id), {
         checkedIn: false,
       });
@@ -370,7 +341,7 @@ export default function Index() {
     setAbsenceModalVisible(false);
   };
 
-  // ferie-periode for alle valgte – LAGRER I FIRESTORE
+  // ferie-periode – lagres i "absences"
   const registerVacationForSelected = async () => {
     if (!anySelected) return;
 
@@ -379,7 +350,6 @@ export default function Index() {
 
     const selectedChildren = children.filter((c) => c.selected);
 
-    // Oppdater UI
     setChildren((prev) =>
       prev.map((child) =>
         child.selected
@@ -395,7 +365,6 @@ export default function Index() {
       )
     );
 
-    // Lagre i Firestore
     for (const child of selectedChildren) {
       const absRef = collection(db, "children", child.id, "absences");
       await addDoc(absRef, {
@@ -413,27 +382,74 @@ export default function Index() {
     setAbsenceModalVisible(false);
   };
 
-  const onCalendarDayPress = (day: DateData) => {
+  // --- kalender / events ---
+
+  const markedDates = useMemo(() => {
+    const m: Record<string, any> = {};
+    const counts: Record<string, number> = {};
+
+    events.forEach((ev) => {
+      const dateStr = parseTimestampToDateString(ev.date);
+      counts[dateStr] = (counts[dateStr] || 0) + 1;
+    });
+
+    events.forEach((ev) => {
+      const dateStr = parseTimestampToDateString(ev.date);
+      m[dateStr] = {
+        marked: true,
+        dotColor: "#57507F",
+        eventCount: counts[dateStr],
+      };
+    });
+
+    if (selectedDateInCalendar) {
+      m[selectedDateInCalendar] = {
+        ...(m[selectedDateInCalendar] || {}),
+        selected: true,
+        selectedColor: "#BCA9FF",
+      };
+    }
+
+    return m;
+  }, [events, selectedDateInCalendar]);
+
+  const nextEvent = useMemo(() => {
+    if (!events.length) return null;
+
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const future = events
+      .map((ev) => ({
+        ...ev,
+        time: parseISODateToLocal(parseTimestampToDateString(ev.date)),
+      }))
+      .filter((ev) => ev.time.getTime() >= today.getTime())
+      .sort((a, b) => a.time.getTime() - b.time.getTime());
+
+    return future.length ? future[0] : null;
+  }, [events]);
+
+  const onCalendarDayPress = (day: DateData) =>
     setSelectedDateInCalendar(day.dateString);
-  };
 
   const eventsForSelectedDate = useMemo(() => {
     if (!selectedDateInCalendar) return [];
-    return events.filter((ev) => ev.date === selectedDateInCalendar);
+    return events.filter(
+      (ev) => parseTimestampToDateString(ev.date) === selectedDateInCalendar
+    );
   }, [events, selectedDateInCalendar]);
 
-  const activeChild =
-    overlayChildId != null
-      ? children.find((c) => c.id === overlayChildId)
-      : undefined;
+  const activeChild = overlayChildId
+    ? children.find((c) => c.id === overlayChildId)
+    : undefined;
 
-  if (loading) {
+  if (loading)
     return (
       <SafeAreaView style={styles.safe}>
         <ActivityIndicator size="large" />
       </SafeAreaView>
     );
-  }
 
   return (
     <SafeAreaView style={styles.safe}>
@@ -457,7 +473,6 @@ export default function Index() {
                 <View style={styles.avatarPlaceholder}>
                   <Text style={{ fontSize: 28 }}>🙋‍♂️</Text>
                 </View>
-
                 <View style={styles.childInfo}>
                   <Text style={styles.childName}>
                     {child.firstName} {child.lastName}
@@ -474,16 +489,12 @@ export default function Index() {
                     <Text style={styles.absenceText}>{absenceLabel}</Text>
                   )}
                 </View>
-
                 <Pressable
                   onPress={(e: GestureResponderEvent) => {
                     e.stopPropagation();
                     toggleSelect(child.id);
                   }}
-                  style={[
-                    styles.circle,
-                    child.selected && styles.circleSelected,
-                  ]}
+                  style={[styles.circle, child.selected && styles.circleSelected]}
                 >
                   {child.selected && <Text style={styles.checkmark}>✓</Text>}
                 </Pressable>
@@ -497,24 +508,24 @@ export default function Index() {
           <Text style={{ fontWeight: "700", marginBottom: 8 }}>
             Kommende hendelse
           </Text>
-
           <Pressable
             style={styles.upcomingCard}
             onPress={() => {
               setCalendarModalVisible(true);
-              if (nextEvent) setSelectedDateInCalendar(nextEvent.date);
+              if (nextEvent)
+                setSelectedDateInCalendar(parseTimestampToDateString(nextEvent.date));
             }}
           >
             {nextEvent ? (
               <View>
                 <Text style={{ fontWeight: "700", fontSize: 16 }}>
-                  {nextEvent.title ?? "Hendelse"}
+                  {nextEvent.title}
                 </Text>
                 <Text style={{ color: "#666", marginTop: 4 }}>
-                  {nextEvent.avdeling}
+                  {nextEvent.department}
                 </Text>
                 <Text style={{ color: "#666", marginTop: 4 }}>
-                  {nextEvent.date}
+                  {parseTimestampToDateString(nextEvent.date)}
                 </Text>
               </View>
             ) : (
@@ -523,7 +534,7 @@ export default function Index() {
           </Pressable>
         </View>
 
-        {/* to knapper: fravær + sjekk inn/ut */}
+        {/* fravær + sjekk inn/ut */}
         <View style={styles.footerButtonsRow}>
           <Pressable
             style={[
@@ -549,12 +560,10 @@ export default function Index() {
         <Modal visible={overlayVisible} transparent animationType="fade">
           <View style={styles.overlayBackdrop}>
             <Pressable style={StyleSheet.absoluteFill} onPress={closeOverlay} />
-
             <View style={styles.overlayCard}>
               <Pressable style={styles.backButton} onPress={closeOverlay}>
                 <Text style={styles.backButtonText}>Tilbake</Text>
               </Pressable>
-
               {activeChild && (
                 <>
                   <View style={styles.profileCard}>
@@ -562,15 +571,12 @@ export default function Index() {
                       <View style={styles.profileAvatar}>
                         <Text style={{ fontSize: 28 }}>👶</Text>
                       </View>
-
                       <View style={{ flex: 1 }}>
                         <Text style={styles.profileName}>
                           {activeChild.firstName} {activeChild.lastName}
                         </Text>
                         <Text style={styles.profileStatusText}>
-                          {activeChild.checkedIn
-                            ? "Sjekket inn"
-                            : "Sjekket ut"}
+                          {activeChild.checkedIn ? "Sjekket inn" : "Sjekket ut"}
                         </Text>
                         {getAbsenceLabel(activeChild) && (
                           <Text style={styles.profileAbsenceText}>
@@ -590,7 +596,6 @@ export default function Index() {
                         Opprett gjest-linke
                       </Text>
                     </Pressable>
-
                     <Pressable
                       style={styles.purpleButton}
                       onPress={toggleOverlayChildCheckIn}
@@ -606,12 +611,8 @@ export default function Index() {
           </View>
         </Modal>
 
-        {/* full kalender-modal */}
-        <Modal
-          visible={calendarModalVisible}
-          animationType="slide"
-          transparent
-        >
+        {/* kalender-modal */}
+        <Modal visible={calendarModalVisible} transparent animationType="slide">
           <View style={styles.overlayBackdrop}>
             <View style={[styles.overlayCard, { maxHeight: "90%" }]}>
               <Pressable
@@ -620,22 +621,16 @@ export default function Index() {
               >
                 <Text style={styles.backButtonText}>Lukk</Text>
               </Pressable>
-
               <Calendar
                 onDayPress={onCalendarDayPress}
                 markedDates={markedDates}
                 style={{ borderRadius: 8 }}
                 theme={{ todayTextColor: "#57507F" }}
               />
-
               <View style={{ marginTop: 12 }}>
                 <Text style={{ fontWeight: "700", marginBottom: 6 }}>
-                  Hendelser{" "}
-                  {selectedDateInCalendar
-                    ? `– ${selectedDateInCalendar}`
-                    : ""}
+                  Hendelser {selectedDateInCalendar ? `– ${selectedDateInCalendar}` : ""}
                 </Text>
-
                 {selectedDateInCalendar ? (
                   eventsForSelectedDate.length === 0 ? (
                     <Text style={{ color: "#666" }}>
@@ -644,14 +639,12 @@ export default function Index() {
                   ) : (
                     eventsForSelectedDate.map((ev) => (
                       <View key={ev.id} style={{ paddingVertical: 6 }}>
-                        <Text style={{ fontWeight: "600" }}>
-                          {ev.title ?? "Hendelse"}
-                        </Text>
+                        <Text style={{ fontWeight: "600" }}>{ev.title}</Text>
                         <Text style={{ color: "#666" }}>
-                          Avdeling: {ev.avdeling}
+                          Avdeling: {ev.department}
                         </Text>
                         <Text style={{ color: "#666", marginTop: 10 }}>
-                          {ev.beskrivelse}
+                          {ev.description}
                         </Text>
                       </View>
                     ))
@@ -670,27 +663,16 @@ export default function Index() {
         <Modal visible={guestLinkVisible} transparent animationType="slide">
           <View style={styles.overlayBackdrop}>
             <View style={[styles.overlayCard, { alignItems: "center" }]}>
-              <Pressable
-                style={styles.backButton}
-                onPress={closeGuestLinkModal}
-              >
+              <Pressable style={styles.backButton} onPress={closeGuestLinkModal}>
                 <Text style={styles.backButtonText}>Tilbake</Text>
               </Pressable>
-
               <Text style={styles.fetchTitle}>
-                {activeChild
-                  ? `${activeChild.firstName} ${activeChild.lastName}`
-                  : "Hentebarn"}
+                {activeChild ? `${activeChild.firstName} ${activeChild.lastName}` : "Hentebarn"}
               </Text>
-
               <View style={styles.fetchAvatar}>
                 <Text style={{ fontSize: 36 }}>👶</Text>
               </View>
-
-              <Text style={styles.fetchSubtitle}>
-                Fyll inn hvem som skal hente
-              </Text>
-
+              <Text style={styles.fetchSubtitle}>Fyll inn hvem som skal hente</Text>
               <Text style={styles.inputLabel}>Navn:</Text>
               <TextInput
                 style={styles.input}
@@ -699,7 +681,6 @@ export default function Index() {
                 placeholder="Skriv navn"
                 placeholderTextColor="#999"
               />
-
               <Text style={styles.inputLabel}>Telefonnummer:</Text>
               <TextInput
                 style={styles.input}
@@ -709,24 +690,20 @@ export default function Index() {
                 placeholderTextColor="#999"
                 keyboardType="phone-pad"
               />
-
               <Pressable
                 style={[
                   styles.purpleButton,
-                  { marginTop: 24, flex: undefined, alignSelf: "stretch" },
+                  { marginTop: 24, flex: undefined, alignSelf: "stretch", opacity: guestSending ? 0.7 : 1 },
                 ]}
+                onPress={sendGuestLink}
+                disabled={guestSending}
               >
-                <Text
-                  style={{
-                    color: "#fff",
-                    fontWeight: "700",
-                    fontSize: 16,
-                    textAlign: "center",
-                  }}
-                >
-                  Send hentemelding
+                <Text style={{ color: "#fff", fontWeight: "700", fontSize: 16 }}>
+                  {guestSending ? "Sender..." : "Send hentemelding"}
                 </Text>
               </Pressable>
+
+              {guestError && <Text style={{ color: "red", marginTop: 8 }}>{guestError}</Text>}
             </View>
           </View>
         </Modal>
@@ -734,58 +711,31 @@ export default function Index() {
         {/* fraværsmodal */}
         <Modal visible={absenceModalVisible} transparent animationType="fade">
           <View style={styles.overlayBackdrop}>
-            <Pressable
-              style={StyleSheet.absoluteFill}
-              onPress={closeAbsenceModal}
-            />
-
+            <Pressable style={StyleSheet.absoluteFill} onPress={closeAbsenceModal} />
             <View style={styles.overlayCard}>
               <Text style={styles.absenceModalTitle}>Registrer fravær</Text>
               <Text style={styles.absenceModalSubtitle}>
                 {children.filter((c) => c.selected).length} barn valgt
               </Text>
-
               <View style={styles.absenceSection}>
-                <Pressable
-                  style={styles.absenceOption}
-                  onPress={registerSicknessTodayForSelected}
-                >
+                <Pressable style={styles.absenceOption} onPress={registerSicknessTodayForSelected}>
                   <Text style={styles.absenceOptionText}>Sykdom i dag</Text>
                 </Pressable>
 
                 <View style={styles.vacationBlock}>
-                  <Text style={styles.vacationLabel}>
-                    Ferie – antall dager
-                  </Text>
+                  <Text style={styles.vacationLabel}>Ferie – antall dager</Text>
                   <View style={styles.vacationRow}>
-                    <Pressable
-                      style={styles.vacationAdjustButton}
-                      onPress={() =>
-                        setVacationDays((d) => Math.max(1, d - 1))
-                      }
-                    >
+                    <Pressable style={styles.vacationAdjustButton} onPress={() => setVacationDays((d) => Math.max(1, d - 1))}>
                       <Text style={styles.vacationAdjustText}>-</Text>
                     </Pressable>
-                    <Text style={styles.vacationDaysText}>
-                      {vacationDays}
-                    </Text>
-                    <Pressable
-                      style={styles.vacationAdjustButton}
-                      onPress={() =>
-                        setVacationDays((d) => Math.min(30, d + 1))
-                      }
-                    >
+                    <Text style={styles.vacationDaysText}>{vacationDays}</Text>
+                    <Pressable style={styles.vacationAdjustButton} onPress={() => setVacationDays((d) => Math.min(30, d + 1))}>
                       <Text style={styles.vacationAdjustText}>+</Text>
                     </Pressable>
                   </View>
 
-                  <Pressable
-                    style={[styles.absenceOption, { marginTop: 8 }]}
-                    onPress={registerVacationForSelected}
-                  >
-                    <Text style={styles.absenceOptionText}>
-                      Registrer ferie
-                    </Text>
+                  <Pressable style={[styles.absenceOption, { marginTop: 8 }]} onPress={registerVacationForSelected}>
+                    <Text style={styles.absenceOptionText}>Registrer ferie</Text>
                   </Pressable>
                 </View>
               </View>
@@ -797,6 +747,7 @@ export default function Index() {
   );
 }
 
+// --- Styles ---
 const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: "#ffff" },
   container: { padding: 24, paddingBottom: 40 },
@@ -939,39 +890,26 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     marginBottom: 16,
   },
-  backButtonText: { color: "#fff", fontWeight: "600" },
-  fetchTitle: {
-    fontSize: 26,
-    fontWeight: "700",
-    marginBottom: 12,
-  },
+  backButtonText: { color: "#fff", fontWeight: "700" },
+  fetchTitle: { fontSize: 22, fontWeight: "700", marginVertical: 12 },
+  fetchSubtitle: { fontSize: 16, marginBottom: 12 },
   fetchAvatar: {
-    width: 140,
-    height: 140,
-    borderRadius: 70,
-    backgroundColor: "#eaeaea",
+    width: 80,
+    height: 80,
+    borderRadius: 16,
+    backgroundColor: "#eee",
     alignItems: "center",
     justifyContent: "center",
-    marginBottom: 20,
+    marginBottom: 12,
   },
-  fetchSubtitle: {
-    fontSize: 16,
-    fontWeight: "600",
-    marginBottom: 16,
-  },
-  inputLabel: {
-    alignSelf: "flex-start",
-    fontSize: 16,
-    fontWeight: "600",
-    marginTop: 12,
-    marginBottom: 6,
-  },
+  inputLabel: { alignSelf: "flex-start", marginBottom: 4, fontWeight: "600" },
   input: {
     width: "100%",
-    backgroundColor: "#f1f1f1",
-    borderRadius: 14,
     padding: 12,
-    fontSize: 16,
+    borderWidth: 1,
+    borderColor: "#ccc",
+    borderRadius: 12,
+    marginBottom: 12,
   },
   upcomingCard: {
     backgroundColor: "#FFF",

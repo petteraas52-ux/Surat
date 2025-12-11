@@ -1,5 +1,6 @@
 import { getParent, updateParent } from "@/api/parents";
 import ProfilePicture from "@/components/image/ProfilePicture";
+import { ParentProps } from "@/types/parent";
 import { MaterialIcons } from "@expo/vector-icons";
 import { getAuth, signOut } from "firebase/auth";
 import { useEffect, useState } from "react";
@@ -24,7 +25,7 @@ export default function ProfileScreen() {
   const [email, setEmail] = useState("");
   const [isEditing, setIsEditing] = useState(false);
   const [loading, setLoading] = useState(true);
-
+  const [parentData, setParentData] = useState<ParentProps | null>(null);
   const handleLogout = async () => {
     try {
       await signOut(auth);
@@ -45,6 +46,7 @@ export default function ProfileScreen() {
           setName(`${parent.firstName} ${parent.lastName}`);
           setPhone(parent.phone);
           setEmail(parent.eMail);
+          setParentData(parent);
         }
       } catch (err) {
         console.error("Failed to load profile:", err);
@@ -85,12 +87,27 @@ export default function ProfileScreen() {
     );
   }
 
+  if (!uid) {
+    return (
+      <SafeAreaView style={styles.safe}>
+        <View style={styles.container}>
+          <Text style={styles.title}>Ingen bruker logget inn</Text>
+        </View>
+      </SafeAreaView>
+    );
+  }
+
   return (
     <SafeAreaView style={styles.safe}>
       <ScrollView contentContainerStyle={styles.container}>
         <Text style={styles.title}>Min profil</Text>
 
-        <ProfilePicture showEdit={isEditing} />
+        <ProfilePicture
+          showEdit={isEditing}
+          userId={uid}
+          userType="parent"
+          initialImagePath={parentData?.imageUri}
+        />
 
         <View style={styles.row}>
           <Text style={styles.label}>Navn</Text>
