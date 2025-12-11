@@ -1,5 +1,6 @@
 import { getAllEvents } from "@/api/event";
 import { getParent } from "@/api/parents";
+import ProfilePicture from "@/components/image/ProfilePicture";
 import { db } from "@/firebaseConfig";
 import { ChildProps } from "@/types/child";
 import { EventProps } from "@/types/event";
@@ -471,7 +472,12 @@ export default function Index() {
                 style={styles.childCard}
               >
                 <View style={styles.avatarPlaceholder}>
-                  <Text style={{ fontSize: 28 }}>🙋‍♂️</Text>
+                  <ProfilePicture
+                              showEdit={false}
+                              userId={child.id}
+                              userType="child"
+                              initialImagePath={child?.imageUri}
+                        /> 
                 </View>
                 <View style={styles.childInfo}>
                   <Text style={styles.childName}>
@@ -569,7 +575,12 @@ export default function Index() {
                   <View style={styles.profileCard}>
                     <View style={styles.profileRow}>
                       <View style={styles.profileAvatar}>
-                        <Text style={{ fontSize: 28 }}>👶</Text>
+                         <ProfilePicture
+                              showEdit={true}
+                              userId={activeChild.id}
+                              userType="child"
+                              initialImagePath={activeChild?.imageUri}
+                        /> 
                       </View>
                       <View style={{ flex: 1 }}>
                         <Text style={styles.profileName}>
