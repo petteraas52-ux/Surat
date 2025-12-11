@@ -1,5 +1,5 @@
 import { getStorageRef } from "@/firebaseConfig";
-import { uploadBytesResumable } from "firebase/storage";
+import { getDownloadURL, uploadBytesResumable } from "firebase/storage";
 /*  
     Mer eller mindre basert på kode fra kryssplattform
     https://github.com/studBrage/Kryssplattform-HK-H25/blob/main/api/imageApi.ts  
@@ -26,6 +26,18 @@ export async function uploadImageToFirebase(uri: string) {
     return uploadPath;
   } catch (e) {
     console.error("Error uploading image to firebase", e);
+    return null;
+  }
+}
+
+
+export async function getImageUrl(storagePath: string): Promise<string | null> {
+  try {
+    const imageRef = await getStorageRef(storagePath);
+    const url = await getDownloadURL(imageRef);
+    return url;
+  } catch (e) {
+    console.error("Error getting image URL:", e);
     return null;
   }
 }
