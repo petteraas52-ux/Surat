@@ -9,7 +9,7 @@ import {
   updateDoc,
   where,
 } from "firebase/firestore";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   ActivityIndicator,
   Modal,
@@ -17,8 +17,10 @@ import {
   ScrollView,
   StyleSheet,
   Text,
+  TextInput,
   View,
 } from "react-native";
+import { Calendar, DateData } from "react-native-calendars";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 type UIChild = ChildProps & { selected?: boolean };
@@ -32,6 +34,82 @@ export default function Index() {
 
   const [overlayVisible, setOverlayVisible] = useState(false);
   const [overlayChildId, setOverlayChildId] = useState<string | null>(null);
+  const [guestLinkVisible, setGuestLinkVisible] = useState(false);
+
+  const [guestName, setGuestName] = useState("");
+  const [guestPhone, setGuestPhone] = useState("");
+// Kalender modal (full calendar)
+const [calendarModalVisible, setCalendarModalVisible] = useState(false);
+const [selectedDateInCalendar, setSelectedDateInCalendar] = useState<string | null>(null);
+
+// Enkel lokal hendelsesliste (ingen DB)
+const [events, setEvents] = useState<
+  Array<{
+    id: string;
+    date: string; // YYYY-MM-DD
+    title?: string;
+    avdeling?: string;
+    beskrivelse?: string;
+  }>
+>([
+  { id: "e1", date: "2025-12-10", title: "Skogstur", avdeling: "Trollskogen", beskrivelse: "Vi går en tur i nærområdet og ser etter dyr." },
+  { id: "e2", date: "2025-12-20", title: "Tur til Oslo", avdeling: "Trollungene", beskrivelse: "Heldagstur til Oslo, ta med matpakke" },
+  { id: "e3", date: "2026-01-05", title: "Barnehagen er stengt", avdeling: "Alle", beskrivelse: "Barnehagen er stengt grunnet planleggingsdag" },
+]);
+
+// Hjelper: parse 'YYYY-MM-DD' til lokal Date ved midnatt
+const parseISODateToLocal = (iso: string): Date => {
+  const [y, m, d] = iso.split("-").map((s) => parseInt(s, 10));
+  // monthIndex i JS Date er 0-basert
+  return new Date(y, m - 1, d, 0, 0, 0, 0);
+};
+
+// Hvis flere events på samme dato, legger vi inn en count i markeringen
+const markedDates = useMemo(() => {
+  const m: Record<string, any> = {};
+  const counts: Record<string, number> = {};
+
+  events.forEach((ev) => {
+    counts[ev.date] = (counts[ev.date] || 0) + 1;
+  });
+
+  events.forEach((ev) => {
+    // enkel markering — viser dot og antall som ekstra meta
+    m[ev.date] = {
+      marked: true,
+      dotColor: "#57507F",
+      // legg på count hvis nødvendig (du kan bruke dette i din render)
+      eventCount: counts[ev.date],
+    };
+  });
+
+  if (selectedDateInCalendar) {
+    m[selectedDateInCalendar] = {
+      ...(m[selectedDateInCalendar] || {}),
+      selected: true,
+      selectedColor: "#BCA9FF",
+    };
+  }
+
+  return m;
+}, [events, selectedDateInCalendar]);
+
+// Finn neste kommende hendelse (dato >= i dag)
+// Bruker parseISODateToLocal for å unngå tidssoneproblemer
+const nextEvent = useMemo(() => {
+  if (events.length === 0) return null;
+
+  const today = new Date();
+  today.setHours(0, 0, 0, 0); // lokal midnatt i dag
+
+  const future = events
+    .map((ev) => ({ ...ev, time: parseISODateToLocal(ev.date) }))
+    .filter((ev) => ev.time.getTime() >= today.getTime())
+    .sort((a, b) => a.time.getTime() - b.time.getTime());
+
+  return future.length > 0 ? future[0] : null;
+}, [events]);
+
 
   useEffect(() => {
     if (!uid) return;
@@ -70,6 +148,17 @@ export default function Index() {
   const closeOverlay = () => {
     setOverlayVisible(false);
     setOverlayChildId(null);
+  };
+
+  const openGuestLinkModal = () => {
+    setOverlayVisible(false);
+    setGuestLinkVisible(true);
+  };
+
+  const closeGuestLinkModal = () => {
+    setGuestLinkVisible(false);
+    setGuestName("");
+    setGuestPhone("");
   };
 
   const toggleSelect = (id: string) => {
@@ -130,6 +219,15 @@ export default function Index() {
     });
   };
 
+  const onCalendarDayPress = (day: DateData) => {
+    setSelectedDateInCalendar(day.dateString);
+  };
+
+  const eventsForSelectedDate = useMemo(() => {
+    if (!selectedDateInCalendar) return [];
+    return events.filter((ev) => ev.date === selectedDateInCalendar);
+  }, [events, selectedDateInCalendar]);
+
   const activeChild =
     overlayChildId != null
       ? children.find((c) => c.id === overlayChildId)
@@ -187,57 +285,174 @@ export default function Index() {
           ))
         )}
 
+        {/* --- Neste kommende hendelse - kun denne vises på hovedsiden --- */}
+        <View style={{ marginTop: 12, marginBottom: 12 }}>
+          <Text style={{ fontWeight: "700", marginBottom: 8 }}>Kommende hendelse</Text>
+
+          <Pressable
+            style={styles.upcomingCard}
+            onPress={() => {
+              // åpne full kalendermodal når kortet trykkes
+              setCalendarModalVisible(true);
+              // marker også den kommende datoen i kalenderen
+              if (nextEvent) setSelectedDateInCalendar(nextEvent.date);
+            }}
+          >
+            {nextEvent ? (
+              <View>
+                <Text style={{ fontWeight: "700", fontSize: 16 }}>{nextEvent.title ?? "Hendelse"}</Text>
+                <Text style={{ color: "#666", marginTop: 4 }}>{nextEvent.avdeling}</Text>
+                <Text style={{ color: "#666", marginTop: 4 }}>{nextEvent.date}</Text>
+              </View>
+            ) : (
+              <Text style={{ color: "#666" }}>Ingen kommende hendelser</Text>
+            )}
+          </Pressable>
+        </View>
+
         <Pressable style={styles.checkoutWrapper} onPress={applyCheckInOut}>
           <View style={styles.checkoutButton}>
             <Text style={styles.checkoutText}>{getButtonText()}</Text>
           </View>
         </Pressable>
-      </ScrollView>
 
-      <Modal visible={overlayVisible} transparent animationType="fade">
-        <View style={styles.overlayBackdrop}>
-          <Pressable style={StyleSheet.absoluteFill} onPress={closeOverlay} />
+        {/* Overlay/modal for barnedetaljer */}
+        <Modal visible={overlayVisible} transparent animationType="fade">
+          <View style={styles.overlayBackdrop}>
+            <Pressable style={StyleSheet.absoluteFill} onPress={closeOverlay} />
 
-          <View style={styles.overlayCard}>
-            {activeChild && (
-              <>
-                <View style={styles.profileCard}>
-                  <View style={styles.profileRow}>
-                    <View style={styles.profileAvatar}>
-                      <Text style={{ fontSize: 28 }}>👶</Text>
-                    </View>
+            <View style={styles.overlayCard}>
+              <Pressable style={styles.backButton} onPress={closeOverlay}>
+                <Text style={styles.backButtonText}>Tilbake</Text>
+              </Pressable>
 
-                    <View style={{ flex: 1 }}>
-                      <Text style={styles.profileName}>
-                        {activeChild.firstName} {activeChild.lastName}
-                      </Text>
-                      <Text style={styles.profileStatusText}>
-                        {activeChild.checkedIn ? "Sjekket inn" : "Sjekket ut"}
-                      </Text>
+              {activeChild && (
+                <>
+                  <View style={styles.profileCard}>
+                    <View style={styles.profileRow}>
+                      <View style={styles.profileAvatar}>
+                        <Text style={{ fontSize: 28 }}>👶</Text>
+                      </View>
+
+                      <View style={{ flex: 1 }}>
+                        <Text style={styles.profileName}>
+                          {activeChild.firstName} {activeChild.lastName}
+                        </Text>
+                        <Text style={styles.profileStatusText}>
+                          {activeChild.checkedIn ? "Sjekket inn" : "Sjekket ut"}
+                        </Text>
+                      </View>
                     </View>
                   </View>
-                </View>
-                <View style={styles.bottomButtons}>
-                  <Pressable style={styles.purpleButton}>
-                    <Text style={styles.purpleButtonText}>
-                      Opprett gjest-linke
-                    </Text>
-                  </Pressable>
 
-                  <Pressable
-                    style={styles.purpleButton}
-                    onPress={toggleOverlayChildCheckIn}
-                  >
-                    <Text style={styles.purpleButtonText}>
-                      {activeChild.checkedIn ? "Sjekk ut" : "Sjekk inn"}
-                    </Text>
-                  </Pressable>
-                </View>
-              </>
-            )}
+                  <View style={styles.bottomButtons}>
+                    <Pressable style={styles.purpleButton} onPress={openGuestLinkModal}>
+                      <Text style={styles.purpleButtonText}>Opprett gjest-linke</Text>
+                    </Pressable>
+
+                    <Pressable style={styles.purpleButton} onPress={toggleOverlayChildCheckIn}>
+                      <Text style={styles.purpleButtonText}>
+                        {activeChild.checkedIn ? "Sjekk ut" : "Sjekk inn"}
+                      </Text>
+                    </Pressable>
+                  </View>
+                </>
+              )}
+            </View>
           </View>
-        </View>
-      </Modal>
+        </Modal>
+
+        {/* Full kalender modal som åpnes ved trykk på kommende hendelse */}
+        <Modal visible={calendarModalVisible} animationType="slide" transparent>
+          <View style={styles.overlayBackdrop}>
+            <View style={[styles.overlayCard, { maxHeight: "90%" }]}>
+              <Pressable style={styles.backButton} onPress={() => setCalendarModalVisible(false)}>
+                <Text style={styles.backButtonText}>Lukk</Text>
+              </Pressable>
+
+              <Calendar
+                onDayPress={onCalendarDayPress}
+                markedDates={markedDates}
+                style={{ borderRadius: 8 }}
+                theme={{ todayTextColor: "#57507F" }}
+              />
+
+              <View style={{ marginTop: 12 }}>
+                <Text style={{ fontWeight: "700", marginBottom: 6 }}>
+                  Hendelser {selectedDateInCalendar ? `– ${selectedDateInCalendar}` : ""}
+                </Text>
+
+                {selectedDateInCalendar ? (
+                  eventsForSelectedDate.length === 0 ? (
+                    <Text style={{ color: "#666" }}>Ingen hendelser denne dagen</Text>
+                  ) : (
+                    eventsForSelectedDate.map((ev) => (
+                      <View key={ev.id} style={{ paddingVertical: 6 }}>
+                        <Text style={{ fontWeight: "600" }}>{ev.title ?? "Hendelse"}</Text>
+                         <Text style={{ color: "#666"}}>Avdeling: {ev.avdeling}</Text>
+                        <Text style={{ color: "#666", marginTop: 10}}>{ev.beskrivelse}</Text>
+                      </View>
+                    ))
+                  )
+                ) : (
+                  <Text style={{ color: "#666" }}>Velg en dato for å se hendelser</Text>
+                )}
+              </View>
+            </View>
+          </View>
+        </Modal>
+
+        {/* Guest modal */}
+        <Modal visible={guestLinkVisible} transparent animationType="slide">
+          <View style={styles.overlayBackdrop}>
+            <View style={[styles.overlayCard, { alignItems: "center" }]}>
+              <Pressable style={styles.backButton} onPress={closeGuestLinkModal}>
+                <Text style={styles.backButtonText}>Tilbake</Text>
+              </Pressable>
+
+              <Text style={styles.fetchTitle}>
+                {activeChild ? `${activeChild.firstName} ${activeChild.lastName}` : "Hentebarn"}
+              </Text>
+
+              <View style={styles.fetchAvatar}>
+                <Text style={{ fontSize: 36 }}>👶</Text>
+              </View>
+
+              <Text style={styles.fetchSubtitle}>Fyll inn hvem som skal hente</Text>
+
+              <Text style={styles.inputLabel}>Navn:</Text>
+              <TextInput
+                style={styles.input}
+                value={guestName}
+                onChangeText={setGuestName}
+                placeholder="Skriv navn"
+                placeholderTextColor="#999"
+              />
+
+              <Text style={styles.inputLabel}>Telefonnummer:</Text>
+              <TextInput
+                style={styles.input}
+                value={guestPhone}
+                onChangeText={setGuestPhone}
+                placeholder="Skriv telefonnummer"
+                placeholderTextColor="#999"
+                keyboardType="phone-pad"
+              />
+
+              <Pressable
+                style={[
+                  styles.purpleButton,
+                  { marginTop: 24, flex: undefined, alignSelf: "stretch" },
+                ]}
+              >
+                <Text style={{ color: "#fff", fontWeight: "700", fontSize: 16 }}>
+                  Send hentemelding
+                </Text>
+              </Pressable>
+            </View>
+          </View>
+        </Modal>
+      </ScrollView>
     </SafeAreaView>
   );
 }
@@ -340,4 +555,69 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   purpleButtonText: { color: "#fff", fontWeight: "700" },
+  backButton: {
+    alignSelf: "flex-start",
+    backgroundColor: "#57507F",
+    paddingVertical: 8,
+    paddingHorizontal: 16,
+    borderRadius: 20,
+    marginBottom: 16,
+  },
+  backButtonText: { color: "#fff", fontWeight: "600" },
+  fetchTitle: {
+    fontSize: 26,
+    fontWeight: "700",
+    marginBottom: 12,
+  },
+  fetchAvatar: {
+    width: 140,
+    height: 140,
+    borderRadius: 70,
+    backgroundColor: "#eaeaea",
+    alignItems: "center",
+    justifyContent: "center",
+    marginBottom: 20,
+  },
+  fetchSubtitle: {
+    fontSize: 16,
+    fontWeight: "600",
+    marginBottom: 16,
+  },
+  inputLabel: {
+    alignSelf: "flex-start",
+    fontSize: 16,
+    fontWeight: "600",
+    marginTop: 12,
+    marginBottom: 6,
+  },
+  input: {
+    width: "100%",
+    backgroundColor: "#f1f1f1",
+    borderRadius: 14,
+    padding: 12,
+    fontSize: 16,
+  },
+
+  /* upcoming card */
+  upcomingCard: {
+    backgroundColor: "#FFF",
+    borderRadius: 12,
+    padding: 14,
+    borderWidth: 1,
+    borderColor: "#eee",
+  },
+
+  /* child-picker chip (hvis du trenger senere) */
+  childChip: {
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    borderRadius: 20,
+    backgroundColor: "#eee",
+    marginRight: 8,
+  },
+  childChipSelected: {
+    backgroundColor: "#57507F",
+  },
+  childChipText: { color: "#333" },
+  childChipTextSelected: { color: "#fff" },
 });
