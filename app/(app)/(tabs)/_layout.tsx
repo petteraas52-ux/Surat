@@ -43,6 +43,15 @@ export default function TabBar() {
           ),
         }}
       />
+      <Tabs.Screen
+        name="create-event"
+        options={{
+          title: "EventCreation",
+          tabBarIcon: () => (
+            <Ionicons name="warning-outline" size={24} color="purple" />
+          ),
+        }}
+      />
     </Tabs>
   );
 }
