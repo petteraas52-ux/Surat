@@ -65,7 +65,7 @@ export function AuthSessionProvider({ children }: { children: ReactNode }) {
   }, [isLoading, userAuthSession]);
 
   return (
-    <AuthContext
+    <AuthContext.Provider
       value={{
         signIn: (userEmail: string, password: string) => {
           signIn(userEmail, password);
@@ -90,6 +90,6 @@ export function AuthSessionProvider({ children }: { children: ReactNode }) {
       }}
     >
       {children}
-    </AuthContext>
+    </AuthContext.Provider>
   );
 }

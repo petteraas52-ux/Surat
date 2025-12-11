@@ -18,14 +18,8 @@ const Authentication = () => {
 
   const { signIn } = useAuthSession();
 
-  return (
-    <KeyboardAvoidingView
-      style={styles.container}
-      behavior={Platform.OS === "ios" ? "padding" : "height"}
-      keyboardVerticalOffset={Platform.OS === "ios" ? 80 : 0}
-    >
-      <TouchableWithoutFeedback onPress={() => Keyboard.dismiss()}>
-        <View style={styles.inner}>
+  const content = (
+    <View style={styles.inner}>
           <View style={styles.card}>
             <Text style={styles.title}>Logg inn</Text>
             <Text style={styles.subtitle}>
@@ -65,7 +59,21 @@ const Authentication = () => {
             </Pressable>
           </View>
         </View>
+  );
+
+  return (
+    <KeyboardAvoidingView
+      style={styles.container}
+      behavior={Platform.OS === "ios" ? "padding" : "height"}
+      keyboardVerticalOffset={Platform.OS === "ios" ? 80 : 0}
+    >
+      {Platform.OS === "web" ? (
+        content
+      ) : (
+        <TouchableWithoutFeedback onPress={() => Keyboard.dismiss()}>
+        {content}
       </TouchableWithoutFeedback>
+      )}
     </KeyboardAvoidingView>
   );
 };

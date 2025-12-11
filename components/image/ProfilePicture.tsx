@@ -1,25 +1,27 @@
+import { updateChildProfileImage } from "@/api/children";
+import { getImageUrl } from "@/api/imageApi";
+import { updateParentProfileImage } from "@/api/parents";
 import FontAwesome5 from "@expo/vector-icons/FontAwesome5";
 import Ionicons from "@expo/vector-icons/Ionicons";
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import {
+  ActivityIndicator,
   Image,
   Modal,
   Pressable,
   StyleSheet,
   TouchableOpacity,
   View,
-  ActivityIndicator,
+  ViewStyle,
 } from "react-native";
 import SelectImageModal from "./SelectImageModal";
-import { getImageUrl } from "@/api/imageApi";
-import { updateChildProfileImage } from "@/api/children";
-import { updateParentProfileImage } from "@/api/parents";
 
 type ProfilePictureProps = {
   showEdit?: boolean;
   userId: string; // childId eller parentId
   userType: "child" | "parent"; // Type bruker
   initialImagePath?: string; // Existing image path fra Firestore
+  style?: ViewStyle;
 };
 
 export default function ProfilePicture({
@@ -27,6 +29,7 @@ export default function ProfilePicture({
   userId,
   userType,
   initialImagePath,
+  style,
 }: ProfilePictureProps) {
   const [image, setImage] = useState<string | null>(null);
   const [isCameraOpen, setIsCameraOpen] = useState(false);
@@ -73,16 +76,14 @@ export default function ProfilePicture({
 
   if (loading) {
     return (
-      <View style={styles.container}>
-        <View style={styles.imageWrapper}>
+      <View style={[styles.container, style]}>
           <ActivityIndicator size="large" color="#5c578f" />
-        </View>
       </View>
     );
   }
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, style]}>
       <Modal visible={isCameraOpen}>
         <SelectImageModal
           closeModal={() => setIsCameraOpen(false)}
@@ -92,8 +93,7 @@ export default function ProfilePicture({
           }}
         />
       </Modal>
-      <View style={styles.imageWrapper}>
-        <Pressable>
+        <Pressable style={styles.imageWrapper}>
           {image ? (
             <Image source={{ uri: image }} style={styles.image} />
           ) : (
@@ -120,33 +120,43 @@ export default function ProfilePicture({
           </TouchableOpacity>
         )}
       </View>
-    </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
-    padding: 24,
-    paddingBottom: 40,
+    position: "relative",
     alignItems: "center",
+    justifyContent: "center",
+  },
+  // wrapper fyller forelderen hvis den får en konkret størrelse,
+  // og har fallback hvis ikke
+  imageWrapper: {
+    position: "relative",
+    width: "100%",        
+    aspectRatio: 1,       
+    overflow: "hidden",  
+    borderRadius: 999,   
+    minWidth: 64,
+    minHeight: 64,
   },
   image: {
-    width: 160,
-    height: 160,
-    borderRadius: 100,
-    marginBottom: 20,
+    width: "100%",
+    height: "100%",
+    borderRadius: 999,
+    resizeMode: "cover", // sikrer riktig utsnitt
   },
   editButton: {
     position: "absolute",
-    bottom: 10,
-    right: 10,
-    width: 44,
-    height: 44,
-    borderRadius: 22,
+    bottom: 0,
+    right: 0,
+    width: 32,
+    height: 32,
+    borderRadius: 16,
     backgroundColor: "black",
     alignItems: "center",
     justifyContent: "center",
-    borderWidth: 3,
+    borderWidth: 2,
     borderColor: "white",
     shadowColor: "#000",
     shadowOpacity: 0.25,
@@ -154,17 +164,12 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 2 },
     elevation: 6,
   },
-  imageWrapper: {
-    position: "relative",
-    width: 160,
-    height: 160,
-    alignSelf: "center",
-  },
   uploadingOverlay: {
     ...StyleSheet.absoluteFillObject,
     backgroundColor: "rgba(0,0,0,0.5)",
-    borderRadius: 100,
     justifyContent: "center",
     alignItems: "center",
+    borderRadius: 999,
   },
 });
+
