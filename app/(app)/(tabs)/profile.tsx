@@ -107,6 +107,7 @@ export default function ProfileScreen() {
           userId={uid}
           userType="parent"
           initialImagePath={parentData?.imageUri}
+          style={{ width: 160, height: 160, marginBottom: 20 }}
         />
 
         <View style={styles.row}>
