@@ -1,20 +1,16 @@
 import { getAllEvents } from "@/api/event";
-import { getParent } from "@/api/parents";
 import { db } from "@/firebaseConfig";
 import { ChildProps } from "@/types/child";
 import { EventProps } from "@/types/event";
 import { getAuth } from "firebase/auth";
 import {
-  addDoc,
   collection,
   doc,
   getDocs,
   query,
-  serverTimestamp,
   updateDoc,
   where,
 } from "firebase/firestore";
-
 import { useEffect, useMemo, useState } from "react";
 import {
   ActivityIndicator,
@@ -46,11 +42,6 @@ export default function Index() {
   const [guestName, setGuestName] = useState("");
   const [guestPhone, setGuestPhone] = useState("");
 
-  // Gjeste-håndtering
-  const [guestSending, setGuestSending] = useState(false);
-  const [guestError, setGuestError] = useState<string | null>(null);
-
-  // Kalender modal (full calendar)
   const [calendarModalVisible, setCalendarModalVisible] = useState(false);
   const [selectedDateInCalendar, setSelectedDateInCalendar] = useState<
     string | null
@@ -65,9 +56,9 @@ export default function Index() {
         const q = query(childrenCol, where("parents", "array-contains", uid));
         const snap = await getDocs(q);
 
-        const data: UIChild[] = snap.docs.map((d) => ({
-          id: d.id,
-          ...(d.data() as Omit<ChildProps, "id">),
+        const data: UIChild[] = snap.docs.map((doc) => ({
+          id: doc.id,
+          ...(doc.data() as Omit<ChildProps, "id">),
           selected: false,
         }));
 
@@ -111,54 +102,6 @@ export default function Index() {
     setGuestLinkVisible(false);
     setGuestName("");
     setGuestPhone("");
-    setGuestError(null);
-  };
-
-  const sendGuestLink = async () => {
-    setGuestError(null);
-
-    if (!overlayChildId) {
-      setGuestError("Ingen barn valgt.");
-      return;
-    }
-    if (!guestName.trim() || !guestPhone.trim()) {
-      setGuestError("Fyll inn navn og telefonnummer.");
-      return;
-    }
-
-    setGuestSending(true);
-    try {
-      const guestColRef = collection(
-        db,
-        "children",
-        overlayChildId,
-        "guestLinks"
-      );
-
-      // Hent parent hvis uid finnes
-      let parent = null;
-      if (uid) {
-        parent = await getParent(uid);
-      }
-
-      const payload = {
-        name: guestName.trim(),
-        phone: guestPhone.trim(),
-        sentAt: serverTimestamp(),
-        parentsId: parent?.id ?? null,
-      };
-
-      await addDoc(guestColRef, payload);
-
-      setGuestName("");
-      setGuestPhone("");
-      setGuestLinkVisible(false);
-    } catch (err) {
-      console.error("Failed to save guest link:", err);
-      setGuestError("Noe gikk galt. Prøv igjen.");
-    } finally {
-      setGuestSending(false);
-    }
   };
 
   const toggleSelect = (id: string) => {
@@ -338,12 +281,6 @@ export default function Index() {
           ))
         )}
 
-        <Pressable style={styles.checkoutWrapper} onPress={applyCheckInOut}>
-          <View style={styles.checkoutButton}>
-            <Text style={styles.checkoutText}>{getButtonText()}</Text>
-          </View>
-        </Pressable>
-
         <View style={{ marginTop: 12, marginBottom: 12 }}>
           <Text style={{ fontWeight: "700", marginBottom: 8 }}>
             Kommende hendelse
@@ -353,7 +290,9 @@ export default function Index() {
             onPress={() => {
               setCalendarModalVisible(true);
               if (nextEvent)
-                setSelectedDateInCalendar(parseTimestampToDateString(nextEvent.date));
+                setSelectedDateInCalendar(
+                  parseTimestampToDateString(nextEvent.date)
+                );
             }}
           >
             {nextEvent ? (
@@ -373,6 +312,12 @@ export default function Index() {
             )}
           </Pressable>
         </View>
+
+        <Pressable style={styles.checkoutWrapper} onPress={applyCheckInOut}>
+          <View style={styles.checkoutButton}>
+            <Text style={styles.checkoutText}>{getButtonText()}</Text>
+          </View>
+        </Pressable>
 
         <Modal visible={overlayVisible} transparent animationType="fade">
           <View style={styles.overlayBackdrop}>
@@ -440,7 +385,8 @@ export default function Index() {
               />
               <View style={{ marginTop: 12 }}>
                 <Text style={{ fontWeight: "700", marginBottom: 6 }}>
-                  Hendelser {selectedDateInCalendar ? `– ${selectedDateInCalendar}` : ""}
+                  Hendelser{" "}
+                  {selectedDateInCalendar ? `– ${selectedDateInCalendar}` : ""}
                 </Text>
                 {selectedDateInCalendar ? (
                   eventsForSelectedDate.length === 0 ? (
@@ -473,16 +419,23 @@ export default function Index() {
         <Modal visible={guestLinkVisible} transparent animationType="slide">
           <View style={styles.overlayBackdrop}>
             <View style={[styles.overlayCard, { alignItems: "center" }]}>
-              <Pressable style={styles.backButton} onPress={closeGuestLinkModal}>
+              <Pressable
+                style={styles.backButton}
+                onPress={closeGuestLinkModal}
+              >
                 <Text style={styles.backButtonText}>Tilbake</Text>
               </Pressable>
               <Text style={styles.fetchTitle}>
-                {activeChild ? `${activeChild.firstName} ${activeChild.lastName}` : "Hentebarn"}
+                {activeChild
+                  ? `${activeChild.firstName} ${activeChild.lastName}`
+                  : "Hentebarn"}
               </Text>
               <View style={styles.fetchAvatar}>
                 <Text style={{ fontSize: 36 }}>👶</Text>
               </View>
-              <Text style={styles.fetchSubtitle}>Fyll inn hvem som skal hente</Text>
+              <Text style={styles.fetchSubtitle}>
+                Fyll inn hvem som skal hente
+              </Text>
               <Text style={styles.inputLabel}>Navn:</Text>
               <TextInput
                 style={styles.input}
@@ -503,17 +456,15 @@ export default function Index() {
               <Pressable
                 style={[
                   styles.purpleButton,
-                  { marginTop: 24, flex: undefined, alignSelf: "stretch", opacity: guestSending ? 0.7 : 1 },
+                  { marginTop: 24, flex: undefined, alignSelf: "stretch" },
                 ]}
-                onPress={sendGuestLink}
-                disabled={guestSending}
               >
-                <Text style={{ color: "#fff", fontWeight: "700", fontSize: 16 }}>
-                  {guestSending ? "Sender..." : "Send hentemelding"}
+                <Text
+                  style={{ color: "#fff", fontWeight: "700", fontSize: 16 }}
+                >
+                  Send hentemelding
                 </Text>
               </Pressable>
-
-              {guestError && <Text style={{ color: "red", marginTop: 8 }}>{guestError}</Text>}
             </View>
           </View>
         </Modal>
