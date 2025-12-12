@@ -63,7 +63,6 @@ export const deleteChild = async (id: string) => {
   await deleteDoc(childRef);
 };
 
-
 export const updateChildProfileImage = async (
   childId: string,
   imageUri: string

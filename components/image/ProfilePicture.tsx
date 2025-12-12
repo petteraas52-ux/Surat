@@ -1,6 +1,4 @@
-import { updateChildProfileImage } from "@/api/children";
 import { getImageUrl } from "@/api/imageApi";
-import { updateParentProfileImage } from "@/api/parents";
 import FontAwesome5 from "@expo/vector-icons/FontAwesome5";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import { useEffect, useState } from "react";
@@ -18,9 +16,9 @@ import SelectImageModal from "./SelectImageModal";
 
 type ProfilePictureProps = {
   showEdit?: boolean;
-  userId: string; // childId eller parentId
-  userType: "child" | "parent"; // Type bruker
-  initialImagePath?: string; // Existing image path fra Firestore
+  userId: string;
+  userType: "child" | "parent";
+  initialImagePath?: string;
   style?: ViewStyle;
 };
 
@@ -36,7 +34,6 @@ export default function ProfilePicture({
   const [uploading, setUploading] = useState(false);
   const [loading, setLoading] = useState(true);
 
-  // Last inn eksisterende bilde når komponenten mountes
   useEffect(() => {
     async function loadImage() {
       if (initialImagePath) {
@@ -48,36 +45,12 @@ export default function ProfilePicture({
     loadImage();
   }, [initialImagePath]);
 
-  async function handleImageSelected(imageUri: string) {
-    setImage(imageUri); // Vis bildet umiddelbart
-    setUploading(true);
-
-    try {
-      let success = false;
-      if (userType === "child") {
-        success = await updateChildProfileImage(userId, imageUri);
-      } else {
-        success = await updateParentProfileImage(userId, imageUri);
-      }
-
-      if (success) {
-        console.log("✅ Profilbilde oppdatert!");
-      } else {
-        console.error("❌ Kunne ikke oppdatere profilbilde");
-        setImage(null); // Reset hvis feil
-      }
-    } catch (error) {
-      console.error("Error uploading profile image:", error);
-      setImage(null);
-    } finally {
-      setUploading(false);
-    }
-  }
+  async function handleImageSelected(imageUri: string) {}
 
   if (loading) {
     return (
       <View style={[styles.container, style]}>
-          <ActivityIndicator size="large" color="#5c578f" />
+        <ActivityIndicator size="large" color="#5c578f" />
       </View>
     );
   }
@@ -93,33 +66,30 @@ export default function ProfilePicture({
           }}
         />
       </Modal>
-        <Pressable style={styles.imageWrapper}>
-          {image ? (
-            <Image source={{ uri: image }} style={styles.image} />
-          ) : (
-            <Ionicons
-              name="person-circle"
-              size={160}
-              color="grey"
-              style={styles.image}
-            />
-          )}
-          {uploading && (
-            <View style={styles.uploadingOverlay}>
-              <ActivityIndicator size="large" color="white" />
-            </View>
-          )}
-        </Pressable>
-        {showEdit && (
-          <TouchableOpacity
-            style={styles.editButton}
-            onPress={() => setIsCameraOpen(true)}
-            disabled={uploading}
-          >
-            <FontAwesome5 name="edit" size={18} color="white" />
-          </TouchableOpacity>
+      <Pressable style={styles.imageWrapper}>
+        {image ? (
+          <Image source={{ uri: image }} style={styles.image} />
+        ) : (
+          <View style={styles.placeholderContainer}>
+            <Ionicons name="person-circle" size={45} color="grey" />
+          </View>
         )}
-      </View>
+        {uploading && (
+          <View style={styles.uploadingOverlay}>
+            <ActivityIndicator size="large" color="white" />
+          </View>
+        )}
+      </Pressable>
+      {showEdit && (
+        <TouchableOpacity
+          style={styles.editButton}
+          onPress={() => setIsCameraOpen(true)}
+          disabled={uploading}
+        >
+          <FontAwesome5 name="edit" size={18} color="#5B5682" />
+        </TouchableOpacity>
+      )}
+    </View>
   );
 }
 
@@ -129,22 +99,21 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
   },
-  // wrapper fyller forelderen hvis den får en konkret størrelse,
-  // og har fallback hvis ikke
   imageWrapper: {
     position: "relative",
-    width: "100%",        
-    aspectRatio: 1,       
-    overflow: "hidden",  
-    borderRadius: 999,   
-    minWidth: 64,
-    minHeight: 64,
+    width: "100%",
+    height: "100%",
+    overflow: "hidden",
+  },
+  placeholderContainer: {
+    ...StyleSheet.absoluteFillObject,
+    justifyContent: "center",
+    alignItems: "center",
   },
   image: {
     width: "100%",
     height: "100%",
-    borderRadius: 999,
-    resizeMode: "cover", // sikrer riktig utsnitt
+    resizeMode: "cover",
   },
   editButton: {
     position: "absolute",
@@ -153,11 +122,11 @@ const styles = StyleSheet.create({
     width: 32,
     height: 32,
     borderRadius: 16,
-    backgroundColor: "black",
+    backgroundColor: "#ffffffbe",
     alignItems: "center",
     justifyContent: "center",
     borderWidth: 2,
-    borderColor: "white",
+    borderColor: "#5B5682",
     shadowColor: "#000",
     shadowOpacity: 0.25,
     shadowRadius: 4,
@@ -169,7 +138,5 @@ const styles = StyleSheet.create({
     backgroundColor: "rgba(0,0,0,0.5)",
     justifyContent: "center",
     alignItems: "center",
-    borderRadius: 999,
   },
 });
-
