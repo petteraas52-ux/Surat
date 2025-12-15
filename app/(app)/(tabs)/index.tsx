@@ -38,6 +38,8 @@ export default function Index() {
     absenceModalVisible,
     vacationDays,
     setVacationDays,
+    vacationStartDate,
+    setVacationStartDate,
     getAbsenceLabel,
     openAbsenceModal,
     closeAbsenceModal,
@@ -65,10 +67,12 @@ export default function Index() {
     onCalendarDayPress,
     openCalendarModal,
     closeCalendarModal,
+    openCalendarModalForDate,
   } = useCalendarEvents({ events });
 
   const [overlayVisible, setOverlayVisible] = useState(false);
   const [overlayChildId, setOverlayChildId] = useState<string | null>(null);
+  const [isSelectingVacationDate, setIsSelectingVacationDate] = useState(false);
 
   const activeChild = overlayChildId
     ? children.find((c) => c.id === overlayChildId)
@@ -84,6 +88,12 @@ export default function Index() {
   const handleOpenGuestLink = () => {
     setOverlayVisible(false);
     openGuestLinkModal();
+  };
+
+  const handleOpenVacationDatePicker = () => {
+    closeAbsenceModal();
+    setIsSelectingVacationDate(true);
+    openCalendarModalForDate(vacationStartDate);
   };
 
   if (loading) {
@@ -166,6 +176,8 @@ export default function Index() {
         selectedChildrenCount={children.filter((c) => c.selected).length}
         vacationDays={vacationDays}
         setVacationDays={setVacationDays}
+        vacationStartDate={vacationStartDate}
+        onOpenStartDatePicker={handleOpenVacationDatePicker}
         onRegisterSickness={registerSicknessTodayForSelected}
         onRegisterVacation={registerVacationForSelected}
       />
@@ -185,11 +197,28 @@ export default function Index() {
 
       <CalendarModal
         isVisible={calendarModalVisible}
-        onClose={closeCalendarModal}
+        onClose={() => {
+          if (isSelectingVacationDate) {
+            setIsSelectingVacationDate(false);
+            closeCalendarModal();
+            openAbsenceModal();
+          } else {
+            closeCalendarModal();
+          }
+        }}
         markedDates={markedDates}
         selectedDate={selectedDateInCalendar}
         eventsForSelectedDate={eventsForSelectedDate}
-        onDayPress={onCalendarDayPress}
+        onDayPress={(day) => {
+          if (isSelectingVacationDate) {
+            setVacationStartDate(day.dateString);
+            setIsSelectingVacationDate(false);
+            closeCalendarModal();
+            openAbsenceModal();
+          } else {
+            onCalendarDayPress(day);
+          }
+        }}
       />
     </SafeAreaView>
   );

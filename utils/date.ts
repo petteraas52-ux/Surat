@@ -20,7 +20,6 @@ export const parseTimestampToDateString = (ts: DateInput): string => {
   } else {
     dateObj = new Date(ts);
   }
-
   return dateObj.toISOString().split("T")[0];
 };
 
@@ -29,18 +28,31 @@ export const parseISODateToLocal = (iso: string): Date => {
   return new Date(y, m - 1, d);
 };
 
-export const toDateStr = (d: Date): string => d.toISOString().slice(0, 10);
+export const toDateStr = (d: Date): string => {
+  const y = d.getFullYear();
+  const m = `${d.getMonth() + 1}`.padStart(2, "0");
+  const day = `${d.getDate()}`.padStart(2, "0");
+  return `${y}-${m}-${day}`;
+};
 
 export const getTodayStr = (): string => toDateStr(new Date());
 
+/**
+ * @param dateStr The starting date string (YYYY-MM-DD).
+ * @param days The number of days to add.
+ * @returns The resulting date string (YYYY-MM-DD).
+ */
 export const addDays = (dateStr: string, days: number): string => {
-  const d = new Date(dateStr + "T00:00:00");
+  const d = parseISODateToLocal(dateStr);
+
   d.setDate(d.getDate() + days);
+
   return toDateStr(d);
 };
 
 export const formatDateShort = (dateStr: string): string => {
-  const d = new Date(dateStr + "T00:00:00");
+  const d = parseISODateToLocal(dateStr);
+
   const day = `${d.getDate()}`.padStart(2, "0");
   const month = `${d.getMonth() + 1}`.padStart(2, "0");
   return `${day}.${month}`;

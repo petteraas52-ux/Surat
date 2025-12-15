@@ -78,6 +78,11 @@ export const useCalendarEvents = ({ events }: UseCalendarEventsProps) => {
     }
   };
 
+  const openCalendarModalForDate = (dateStr: string) => {
+    setSelectedDateInCalendar(dateStr);
+    setCalendarModalVisible(true);
+  };
+
   const closeCalendarModal = () => {
     setCalendarModalVisible(false);
   };
@@ -91,5 +96,6 @@ export const useCalendarEvents = ({ events }: UseCalendarEventsProps) => {
     onCalendarDayPress,
     openCalendarModal,
     closeCalendarModal,
+    openCalendarModalForDate,
   };
 };
