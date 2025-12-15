@@ -1,5 +1,6 @@
 import ProfilePicture from "@/components/image/ProfilePicture";
 import { UIChild } from "@/hooks/useChildData";
+import { useI18n } from "@/hooks/useI18n";
 import React from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
@@ -16,6 +17,7 @@ export const ChildCard: React.FC<ChildCardProps> = ({
   onPress,
   absenceLabel,
 }) => {
+  const { t } = useI18n();
   const isAbsent = !!absenceLabel;
 
   const dynamicCardStyle = [
@@ -51,7 +53,7 @@ export const ChildCard: React.FC<ChildCardProps> = ({
           </Text>
 
           <Text style={dynamicStatusTextStyle}>
-            {child.checkedIn ? "Sjekket inn" : "Sjekket ut"}
+            {child.checkedIn ? t("checkedIn") : t("checkedOut")}
           </Text>
 
           {isAbsent && (

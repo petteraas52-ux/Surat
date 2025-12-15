@@ -1,15 +1,17 @@
+import { useI18n } from "@/hooks/useI18n";
 import { Link, Stack } from "expo-router";
 import { StyleSheet, Text, View } from "react-native";
 
 export default function NotFoundScreen() {
+   const { t } = useI18n();
   return (
     <>
       <Stack.Screen options={{ title: "Oops!" }} />
       <View style={styles.container}>
-        <Text style={styles.title}>Denne skjermen finnes ikke!</Text>
+        <Text style={styles.title}>{t("notFoundPage")}</Text>
 
         <Link href="/" style={styles.link}>
-          <Text style={styles.linkText}>Gå til hjem skjermen!</Text>
+          <Text style={styles.linkText}>{t("notFoundPageBack")}</Text>
         </Link>
       </View>
     </>

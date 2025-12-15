@@ -1,3 +1,4 @@
+import { useI18n } from "@/hooks/useI18n";
 import React from "react";
 import { Modal, Pressable, StyleSheet, Text, View } from "react-native";
 
@@ -20,25 +21,26 @@ export const AbsenceModal: React.FC<AbsenceModalProps> = ({
   onRegisterSickness,
   onRegisterVacation,
 }) => {
+  const { t } = useI18n();
   return (
     <Modal visible={isVisible} transparent animationType="fade">
       <View style={styles.overlayBackdrop}>
         <Pressable style={StyleSheet.absoluteFill} onPress={onClose} />
         <View style={styles.overlayCard}>
-          <Text style={styles.absenceModalTitle}>Registrer fravær</Text>
+          <Text style={styles.absenceModalTitle}>{t("registerLeave")}</Text>
           <Text style={styles.absenceModalSubtitle}>
-            {selectedChildrenCount} barn valgt
+            {selectedChildrenCount} {t("numOfChildren")}
           </Text>
           <View style={styles.absenceSection}>
             <Pressable
               style={styles.absenceOption}
               onPress={onRegisterSickness}
             >
-              <Text style={styles.absenceOptionText}>Sykdom i dag</Text>
+              <Text style={styles.absenceOptionText}>{t("sickToday")}</Text>
             </Pressable>
 
             <View style={styles.vacationBlock}>
-              <Text style={styles.vacationLabel}>Ferie – antall dager</Text>
+              <Text style={styles.vacationLabel}>{t("vacation")} – {t("numOfDays")}</Text>
               <View style={styles.vacationRow}>
                 <Pressable
                   style={styles.vacationAdjustButton}
@@ -61,7 +63,7 @@ export const AbsenceModal: React.FC<AbsenceModalProps> = ({
                 style={[styles.absenceOption, { marginTop: 8 }]}
                 onPress={onRegisterVacation}
               >
-                <Text style={styles.absenceOptionText}>Registrer ferie</Text>
+                <Text style={styles.absenceOptionText}>{t("registerVacation")}</Text>
               </Pressable>
             </View>
           </View>

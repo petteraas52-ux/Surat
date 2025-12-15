@@ -1,3 +1,5 @@
+import { useI18n } from "@/hooks/useI18n";
+import "@/i18n";
 import { useAuthSession } from "@/providers/authctx";
 import React, { useState } from "react";
 import {
@@ -11,54 +13,51 @@ import {
   TouchableWithoutFeedback,
   View,
 } from "react-native";
-
 const Authentication = () => {
   const [userEmail, setUserEmail] = useState("");
   const [password, setPassword] = useState("");
 
   const { signIn } = useAuthSession();
-
+  const { t } = useI18n();
   const content = (
     <View style={styles.inner}>
-          <View style={styles.card}>
-            <Text style={styles.title}>Logg inn</Text>
-            <Text style={styles.subtitle}>
-              Logg inn for å sjekke inn/ut dine barn
-            </Text>
+      <View style={styles.card}>
+        <Text style={styles.title}>{t("logInButtonText")}</Text>
+        <Text style={styles.subtitle}>{t("loginHelpText")}</Text>
 
-            <View style={styles.inputGroup}>
-              <Text style={styles.label}>Epost</Text>
-              <TextInput
-                style={styles.input}
-                value={userEmail}
-                onChangeText={setUserEmail}
-                placeholder="din@epost.no"
-                keyboardType="email-address"
-                autoCapitalize="none"
-              />
-            </View>
-
-            <View style={styles.inputGroup}>
-              <Text style={styles.label}>Passord</Text>
-              <TextInput
-                style={styles.input}
-                value={password}
-                secureTextEntry
-                onChangeText={setPassword}
-                placeholder="Passord"
-              />
-            </View>
-
-            <Pressable
-              style={styles.button}
-              onPress={() => {
-                signIn(userEmail, password);
-              }}
-            >
-              <Text style={styles.buttonText}>Logg inn</Text>
-            </Pressable>
-          </View>
+        <View style={styles.inputGroup}>
+          <Text style={styles.label}>{t("email")}</Text>
+          <TextInput
+            style={styles.input}
+            value={userEmail}
+            onChangeText={setUserEmail}
+            placeholder={t("placeholderEmail")}
+            keyboardType="email-address"
+            autoCapitalize="none"
+          />
         </View>
+
+        <View style={styles.inputGroup}>
+          <Text style={styles.label}>{t("password")}</Text>
+          <TextInput
+            style={styles.input}
+            value={password}
+            secureTextEntry
+            onChangeText={setPassword}
+            placeholder={t("placeholderPassword")}
+          />
+        </View>
+
+        <Pressable
+          style={styles.button}
+          onPress={() => {
+            signIn(userEmail, password);
+          }}
+        >
+          <Text style={styles.buttonText}>{t("logInButtonText")}</Text>
+        </Pressable>
+      </View>
+    </View>
   );
 
   return (
@@ -71,8 +70,8 @@ const Authentication = () => {
         content
       ) : (
         <TouchableWithoutFeedback onPress={() => Keyboard.dismiss()}>
-        {content}
-      </TouchableWithoutFeedback>
+          {content}
+        </TouchableWithoutFeedback>
       )}
     </KeyboardAvoidingView>
   );

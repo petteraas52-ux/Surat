@@ -1,3 +1,4 @@
+import { useI18n } from "@/hooks/useI18n";
 import { EventProps } from "@/types/event";
 import { formatDateShort } from "@/utils/date";
 import React from "react";
@@ -28,10 +29,13 @@ export const CalendarModal: React.FC<CalendarModalProps> = ({
   eventsForSelectedDate,
   onDayPress,
 }) => {
+
+  const { t } = useI18n();
+
   const renderEvent = (event: EventProps, index: number) => (
     <View key={index} style={styles.eventItem}>
       <Text style={styles.eventTitle}>{event.title}</Text>
-      <Text style={styles.eventSubtitle}>Avdeling: {event.department}</Text>
+      <Text style={styles.eventSubtitle}>{t("department")}: {event.department}</Text>
       {event.description && (
         <Text style={styles.eventDescription}>{event.description}</Text>
       )}
@@ -43,11 +47,11 @@ export const CalendarModal: React.FC<CalendarModalProps> = ({
       <View style={styles.overlayBackdrop}>
         <View style={styles.overlayCard}>
           <Pressable style={styles.backButton} onPress={onClose}>
-            <Text style={styles.backButtonText}>Lukk</Text>
+            <Text style={styles.backButtonText}>{t("close")}</Text>
           </Pressable>
 
           <Text style={styles.calendarModalTitle}>
-            Kalender & Arrangementer
+            {t("calendarHeader")}
           </Text>
 
           <Calendar
@@ -67,8 +71,8 @@ export const CalendarModal: React.FC<CalendarModalProps> = ({
 
           <View style={styles.eventsContainer}>
             <Text style={styles.eventsHeader}>
-              Arrangementer:{" "}
-              {selectedDate ? formatDateShort(selectedDate) : "Velg dato"}
+              {t("eventsPlural")}:{" "}
+              {selectedDate ? formatDateShort(selectedDate) : t("choseDate")}
             </Text>
             <ScrollView style={styles.eventsList}>
               {eventsForSelectedDate.length > 0 ? (
@@ -76,8 +80,9 @@ export const CalendarModal: React.FC<CalendarModalProps> = ({
               ) : (
                 <Text style={styles.noEventsText}>
                   {selectedDate
-                    ? "Ingen arrangementer denne dagen."
-                    : "Velg en dag i kalenderen for å se arrangementer."}
+                    ? t("noEventsToday")
+                    : t("noDateSelected")
+                  }
                 </Text>
               )}
             </ScrollView>

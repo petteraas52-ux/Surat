@@ -1,0 +1,77 @@
+{
+  "parent": "Батько / Мати",
+  "child": "Дитина",
+  "selectLanguage": "Вибрати мову",
+  "welcome": "Ласкаво просимо",
+  "loginHelpText": "Увійдіть, щоб відмічати прихід і вихід ваших дітей",
+  "logInButtonText": "Увійти",
+  "email": "Електронна пошта",
+  "placeholderEmail": "Введіть електронну пошту",
+  "password": "Пароль",
+  "placeholderPassword": "Введіть пароль",
+  "loadingUser": "Завантаження вашого профілю...",
+  "loading": "Завантаження, будь ласка, зачекайте...",
+
+  "notFoundPage": "Цю сторінку не знайдено",
+  "notFoundPageBack": "Повернутися на головну",
+  "tabTitleChildren": "Мої діти",
+  "tabTitleProfile": "Профіль",
+
+  "loadingChildren": "Завантаження даних дітей...",
+  "childrenHeader": "Мої діти",
+  "upcommingEvent": "Майбутні події",
+  "noEvents": "Немає зареєстрованих майбутніх подій",
+  "department": "Відділення",
+  "registerLeave": "Зареєструвати відсутність",
+
+  "noUserLoggedIn": "Користувач не увійшов",
+  "myProfileHeader": "Мій профіль",
+  "name": "Ім’я",
+  "phone": "Телефон",
+
+  "save": "Зберегти",
+  "edit": "Редагувати",
+  "logout": "Вийти",
+
+  "numOfChildren": "вибрано дітей",
+  "sickToday": "Хворіє сьогодні",
+  "vacation": "Відпустка",
+  "numOfDays": "кількість днів",
+  "registerVacation": "Зареєструвати відпустку",
+
+  "close": "Закрити",
+  "calendarHeader": "Календар та події",
+  "eventsPlural": "Події",
+  "noEventsToday": "На цей день подій немає.",
+  "noDateSelected": "Виберіть день, щоб переглянути події.",
+  "choseDate": "Вибрати дату",
+
+  "checkOut": "Відмітити вихід",
+  "checkIn": "Відмітити прихід",
+
+  "checkedOut": "Вихід відмічено",
+  "checkedIn": "Прихід відмічено",
+
+  "guestPickup": "Гостьовий забір",
+  "absence": "Відсутність",
+  "status": "Статус",
+
+  "guestLinkHelpText": "Введіть інформацію для гостя",
+  "fetchChildrenText": "Отримання дитини",
+  "backButtonText": "Назад",
+
+  "nameInputFieldPlaceholder": "Введіть ім’я",
+  "phoneInputFieldPlaceholder": "Введіть номер телефону",
+
+  "sendGuestMessage": "Надіслати повідомлення про гостьовий забір",
+  "sending": "Надсилання",
+  "send": "Надіслати",
+  "writeAComment": "Написати коментар",
+  "loadingTime": "Завантаження часових міток",
+  "commentsComponentHeader": "Коментарі",
+  "noComments": "Коментарів поки немає",
+  "unkownUser": "Невідомий користувач",
+
+  "choseChildrenButtonText": "Вибрати дітей",
+  "updateStatusText": "Оновити статус"
+}

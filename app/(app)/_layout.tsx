@@ -3,14 +3,16 @@ import "react-native-reanimated";
 
 import { useAuthSession } from "@/providers/authctx";
 import { Text, View } from "react-native";
+import { useI18n } from "@/hooks/useI18n";
 
 export default function RootLayout() {
   const { user, isLoading } = useAuthSession();
+  const { t } = useI18n();
 
   if (isLoading) {
     return (
       <View>
-        <Text>Henter bruker...</Text>
+        <Text>{t("loadingUser")}</Text>
       </View>
     );
   }
