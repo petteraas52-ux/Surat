@@ -1,14 +1,22 @@
-import { useState, useEffect } from "react";
-import { View, Text, TextInput, Pressable, StyleSheet, ScrollView, ActivityIndicator } from "react-native";
-import { useAuthSession } from "@/providers/authctx";
 import { createComment, getComments } from "@/api/commentApi";
+import { useAuthSession } from "@/providers/authctx";
 import { Comment } from "@/types/comment";
+import { useEffect, useState } from "react";
+import {
+  ActivityIndicator,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  View,
+} from "react-native";
 
 type CommentBoxProps = {
-    childId: string;
+  childId: string;
 };
 
-export default function CommentBox({ childId } : CommentBoxProps) {
+export default function CommentBox({ childId }: CommentBoxProps) {
   const { user } = useAuthSession();
   const [comments, setComments] = useState<Comment[]>([]);
   const [text, setText] = useState("");
@@ -31,10 +39,10 @@ export default function CommentBox({ childId } : CommentBoxProps) {
     setLoading(true);
 
     await createComment({
-        childId,
-        text: text.trim(),
-        createdById: user.uid,
-        createdByName: user.displayName ?? user.email ?? "Ukjent bruker",
+      childId,
+      text: text.trim(),
+      createdById: user.uid,
+      createdByName: user.displayName ?? user.email ?? "Ukjent bruker",
     });
 
     setText("");
@@ -44,9 +52,9 @@ export default function CommentBox({ childId } : CommentBoxProps) {
 
   if (initialLoading) {
     return (
-        <View style={styles.center}>
-            <ActivityIndicator />
-        </View>
+      <View style={styles.center}>
+        <ActivityIndicator />
+      </View>
     );
   }
 
@@ -83,9 +91,16 @@ export default function CommentBox({ childId } : CommentBoxProps) {
         <Pressable
           onPress={handleCreateComment}
           disabled={loading || !text.trim()}
-          style={[styles.button, (loading || !text.trim()) && styles.buttonDisabled]}
+          style={[
+            styles.button,
+            (loading || !text.trim()) && styles.buttonDisabled,
+          ]}
         >
-          {loading ? <ActivityIndicator /> : <Text>Send</Text>}
+          {loading ? (
+            <ActivityIndicator />
+          ) : (
+            <Text style={styles.buttonText}>Send</Text>
+          )}
         </Pressable>
       </View>
     </View>
@@ -120,6 +135,9 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingVertical: 10,
     borderRadius: 8,
+  },
+  buttonText: {
+    color: "white",
   },
   buttonDisabled: { opacity: 0.6 },
   center: { alignItems: "center", marginTop: 20 },
