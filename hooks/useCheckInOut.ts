@@ -1,6 +1,7 @@
 import { db } from "@/firebaseConfig";
 import { doc, updateDoc } from "firebase/firestore";
 import { UIChild } from "./useChildData";
+import { useI18n } from "./useI18n";
 
 interface UseCheckInOutProps {
   children: UIChild[];
@@ -12,17 +13,19 @@ export const useCheckInOut = ({
   setChildren,
 }: UseCheckInOutProps) => {
   const anySelected = children.some((c) => c.selected);
+  const { t } = useI18n();
 
   const getButtonText = (): string => {
     const selected = children.filter((c) => c.selected);
-    if (selected.length === 0) return "Velg barn";
+    
+    if (selected.length === 0) return t("choseChildrenButtonText");
 
     const allCheckedIn = selected.every((c) => c.checkedIn);
     const allCheckedOut = selected.every((c) => !c.checkedIn);
 
-    if (allCheckedIn) return "Sjekk ut";
-    if (allCheckedOut) return "Sjekk inn";
-    return "Oppdater status";
+    if (allCheckedIn) return t("checkOut");
+    if (allCheckedOut) return t("checkIn");
+    return t("updateStatusText");
   };
 
   const applyCheckInOut = async () => {

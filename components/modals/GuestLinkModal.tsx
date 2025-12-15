@@ -9,6 +9,7 @@ import {
   View,
 } from "react-native";
 import { UIChild } from "../../hooks/useChildData";
+import { useI18n } from "@/hooks/useI18n";
 
 interface GuestLinkModalProps {
   isVisible: boolean;
@@ -35,41 +36,44 @@ export const GuestLinkModal: React.FC<GuestLinkModalProps> = ({
   guestSending,
   guestError,
 }) => {
+
+  const { t } = useI18n();
+
   return (
     <Modal visible={isVisible} transparent animationType="slide">
       <View style={styles.overlayBackdrop}>
         <View style={[styles.overlayCard, { alignItems: "center" }]}>
           <Pressable style={styles.backButton} onPress={onClose}>
-            <Text style={styles.backButtonText}>Tilbake</Text>
+            <Text style={styles.backButtonText}>{t("backButtonText")}</Text>
           </Pressable>
 
           <Text style={styles.fetchTitle}>
             {activeChild
               ? `${activeChild.firstName} ${activeChild.lastName}`
-              : "Hentebarn"}
+              : t("fetchChildrenText")}
           </Text>
 
           <View style={styles.fetchAvatar}>
             <Text style={{ fontSize: 36 }}>👶</Text>
           </View>
 
-          <Text style={styles.fetchSubtitle}>Fyll inn hvem som skal hente</Text>
+          <Text style={styles.fetchSubtitle}>{t("guestLinkHelpText")}</Text>
 
-          <Text style={styles.inputLabel}>Navn:</Text>
+          <Text style={styles.inputLabel}>{t("name")}:</Text>
           <TextInput
             style={styles.input}
             value={guestName}
             onChangeText={setGuestName}
-            placeholder="Skriv navn"
+            placeholder={t("nameInputFieldPlaceholder")}
             placeholderTextColor="#999"
           />
 
-          <Text style={styles.inputLabel}>Telefonnummer:</Text>
+          <Text style={styles.inputLabel}>{t("phone")}:</Text>
           <TextInput
             style={styles.input}
             value={guestPhone}
             onChangeText={setGuestPhone}
-            placeholder="Skriv telefonnummer"
+            placeholder={t("phoneInputFieldPlaceholder")}
             placeholderTextColor="#999"
             keyboardType="phone-pad"
           />
@@ -88,7 +92,7 @@ export const GuestLinkModal: React.FC<GuestLinkModalProps> = ({
             disabled={guestSending}
           >
             <Text style={{ color: "#fff", fontWeight: "700", fontSize: 16 }}>
-              {guestSending ? "Sender..." : "Send hentemelding"}
+              {guestSending ? t("sending") : t("sendGuestMessage")}
             </Text>
           </Pressable>
 

@@ -24,8 +24,10 @@ import { GuestLinkModal } from "@/components/modals/GuestLinkModal";
 import { formatDateShort, parseTimestampToDateString } from "@/utils/date";
 
 import { SafeAreaView } from "react-native-safe-area-context";
+import { useI18n } from "@/hooks/useI18n";
 
 export default function Index() {
+  const { t } = useI18n();
   const { children, setChildren, events, loading, toggleSelect } =
     useChildData();
   const {
@@ -100,7 +102,7 @@ export default function Index() {
     return (
       <View style={[styles.loadingContainer, styles.container]}>
         <ActivityIndicator size="large" color="#57507F" />
-        <Text style={{ marginTop: 16 }}>Laster inn barnedata...</Text>
+        <Text style={{ marginTop: 16 }}>{t("loadingChildren")}</Text>
       </View>
     );
   }
@@ -108,7 +110,7 @@ export default function Index() {
   return (
     <SafeAreaView style={styles.safe}>
       <ScrollView contentContainerStyle={styles.container}>
-        <Text style={styles.headerTitle}>Mine Barn</Text>
+        <Text style={styles.headerTitle}>{t("childrenHeader")}</Text>
 
         <View style={styles.childrenList}>
           {children.map((child) => (
@@ -123,7 +125,7 @@ export default function Index() {
         </View>
 
         <View style={{ marginTop: 12, marginBottom: 12 }}>
-          <Text style={styles.sectionHeader}>Kommende hendelse</Text>
+          <Text style={styles.sectionHeader}>{t("upcommingEvent")}</Text>
           <Pressable style={styles.upcomingCard} onPress={openCalendarModal}>
             {nextEvent ? (
               <View>
@@ -132,12 +134,12 @@ export default function Index() {
                 </Text>
                 <Text style={styles.eventTitle}>{nextEvent.title}</Text>
                 <Text style={styles.eventSubtitle}>
-                  Avdeling: {nextEvent.department}
+                  {t("department")}: {nextEvent.department}
                 </Text>
               </View>
             ) : (
               <Text style={styles.noEventText}>
-                Ingen kommende arrangementer registrert.
+                {t("noEvents")}
               </Text>
             )}
           </Pressable>
@@ -152,7 +154,7 @@ export default function Index() {
             onPress={openAbsenceModal}
             disabled={!anySelected}
           >
-            <Text style={styles.footerButtonText}>Registrer fravær</Text>
+            <Text style={styles.footerButtonText}>{t("registerLeave")}</Text>
           </Pressable>
 
           <Pressable style={styles.checkoutWrapper} onPress={applyCheckInOut}>

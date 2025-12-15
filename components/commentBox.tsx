@@ -1,4 +1,5 @@
 import { createComment, getComments } from "@/api/commentApi";
+import { useI18n } from "@/hooks/useI18n";
 import { useAuthSession } from "@/providers/authctx";
 import { Comment } from "@/types/comment";
 import { useEffect, useState } from "react";
@@ -18,6 +19,7 @@ type CommentBoxProps = {
 
 export default function CommentBox({ childId }: CommentBoxProps) {
   const { user } = useAuthSession();
+  const { t } = useI18n();
   const [comments, setComments] = useState<Comment[]>([]);
   const [text, setText] = useState("");
   const [loading, setLoading] = useState(false);
@@ -42,7 +44,7 @@ export default function CommentBox({ childId }: CommentBoxProps) {
       childId,
       text: text.trim(),
       createdById: user.uid,
-      createdByName: user.displayName ?? user.email ?? "Ukjent bruker",
+      createdByName: user.displayName ?? user.email ?? t("unkownUser"),
     });
 
     setText("");
@@ -60,11 +62,11 @@ export default function CommentBox({ childId }: CommentBoxProps) {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.header}>Kommentarer</Text>
+      <Text style={styles.header}>{t("commentsComponentHeader")}</Text>
 
       <ScrollView style={styles.list}>
         {comments.length === 0 && (
-          <Text style={styles.noComments}>Ingen kommentarer enda</Text>
+          <Text style={styles.noComments}>{t("noComments")}</Text>
         )}
 
         {comments.map((c) => (
@@ -74,7 +76,7 @@ export default function CommentBox({ childId }: CommentBoxProps) {
               {c.createdByName} •{" "}
               {c.createdAt
                 ? c.createdAt.toDate().toLocaleString("nb-NO")
-                : "Laster tidspunkt"}
+                : t("loadingTime")}
             </Text>
           </View>
         ))}
@@ -84,7 +86,7 @@ export default function CommentBox({ childId }: CommentBoxProps) {
         <TextInput
           value={text}
           onChangeText={setText}
-          placeholder="Skriv en kommentar…"
+          placeholder={t("writeAComment")}
           style={styles.input}
           multiline
         />
@@ -99,7 +101,7 @@ export default function CommentBox({ childId }: CommentBoxProps) {
           {loading ? (
             <ActivityIndicator />
           ) : (
-            <Text style={styles.buttonText}>Send</Text>
+            <Text style={styles.buttonText}>{t("send")}</Text>
           )}
         </Pressable>
       </View>
