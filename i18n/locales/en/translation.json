@@ -73,6 +73,6 @@
     "unkownUser": "Uknown user",
 
     "choseChildrenButtonText": "Select children",
-    "updateStatusText": "Update status"
-
+    "updateStatusText": "Update status",
+    "languageModalHeader": "Select language"
 }

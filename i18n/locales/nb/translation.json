@@ -74,6 +74,7 @@
     "unkownUser": "Ukjent bruker",
 
     "choseChildrenButtonText": "Velg barn",
-    "updateStatusText": "Oppdater status"
+    "updateStatusText": "Oppdater status",
+    "languageModalHeader": "Velg språk"
 
 }

@@ -73,5 +73,6 @@
   "unkownUser": "Невідомий користувач",
 
   "choseChildrenButtonText": "Вибрати дітей",
-  "updateStatusText": "Оновити статус"
+  "updateStatusText": "Оновити статус",
+  "languageModalHeader": "Оберіть мову"
 }
