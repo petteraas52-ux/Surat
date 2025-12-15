@@ -3,9 +3,12 @@ import "react-native-reanimated";
 
 import { useAuthSession } from "@/providers/authctx";
 import { Text, View } from "react-native";
+import { useState } from "react";
+import PinCheck from "@/components/PinCheck";
 
 export default function RootLayout() {
   const { user, isLoading } = useAuthSession();
+  const [pinUnlocked, setPinUnlocked] = useState(false);
 
   if (isLoading) {
     return (
@@ -17,6 +20,15 @@ export default function RootLayout() {
 
   if (!user) {
     return <Redirect href={"/authentication"} />;
+  }
+
+  if (!pinUnlocked) {
+    return (
+      <PinCheck
+      uid={user.uid}
+      onUnlocked={() => setPinUnlocked(true)}
+      />
+    );
   }
 
   return (

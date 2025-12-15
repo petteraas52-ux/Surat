@@ -15,6 +15,7 @@ import {
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import ChangePinModal from "@/components/modals/ChangePinModal";
 
 export default function ProfileScreen() {
   const auth = getAuth();
@@ -26,6 +27,7 @@ export default function ProfileScreen() {
   const [isEditing, setIsEditing] = useState(false);
   const [loading, setLoading] = useState(true);
   const [parentData, setParentData] = useState<ParentProps | null>(null);
+  const [showChangePin, setShowChangePin] = useState(false);
 
   const handleLogout = async () => {
     try {
@@ -151,6 +153,17 @@ export default function ProfileScreen() {
           <Text style={styles.value}>{email}</Text>
         )}
 
+
+        <Pressable style={styles.button} onPress={() => setShowChangePin(true)}>
+          <Text style={styles.buttonText}>Endre PIN</Text>
+        </Pressable>
+
+        <ChangePinModal
+          uid={uid}
+          visible={showChangePin}
+          onClose={() => setShowChangePin(false)}
+        />
+
         <TouchableOpacity
           style={styles.button}
           onPress={() => (isEditing ? handleSave() : setIsEditing(true))}
@@ -158,6 +171,7 @@ export default function ProfileScreen() {
           <Text style={styles.buttonText}>
             {isEditing ? "Lagre" : "Rediger"}
           </Text>
+          
         </TouchableOpacity>
         <Pressable style={styles.button} onPress={handleLogout}>
           <Text style={styles.buttonText}>Logg ut</Text>
