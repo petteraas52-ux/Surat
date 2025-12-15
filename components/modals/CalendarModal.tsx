@@ -2,6 +2,7 @@ import { useI18n } from "@/hooks/useI18n";
 import { EventProps } from "@/types/event";
 import { formatDateShort } from "@/utils/date";
 import React from "react";
+import { useAppTheme } from "@/hooks/useAppTheme";
 import {
   Modal,
   Pressable,
@@ -31,26 +32,29 @@ export const CalendarModal: React.FC<CalendarModalProps> = ({
 }) => {
 
   const { t } = useI18n();
-
+  const theme = useAppTheme();
   const renderEvent = (event: EventProps, index: number) => (
-    <View key={index} style={styles.eventItem}>
-      <Text style={styles.eventTitle}>{event.title}</Text>
-      <Text style={styles.eventSubtitle}>{t("department")}: {event.department}</Text>
+    <View key={index} style={[styles.eventItem, { 
+        backgroundColor: theme.cardBackground,
+        borderLeftColor: theme.primary 
+      }]}>
+      <Text style={[styles.eventTitle, { color: theme.text }]}>{event.title}</Text>
+      <Text style={[styles.eventSubtitle, { color: theme.primary }]}>{t("department")}: {event.department}</Text>
       {event.description && (
-        <Text style={styles.eventDescription}>{event.description}</Text>
+        <Text style={[styles.eventDescription, { color: theme.textSecondary }]}>{event.description}</Text>
       )}
     </View>
   );
 
   return (
     <Modal visible={isVisible} transparent animationType="slide">
-      <View style={styles.overlayBackdrop}>
-        <View style={styles.overlayCard}>
-          <Pressable style={styles.backButton} onPress={onClose}>
+      <View style={[styles.overlayBackdrop, { backgroundColor: theme.modalOverlay }]}>
+        <View style={[styles.overlayCard, { backgroundColor: theme.modalBackground }]}>
+          <Pressable style={[styles.backButton, { backgroundColor: theme.primary }]} onPress={onClose}>
             <Text style={styles.backButtonText}>{t("close")}</Text>
           </Pressable>
 
-          <Text style={styles.calendarModalTitle}>
+          <Text style={[styles.calendarModalTitle, { color: theme.text }]}>
             {t("calendarHeader")}
           </Text>
 
@@ -59,18 +63,34 @@ export const CalendarModal: React.FC<CalendarModalProps> = ({
             markedDates={markedDates}
             markingType="dot"
             theme={{
-              todayTextColor: "#57507F",
-              selectedDayBackgroundColor: "#BCA9FF",
-              dotColor: "#57507F",
-              textDayHeaderFontWeight: "600",
-              monthTextColor: "#57507F",
-              textMonthFontWeight: "700",
+              backgroundColor: theme.backgroundSecondary,
+              calendarBackground: theme.backgroundSecondary,
+              textSectionTitleColor: theme.text,
+              selectedDayBackgroundColor: theme.secondary,
+              selectedDayTextColor: theme.text,
+              todayTextColor: theme.primary,
+              dayTextColor: theme.text,
+              textDisabledColor: theme.textMuted,
+              dotColor: theme.primary,
+              selectedDotColor: theme.primary,
+              arrowColor: theme.primary,
+              monthTextColor: theme.primary,
+              indicatorColor: theme.primary,
+              textDayFontWeight: '400',
+              textMonthFontWeight: '700',
+              textDayHeaderFontWeight: '600',
+              textDayFontSize: 16,
+              textMonthFontSize: 18,
+              textDayHeaderFontSize: 14,
             }}
-            style={styles.calendarStyle}
+            style={[styles.calendarStyle, { 
+              shadowColor: theme.shadow,
+              backgroundColor: theme.backgroundSecondary 
+            }]}
           />
 
-          <View style={styles.eventsContainer}>
-            <Text style={styles.eventsHeader}>
+          <View style={[styles.eventsContainer, { borderTopColor: theme.borderLight }]}>
+            <Text style={[styles.eventsHeader, { color: theme.text }]}>
               {t("eventsPlural")}:{" "}
               {selectedDate ? formatDateShort(selectedDate) : t("choseDate")}
             </Text>
@@ -78,7 +98,7 @@ export const CalendarModal: React.FC<CalendarModalProps> = ({
               {eventsForSelectedDate.length > 0 ? (
                 eventsForSelectedDate.map(renderEvent)
               ) : (
-                <Text style={styles.noEventsText}>
+                <Text style={[styles.noEventsText, { color: theme.textMuted }]}>
                   {selectedDate
                     ? t("noEventsToday")
                     : t("noDateSelected")
@@ -96,7 +116,6 @@ export const CalendarModal: React.FC<CalendarModalProps> = ({
 const styles = StyleSheet.create({
   overlayBackdrop: {
     flex: 1,
-    backgroundColor: "rgba(0,0,0,0.35)",
     justifyContent: "center",
     alignItems: "center",
     paddingHorizontal: 24,
@@ -104,7 +123,6 @@ const styles = StyleSheet.create({
   overlayCard: {
     width: "100%",
     maxHeight: "75%",
-    backgroundColor: "white",
     borderRadius: 20,
     padding: 20,
     elevation: 6,
@@ -112,13 +130,15 @@ const styles = StyleSheet.create({
   },
   backButton: {
     alignSelf: "flex-start",
-    backgroundColor: "#57507F",
     paddingVertical: 8,
     paddingHorizontal: 16,
     borderRadius: 20,
     marginBottom: 16,
   },
-  backButtonText: { color: "#fff", fontWeight: "700" },
+  backButtonText: { 
+    color: "#fff", 
+    fontWeight: "700" 
+  },
   calendarModalTitle: {
     fontSize: 20,
     fontWeight: "700",
@@ -128,7 +148,6 @@ const styles = StyleSheet.create({
   calendarStyle: {
     borderRadius: 12,
     elevation: 2,
-    shadowColor: "#000",
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.2,
     shadowRadius: 1.41,
@@ -137,7 +156,6 @@ const styles = StyleSheet.create({
   eventsContainer: {
     flex: 1,
     borderTopWidth: 1,
-    borderTopColor: "#eee",
     paddingTop: 12,
   },
   eventsHeader: {
@@ -149,30 +167,24 @@ const styles = StyleSheet.create({
     flexGrow: 1,
   },
   eventItem: {
-    backgroundColor: "#f9f9f9",
     padding: 10,
     borderRadius: 8,
     marginBottom: 8,
     borderLeftWidth: 4,
-    borderLeftColor: "#57507F",
   },
   eventTitle: {
     fontWeight: "700",
     fontSize: 16,
-    color: "#333",
   },
   eventSubtitle: {
     fontSize: 13,
-    color: "#57507F",
     marginTop: 4,
   },
   eventDescription: {
     fontSize: 13,
-    color: "#666",
     marginTop: 6,
   },
   noEventsText: {
-    color: "#999",
     textAlign: "center",
     marginTop: 20,
   },
