@@ -74,5 +74,6 @@
 
     "choseChildrenButtonText": "Select children",
     "updateStatusText": "Update status",
-    "languageModalHeader": "Select language"
+    "languageModalHeader": "Select language",
+    "startdate": "Start date"
 }

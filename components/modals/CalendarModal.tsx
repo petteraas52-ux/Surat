@@ -103,11 +103,12 @@ const styles = StyleSheet.create({
   },
   overlayCard: {
     width: "100%",
-    maxHeight: "90%",
+    maxHeight: "75%",
     backgroundColor: "white",
     borderRadius: 20,
     padding: 20,
     elevation: 6,
+    flex: 1,   
   },
   backButton: {
     alignSelf: "flex-start",
@@ -145,7 +146,7 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   eventsList: {
-    flex: 1,
+    flexGrow: 1,
   },
   eventItem: {
     backgroundColor: "#f9f9f9",

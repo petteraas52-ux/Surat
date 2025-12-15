@@ -15,6 +15,7 @@ import {
 const languages = [
   { label: "🇳🇴 Norsk", value: "nb" },
   { label: "🇬🇧 English", value: "en" },
+  { label: "🇸🇪 Svenska", value: "sv" },
   { label: "🇺🇦 Українська", value: "uk" },
 ];
 

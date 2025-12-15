@@ -75,6 +75,7 @@
 
     "choseChildrenButtonText": "Velg barn",
     "updateStatusText": "Oppdater status",
-    "languageModalHeader": "Velg språk"
+    "languageModalHeader": "Velg språk",
+    "startdate": "Startdato"
 
 }

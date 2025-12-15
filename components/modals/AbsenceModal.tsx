@@ -1,6 +1,7 @@
-import { useI18n } from "@/hooks/useI18n";
+import { formatDateShort } from "@/utils/date";
 import React from "react";
 import { Modal, Pressable, StyleSheet, Text, View } from "react-native";
+import { useI18n } from "@/hooks/useI18n";
 
 interface AbsenceModalProps {
   isVisible: boolean;
@@ -8,6 +9,8 @@ interface AbsenceModalProps {
   selectedChildrenCount: number;
   vacationDays: number;
   setVacationDays: React.Dispatch<React.SetStateAction<number>>;
+  vacationStartDate: string;
+  onOpenStartDatePicker: () => void;
   onRegisterSickness: () => Promise<void>;
   onRegisterVacation: () => Promise<void>;
 }
@@ -18,6 +21,8 @@ export const AbsenceModal: React.FC<AbsenceModalProps> = ({
   selectedChildrenCount,
   vacationDays,
   setVacationDays,
+  vacationStartDate,
+  onOpenStartDatePicker,
   onRegisterSickness,
   onRegisterVacation,
 }) => {
@@ -40,8 +45,22 @@ export const AbsenceModal: React.FC<AbsenceModalProps> = ({
             </Pressable>
 
             <View style={styles.vacationBlock}>
-              <Text style={styles.vacationLabel}>{t("vacation")} – {t("numOfDays")}</Text>
+              <Text style={styles.vacationLabel}>{t("vacation")}</Text>
+
+              <Pressable
+                style={styles.vacationDateSelect}
+                onPress={onOpenStartDatePicker}
+              >
+                <Text style={styles.vacationDateLabel}>{t("startdate")}:</Text>
+                <Text style={styles.vacationDateValue}>
+                  {formatDateShort(vacationStartDate)}
+                </Text>
+              </Pressable>
+
               <View style={styles.vacationRow}>
+                <Text style={[styles.vacationLabel, { flex: 1 }]}>
+                  {t("numOfDays")}:
+                </Text>
                 <Pressable
                   style={styles.vacationAdjustButton}
                   onPress={() => setVacationDays((d) => Math.max(1, d - 1))}
@@ -123,6 +142,27 @@ const styles = StyleSheet.create({
     fontSize: 14,
     marginBottom: 4,
     color: "#312E81",
+  },
+  vacationDateSelect: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    padding: 10,
+    backgroundColor: "#EFEFFF",
+    borderRadius: 8,
+    marginBottom: 8,
+    borderWidth: 1,
+    borderColor: "#57507F",
+  },
+  vacationDateLabel: {
+    fontSize: 14,
+    fontWeight: "600",
+    color: "#312E81",
+  },
+  vacationDateValue: {
+    fontSize: 14,
+    fontWeight: "700",
+    color: "#57507F",
   },
   vacationRow: {
     flexDirection: "row",

@@ -74,5 +74,6 @@
 
   "choseChildrenButtonText": "Вибрати дітей",
   "updateStatusText": "Оновити статус",
-  "languageModalHeader": "Оберіть мову"
+  "languageModalHeader": "Оберіть мову",
+  "startdate": "Дата початку"
 }
