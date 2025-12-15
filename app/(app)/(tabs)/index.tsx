@@ -26,14 +26,25 @@ import { formatDateShort, parseTimestampToDateString } from "@/utils/date";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function Index() {
-  const { children, setChildren, events, loading, toggleSelect } =
-    useChildData();
+  const {
+    children,
+    setChildren,
+    events,
+    loading,
+    toggleSelect,
+    errorMessage: childDataError,
+    clearError: clearChildDataError,
+  } = useChildData();
+
   const {
     anySelected,
     getButtonText,
     applyCheckInOut,
     toggleOverlayChildCheckIn,
+    errorMessage: checkInError,
+    clearError: clearCheckInError,
   } = useCheckInOut({ children, setChildren });
+
   const {
     absenceModalVisible,
     vacationDays,
@@ -43,7 +54,10 @@ export default function Index() {
     closeAbsenceModal,
     registerSicknessTodayForSelected,
     registerVacationForSelected,
+    errorMessage: absenceError,
+    clearError: clearAbsenceError,
   } = useAbsenceManagement({ children, setChildren });
+
   const {
     guestLinkVisible,
     closeGuestLinkModal,
@@ -56,6 +70,7 @@ export default function Index() {
     openGuestLinkModal,
     sendGuestLink,
   } = useGuestLink();
+
   const {
     calendarModalVisible,
     selectedDateInCalendar,
@@ -99,6 +114,22 @@ export default function Index() {
     <SafeAreaView style={styles.safe}>
       <ScrollView contentContainerStyle={styles.container}>
         <Text style={styles.headerTitle}>Mine Barn</Text>
+
+        {childDataError && (
+          <Text style={styles.errorText} onPress={clearChildDataError}>
+            {childDataError}
+          </Text>
+        )}
+        {checkInError && (
+          <Text style={styles.errorText} onPress={clearCheckInError}>
+            {checkInError}
+          </Text>
+        )}
+        {absenceError && (
+          <Text style={styles.errorText} onPress={clearAbsenceError}>
+            {absenceError}
+          </Text>
+        )}
 
         <View style={styles.childrenList}>
           {children.map((child) => (
@@ -210,6 +241,10 @@ const styles = StyleSheet.create({
     fontSize: 24,
     fontWeight: "700",
     marginBottom: 20,
+  },
+  errorText: {
+    color: "#dc2626",
+    marginBottom: 8,
   },
   childrenList: {
     flexDirection: "column",

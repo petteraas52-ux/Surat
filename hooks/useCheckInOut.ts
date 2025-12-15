@@ -1,5 +1,7 @@
 import { db } from "@/firebaseConfig";
+import { getErrorMessage } from "@/utils/error";
 import { doc, updateDoc } from "firebase/firestore";
+import { useState } from "react";
 import { UIChild } from "./useChildData";
 
 interface UseCheckInOutProps {
@@ -12,6 +14,7 @@ export const useCheckInOut = ({
   setChildren,
 }: UseCheckInOutProps) => {
   const anySelected = children.some((c) => c.selected);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   const getButtonText = (): string => {
     const selected = children.filter((c) => c.selected);
@@ -45,11 +48,15 @@ export const useCheckInOut = ({
         : child
     );
     setChildren(updatedChildren);
-
-    for (const child of selected) {
-      await updateDoc(doc(db, "children", child.id), {
-        checkedIn: newCheckedIn,
-      });
+    try {
+      for (const child of selected) {
+        await updateDoc(doc(db, "children", child.id), {
+          checkedIn: newCheckedIn,
+        });
+      }
+    } catch (err) {
+      console.error("Failed to update check-in/out:", err);
+      setErrorMessage(getErrorMessage("general", "SERVER"));
     }
   };
 
@@ -75,9 +82,14 @@ export const useCheckInOut = ({
       )
     );
 
-    await updateDoc(doc(db, "children", childId), {
-      checkedIn: newStatus,
-    });
+    try {
+      await updateDoc(doc(db, "children", childId), {
+        checkedIn: newStatus,
+      });
+    } catch (err) {
+      console.error("Failed to update single check-in/out:", err);
+      setErrorMessage(getErrorMessage("general", "SERVER"));
+    }
   };
 
   return {
@@ -85,5 +97,7 @@ export const useCheckInOut = ({
     getButtonText,
     applyCheckInOut,
     toggleOverlayChildCheckIn,
+    errorMessage,
+    clearError: () => setErrorMessage(null),
   };
 };

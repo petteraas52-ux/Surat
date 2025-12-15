@@ -2,6 +2,7 @@ import { getAllEvents } from "@/api/event";
 import { db } from "@/firebaseConfig";
 import { ChildProps } from "@/types/child";
 import { EventProps } from "@/types/event";
+import { getErrorMessage } from "@/utils/error";
 import { getAuth } from "firebase/auth";
 import { collection, getDocs, query, where } from "firebase/firestore";
 import { useEffect, useState } from "react";
@@ -22,6 +23,7 @@ export const useChildData = () => {
   const [children, setChildren] = useState<UIChild[]>([]);
   const [events, setEvents] = useState<EventProps[]>([]);
   const [loading, setLoading] = useState(true);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   useEffect(() => {
     if (!uid) return;
@@ -44,6 +46,7 @@ export const useChildData = () => {
         setChildren(data);
       } catch (err) {
         console.error("Failed to load children:", err);
+        setErrorMessage(getErrorMessage("children", "LOAD_FAILED"));
       }
     };
 
@@ -53,6 +56,7 @@ export const useChildData = () => {
         setEvents(data);
       } catch (err) {
         console.error("Failed to load events:", err);
+        setErrorMessage(getErrorMessage("events", "LOAD_FAILED"));
       } finally {
         setLoading(false);
       }
@@ -77,5 +81,7 @@ export const useChildData = () => {
     loading,
     toggleSelect,
     uid,
+    errorMessage,
+    clearError: () => setErrorMessage(null),
   };
 };
