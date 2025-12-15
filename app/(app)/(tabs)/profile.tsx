@@ -26,6 +26,7 @@ export default function ProfileScreen() {
   const [isEditing, setIsEditing] = useState(false);
   const [loading, setLoading] = useState(true);
   const [parentData, setParentData] = useState<ParentProps | null>(null);
+
   const handleLogout = async () => {
     try {
       await signOut(auth);
@@ -82,7 +83,7 @@ export default function ProfileScreen() {
   if (loading) {
     return (
       <SafeAreaView style={styles.safe}>
-        <ActivityIndicator size="large" />
+        <ActivityIndicator size="large" color="#5c578f" />
       </SafeAreaView>
     );
   }
@@ -101,13 +102,14 @@ export default function ProfileScreen() {
     <SafeAreaView style={styles.safe}>
       <ScrollView contentContainerStyle={styles.container}>
         <Text style={styles.title}>Min profil</Text>
-
-        <ProfilePicture
-          showEdit={isEditing}
-          userId={uid}
-          userType="parent"
-          initialImagePath={parentData?.imageUri}
-        />
+        <View style={styles.profilePictureWrapper}>
+          <ProfilePicture
+            showEdit={isEditing}
+            userId={uid}
+            userType="parent"
+            initialImagePath={parentData?.imageUri}
+          />
+        </View>
 
         <View style={styles.row}>
           <Text style={styles.label}>Navn</Text>
@@ -166,7 +168,7 @@ export default function ProfileScreen() {
 }
 
 const styles = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: "#FFF" },
+  safe: { flex: 1, backgroundColor: "#FFF7ED", justifyContent: "center" },
   container: { padding: 24, paddingBottom: 40, alignItems: "center" },
   title: {
     fontSize: 30,
@@ -174,7 +176,16 @@ const styles = StyleSheet.create({
     textAlign: "center",
     marginBottom: 25,
   },
-  image: { width: 160, height: 160, borderRadius: 100, marginBottom: 20 },
+
+  profilePictureWrapper: {
+    width: 160,
+    height: 160,
+    borderRadius: 80,
+    marginBottom: 20,
+    overflow: "hidden",
+    backgroundColor: "#eee",
+  },
+
   row: {
     flexDirection: "row",
     alignItems: "center",
@@ -203,7 +214,7 @@ const styles = StyleSheet.create({
   },
   button: {
     marginTop: 30,
-    backgroundColor: "#5c578f",
+    backgroundColor: "#5B5682",
     paddingVertical: 12,
     paddingHorizontal: 50,
     borderRadius: 25,

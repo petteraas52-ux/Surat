@@ -1,25 +1,25 @@
+import { getImageUrl } from "@/api/imageApi";
 import FontAwesome5 from "@expo/vector-icons/FontAwesome5";
 import Ionicons from "@expo/vector-icons/Ionicons";
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import {
+  ActivityIndicator,
   Image,
   Modal,
   Pressable,
   StyleSheet,
   TouchableOpacity,
   View,
-  ActivityIndicator,
+  ViewStyle,
 } from "react-native";
 import SelectImageModal from "./SelectImageModal";
-import { getImageUrl } from "@/api/imageApi";
-import { updateChildProfileImage } from "@/api/children";
-import { updateParentProfileImage } from "@/api/parents";
 
 type ProfilePictureProps = {
   showEdit?: boolean;
-  userId: string; // childId eller parentId
-  userType: "child" | "parent"; // Type bruker
-  initialImagePath?: string; // Existing image path fra Firestore
+  userId: string;
+  userType: "child" | "parent";
+  initialImagePath?: string;
+  style?: ViewStyle;
 };
 
 export default function ProfilePicture({
@@ -27,13 +27,13 @@ export default function ProfilePicture({
   userId,
   userType,
   initialImagePath,
+  style,
 }: ProfilePictureProps) {
   const [image, setImage] = useState<string | null>(null);
   const [isCameraOpen, setIsCameraOpen] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [loading, setLoading] = useState(true);
 
-  // Last inn eksisterende bilde når komponenten mountes
   useEffect(() => {
     async function loadImage() {
       if (initialImagePath) {
@@ -45,44 +45,18 @@ export default function ProfilePicture({
     loadImage();
   }, [initialImagePath]);
 
-  async function handleImageSelected(imageUri: string) {
-    setImage(imageUri); // Vis bildet umiddelbart
-    setUploading(true);
-
-    try {
-      let success = false;
-      if (userType === "child") {
-        success = await updateChildProfileImage(userId, imageUri);
-      } else {
-        success = await updateParentProfileImage(userId, imageUri);
-      }
-
-      if (success) {
-        console.log("✅ Profilbilde oppdatert!");
-      } else {
-        console.error("❌ Kunne ikke oppdatere profilbilde");
-        setImage(null); // Reset hvis feil
-      }
-    } catch (error) {
-      console.error("Error uploading profile image:", error);
-      setImage(null);
-    } finally {
-      setUploading(false);
-    }
-  }
+  async function handleImageSelected(imageUri: string) {}
 
   if (loading) {
     return (
-      <View style={styles.container}>
-        <View style={styles.imageWrapper}>
-          <ActivityIndicator size="large" color="#5c578f" />
-        </View>
+      <View style={[styles.container, style]}>
+        <ActivityIndicator size="large" color="#5c578f" />
       </View>
     );
   }
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, style]}>
       <Modal visible={isCameraOpen}>
         <SelectImageModal
           closeModal={() => setIsCameraOpen(false)}
@@ -92,78 +66,76 @@ export default function ProfilePicture({
           }}
         />
       </Modal>
-      <View style={styles.imageWrapper}>
-        <Pressable>
-          {image ? (
-            <Image source={{ uri: image }} style={styles.image} />
-          ) : (
-            <Ionicons
-              name="person-circle"
-              size={160}
-              color="grey"
-              style={styles.image}
-            />
-          )}
-          {uploading && (
-            <View style={styles.uploadingOverlay}>
-              <ActivityIndicator size="large" color="white" />
-            </View>
-          )}
-        </Pressable>
-        {showEdit && (
-          <TouchableOpacity
-            style={styles.editButton}
-            onPress={() => setIsCameraOpen(true)}
-            disabled={uploading}
-          >
-            <FontAwesome5 name="edit" size={18} color="white" />
-          </TouchableOpacity>
+      <Pressable style={styles.imageWrapper}>
+        {image ? (
+          <Image source={{ uri: image }} style={styles.image} />
+        ) : (
+          <View style={styles.placeholderContainer}>
+            <Ionicons name="person-circle" size={45} color="grey" />
+          </View>
         )}
-      </View>
+        {uploading && (
+          <View style={styles.uploadingOverlay}>
+            <ActivityIndicator size="large" color="white" />
+          </View>
+        )}
+      </Pressable>
+      {showEdit && (
+        <TouchableOpacity
+          style={styles.editButton}
+          onPress={() => setIsCameraOpen(true)}
+          disabled={uploading}
+        >
+          <FontAwesome5 name="edit" size={18} color="#5B5682" />
+        </TouchableOpacity>
+      )}
     </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
-    padding: 24,
-    paddingBottom: 40,
+    position: "relative",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  imageWrapper: {
+    position: "relative",
+    width: "100%",
+    height: "100%",
+    overflow: "hidden",
+  },
+  placeholderContainer: {
+    ...StyleSheet.absoluteFillObject,
+    justifyContent: "center",
     alignItems: "center",
   },
   image: {
-    width: 160,
-    height: 160,
-    borderRadius: 100,
-    marginBottom: 20,
+    width: "100%",
+    height: "100%",
+    resizeMode: "cover",
   },
   editButton: {
     position: "absolute",
-    bottom: 10,
-    right: 10,
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    backgroundColor: "black",
+    bottom: 0,
+    right: 0,
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: "#ffffffbe",
     alignItems: "center",
     justifyContent: "center",
-    borderWidth: 3,
-    borderColor: "white",
+    borderWidth: 2,
+    borderColor: "#5B5682",
     shadowColor: "#000",
     shadowOpacity: 0.25,
     shadowRadius: 4,
     shadowOffset: { width: 0, height: 2 },
     elevation: 6,
   },
-  imageWrapper: {
-    position: "relative",
-    width: 160,
-    height: 160,
-    alignSelf: "center",
-  },
   uploadingOverlay: {
     ...StyleSheet.absoluteFillObject,
     backgroundColor: "rgba(0,0,0,0.5)",
-    borderRadius: 100,
     justifyContent: "center",
     alignItems: "center",
   },
