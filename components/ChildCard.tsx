@@ -90,7 +90,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#9E92FF",
   },
   cardAbsent: {
-    backgroundColor: "#FFEB3B",
+    backgroundColor: "#5b56826d",
   },
   selectButton: {
     position: "absolute",
