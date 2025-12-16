@@ -1,5 +1,7 @@
 import { getParent, updateParent } from "@/api/parents";
 import ProfilePicture from "@/components/image/ProfilePicture";
+import { LanguageSwitcher } from "@/components/LanguageSwitcher";
+import { useI18n } from "@/hooks/useI18n";
 import { ParentProps } from "@/types/parent";
 import { MaterialIcons } from "@expo/vector-icons";
 import { getAuth, signOut } from "firebase/auth";
@@ -18,6 +20,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function ProfileScreen() {
   const auth = getAuth();
+  const { t } = useI18n();
   const uid = auth.currentUser?.uid;
 
   const [name, setName] = useState("");
@@ -26,7 +29,7 @@ export default function ProfileScreen() {
   const [isEditing, setIsEditing] = useState(false);
   const [loading, setLoading] = useState(true);
   const [parentData, setParentData] = useState<ParentProps | null>(null);
-
+ 
   const handleLogout = async () => {
     try {
       await signOut(auth);
@@ -92,7 +95,7 @@ export default function ProfileScreen() {
     return (
       <SafeAreaView style={styles.safe}>
         <View style={styles.container}>
-          <Text style={styles.title}>Ingen bruker logget inn</Text>
+          <Text style={styles.title}>{t("noUserLoggedIn")}</Text>
         </View>
       </SafeAreaView>
     );
@@ -101,7 +104,7 @@ export default function ProfileScreen() {
   return (
     <SafeAreaView style={styles.safe}>
       <ScrollView contentContainerStyle={styles.container}>
-        <Text style={styles.title}>Min profil</Text>
+        <Text style={styles.title}>{t("myProfileHeader")}</Text>
         <View style={styles.profilePictureWrapper}>
           <ProfilePicture
             showEdit={isEditing}
@@ -112,7 +115,7 @@ export default function ProfileScreen() {
         </View>
 
         <View style={styles.row}>
-          <Text style={styles.label}>Navn</Text>
+          <Text style={styles.label}>{t("name")}</Text>
           {isEditing && <MaterialIcons name="edit" size={20} color="#5c578f" />}
         </View>
         {isEditing ? (
@@ -122,7 +125,7 @@ export default function ProfileScreen() {
         )}
 
         <View style={styles.row}>
-          <Text style={styles.label}>Telefonnummer</Text>
+          <Text style={styles.label}>{t("phone")}</Text>
           {isEditing && <MaterialIcons name="edit" size={20} color="#5c578f" />}
         </View>
         {isEditing ? (
@@ -137,7 +140,7 @@ export default function ProfileScreen() {
         )}
 
         <View style={styles.row}>
-          <Text style={styles.label}>E-post</Text>
+          <Text style={styles.label}>{t("email")}</Text>
           {isEditing && <MaterialIcons name="edit" size={20} color="#5c578f" />}
         </View>
         {isEditing ? (
@@ -156,11 +159,14 @@ export default function ProfileScreen() {
           onPress={() => (isEditing ? handleSave() : setIsEditing(true))}
         >
           <Text style={styles.buttonText}>
-            {isEditing ? "Lagre" : "Rediger"}
+            {isEditing ? t("save") : t("edit")}
           </Text>
         </TouchableOpacity>
+
+        <LanguageSwitcher/>
+
         <Pressable style={styles.button} onPress={handleLogout}>
-          <Text style={styles.buttonText}>Logg ut</Text>
+          <Text style={styles.buttonText}>{t("logout")}</Text>
         </Pressable>
       </ScrollView>
     </SafeAreaView>

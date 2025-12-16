@@ -1,0 +1,79 @@
+{
+  "parent": "Parent",
+  "child": "Child",
+  "selectLanguage": "Select language",
+  "welcome": "Welcome",
+  "loginHelpText": "Log in to check in/out your children",
+  "logInButtonText": "Log in",
+  "email": "Email",
+  "placeholderEmail": "Enter your email",
+  "password": "Password",
+  "placeholderPassword": "Enter your password",
+  "loadingUser": "Loading your profile...",
+  "loading": "Loading, Please wait...",
+  
+  "notFoundPage": "This page does not excist",
+  "notFoundPageBack": "Go back to home",
+  "tabTitleChildren": "My children",
+  "tabTitleProfile": "Profile",
+
+  "loadingChildren": "Loading children data...",
+  "childrenHeader": "My children",
+  "upcommingEvent": "Upcomming events",
+  "noEvents": "No upcomming events registered",
+  "department": "Department",
+  "registerLeave": "Register absence",
+
+  "noUserLoggedIn": "No user logged in",
+  "myProfileHeader": "My profile",
+  "name": "Name",
+  "phone": "Phone",
+
+  "save": "Save",
+  "edit": "Edit",
+  "logout": "Log out",
+
+  "numOfChildren": "children selected",
+  "sickToday": "Sick today",
+  "vacation": "Vacation",
+  "numOfDays": "number of days",
+  "registerVacation": "Register vacation",
+
+  "close": "Close",
+    "calendarHeader": "Calendar and events",
+    "eventsPlural": "Events",
+    "noEventsToday": "No events this day.",
+    "noDateSelected": "Chose a day to view events.",
+    "choseDate": "Select date",
+
+    "checkOut": "Check out",
+    "checkIn": "Check in",
+
+    "checkedOut": "Checked out",
+    "checkedIn": "Checked in",
+
+    "guestPickup": "Guest pickup",
+    "absence": "Absence",
+    "status": "Status",
+
+    "guestLinkHelpText": "Enter information for the guest",
+    "fetchChildrenText": "Getting child",
+    "backButtonText": "Back",
+
+    "nameInputFieldPlaceholder": "Enter name",
+    "phoneInputFieldPlaceholder": "Enter phone number",
+
+    "sendGuestMessage": "Send guest pickup message",
+    "sending": "Sending",
+    "send": "Send",
+    "writeAComment": "Write a comment",
+    "loadingTime": "Loading timestamps",
+    "commentsComponentHeader":"Comments",
+    "noComments": "No comments yet",
+    "unkownUser": "Uknown user",
+
+    "choseChildrenButtonText": "Select children",
+    "updateStatusText": "Update status",
+    "languageModalHeader": "Select language",
+    "startdate": "Start date"
+}

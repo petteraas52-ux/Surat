@@ -3,6 +3,7 @@
 import CommentBox from "@/components/commentBox";
 import ProfilePicture from "@/components/image/ProfilePicture";
 import { UIChild } from "@/hooks/useChildData";
+import { useI18n } from "@/hooks/useI18n";
 import React from "react";
 import {
   Modal,
@@ -33,6 +34,9 @@ export const ChildDetailModal: React.FC<ChildDetailModalProps> = ({
   onToggleCheckIn,
   hideGuestButton = false, // default: vis knappen som før
 }) => {
+
+  const { t } = useI18n();
+  
   if (!activeChild) return null;
 
   const absenceLabel = getAbsenceLabel(activeChild);
@@ -65,7 +69,7 @@ export const ChildDetailModal: React.FC<ChildDetailModalProps> = ({
 
                 {absenceLabel ? (
                   <Text style={styles.statusAbsent}>
-                    Fravær: {absenceLabel}
+                    {t("absence")}: {absenceLabel}
                   </Text>
                 ) : (
                   <Text
@@ -75,11 +79,13 @@ export const ChildDetailModal: React.FC<ChildDetailModalProps> = ({
                         : styles.statusCheckedOut
                     }
                   >
+                    {t("absence")}:{" "}
+                    {activeChild.checkedIn ? "Sjekket inn" : "Sjekket ut"}
                     Status: {activeChild.checkedIn ? "Sjekket inn" : "Sjekket ut"}
                   </Text>
                 )}
                 <Text style={styles.groupText}>
-                  Avdeling: {activeChild.department}
+                  {t("department")}: {activeChild.department}
                 </Text>
               </View>
             </View>
@@ -93,6 +99,12 @@ export const ChildDetailModal: React.FC<ChildDetailModalProps> = ({
                 <Text style={styles.actionButtonText}>{checkInText}</Text>
               </Pressable>
 
+              <Pressable
+                style={[styles.actionButton, styles.guestButton]}
+                onPress={onOpenGuestLinkModal}
+              >
+                <Text style={styles.actionButtonText}>{t("guestPickup")}</Text>
+              </Pressable>
               {/* Vis gjeste-hent bare hvis den ikke er skjult */}
               {!hideGuestButton && (
                 <Pressable
@@ -110,7 +122,7 @@ export const ChildDetailModal: React.FC<ChildDetailModalProps> = ({
           </ScrollView>
 
           <Pressable style={styles.closeButton} onPress={onClose}>
-            <Text style={styles.closeButtonText}>Lukk</Text>
+            <Text style={styles.closeButtonText}>{t("close")}</Text>
           </Pressable>
         </View>
       </View>
