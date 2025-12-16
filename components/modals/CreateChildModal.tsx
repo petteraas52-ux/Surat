@@ -1,5 +1,3 @@
-// modules/CreateChildModule.tsx
-
 import { createChild } from "@/api/children";
 import { addChildToParent, getAllParents } from "@/api/parents";
 import { useAppTheme } from "@/hooks/useAppTheme";

@@ -1,5 +1,3 @@
-// modules/CreateEmployeeModule.tsx
-
 import { createEmployee } from "@/api/employees";
 import { useAppTheme } from "@/hooks/useAppTheme";
 import { useI18n } from "@/hooks/useI18n";

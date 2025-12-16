@@ -3,13 +3,11 @@
 import { StyleSheet } from "react-native";
 
 export const styles = StyleSheet.create({
-  // General Layout
   container: {
     padding: 24,
-    // FIX CONFIRMED: Removed 'flex: 1' to allow it to size based on content for the ScrollView.
   },
   center: {
-    flex: 1, // Keep flex: 1 for the 'loading' state centered view
+    flex: 1,
     justifyContent: "center",
     alignItems: "center",
   },
@@ -19,7 +17,6 @@ export const styles = StyleSheet.create({
     marginBottom: 25,
   },
 
-  // Form Elements
   label: {
     fontWeight: "700",
     marginTop: 16,
@@ -54,7 +51,6 @@ export const styles = StyleSheet.create({
     marginTop: 4,
   },
 
-  // Button
   createButton: {
     backgroundColor: "#57507F",
     padding: 16,

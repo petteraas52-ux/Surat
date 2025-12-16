@@ -50,6 +50,20 @@ export default function TabBar() {
           ),
         }}
       />
+      <Tabs.Screen
+        name="profile"
+        options={{
+          title: t("tabTitleProfile"),
+          headerShown: false,
+          tabBarIcon: ({ focused }) => (
+            <Ionicons
+              name="person-circle"
+              size={24}
+              color={focused ? theme.tabIconSelected : theme.tabIconDefault}
+            />
+          ),
+        }}
+      />
     </Tabs>
   );
 }

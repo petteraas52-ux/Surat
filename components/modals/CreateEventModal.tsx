@@ -1,5 +1,3 @@
-// modules/CreateEventModule.tsx
-
 import { createEvent } from "@/api/event";
 import { useAppTheme } from "@/hooks/useAppTheme";
 import { useI18n } from "@/hooks/useI18n";

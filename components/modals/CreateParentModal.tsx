@@ -1,5 +1,3 @@
-// modules/CreateParentModule.tsx
-
 import { createParent } from "@/api/parents";
 import { useAppTheme } from "@/hooks/useAppTheme";
 import { useI18n } from "@/hooks/useI18n";
