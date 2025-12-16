@@ -74,6 +74,12 @@ export default function EmployeeOverview() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1 },
-  header: { fontSize: 24, fontWeight: '700', marginBottom: 20, paddingHorizontal: 16 },
+  container: {
+    flex: 1,
+  },
+  header: {
+    fontSize: 24,
+    fontWeight: '700',
+    marginBottom: 20,
+  },
 });
