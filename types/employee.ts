@@ -5,6 +5,5 @@ export interface EmployeeProps {
   eMail: string;
   phone: string;
   imageUri: string;
-  children: string[];
   department: string;
 }
