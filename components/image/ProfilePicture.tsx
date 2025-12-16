@@ -18,7 +18,7 @@ import { useAppTheme } from "@/hooks/useAppTheme";
 type ProfilePictureProps = {
   showEdit?: boolean;
   userId: string;
-  userType: "child" | "parent";
+  userType: "child" | "parent" | "employee";
   initialImagePath?: string;
   style?: ViewStyle;
 };

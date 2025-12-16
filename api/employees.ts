@@ -14,10 +14,6 @@ import { uploadImageToFirebase } from "./imageApi";
 
 const employeesCol = collection(db, "employees");
 
-type BaseEmployeeData = Omit<EmployeeProps, "id" | "children"> & {
-  children?: string[];
-};
-
 export const createEmployee = async (
   email: string,
   temporaryPassword: string,
@@ -34,7 +30,6 @@ export const createEmployee = async (
   await setDoc(doc(db, "employees", uid), {
     ...data,
     eMail: email,
-    children: data.children || [],
   });
 
   return uid;
