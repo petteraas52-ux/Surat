@@ -24,13 +24,10 @@ export const useAbsenceManagement = ({
 }: UseAbsenceManagementProps) => {
   const [absenceModalVisible, setAbsenceModalVisible] = useState(false);
   const [vacationDays, setVacationDays] = useState<number>(7);
-<<<<<<< HEAD
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
-=======
   const [vacationStartDate, setVacationStartDate] = useState<string>(
     getTodayStr()
   );
->>>>>>> upstream/main
 
   const anySelected = children.some((c) => c.selected);
 
