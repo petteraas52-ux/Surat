@@ -1,9 +1,9 @@
 import { getParent } from "@/api/parents";
 import { db } from "@/firebaseConfig";
+import { getErrorMessage } from "@/utils/error";
 import { getAuth } from "firebase/auth";
 import { addDoc, collection, serverTimestamp } from "firebase/firestore";
 import { useState } from "react";
-import { getErrorMessage } from "@/utils/error";
 
 export const useGuestLink = () => {
   const auth = getAuth();
@@ -30,11 +30,11 @@ export const useGuestLink = () => {
     setGuestError(null);
 
     if (!overlayChildId) {
-      setGuestError("Ingen barn valgt.");
+      setGuestError(getErrorMessage("guestLink", "NO_CHILD"));
       return;
     }
     if (!guestName.trim() || !guestPhone.trim()) {
-      setGuestError("Fyll inn navn og telefonnummer.");
+      setGuestError(getErrorMessage("guestLink", "MISSING_FIELDS"));
       return;
     }
 
@@ -66,7 +66,7 @@ export const useGuestLink = () => {
       setGuestLinkVisible(false);
     } catch (err) {
       console.error("Failed to save guest link:", err);
-      setGuestError("Noe gikk galt. Prøv igjen.");
+      setGuestError(getErrorMessage("guestLink", "CREATE_FAILED"));
     } finally {
       setGuestSending(false);
     }

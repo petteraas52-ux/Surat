@@ -1,3 +1,4 @@
+import { useAppTheme } from "@/hooks/useAppTheme";
 import { useI18n } from "@/hooks/useI18n";
 import "@/i18n";
 import { useAuthSession } from "@/providers/authctx";
@@ -13,33 +14,52 @@ import {
   TouchableWithoutFeedback,
   View,
 } from "react-native";
-import { useAppTheme } from "@/hooks/useAppTheme";
 
 const Authentication = () => {
   const [userEmail, setUserEmail] = useState("");
   const [password, setPassword] = useState("");
 
-  const { signIn } = useAuthSession();
+  const { signIn, authError } = useAuthSession();
   const { t } = useI18n();
   const theme = useAppTheme();
 
   const content = (
     <View style={styles.inner}>
-      <View style={[styles.card, { 
-        backgroundColor: theme.backgroundSecondary,
-        shadowColor: theme.shadow 
-      }]}>
-        <Text style={[styles.title, { color: theme.text }]}>{t("logInButtonText")}</Text>
-        <Text style={[styles.subtitle, { color: theme.textSecondary }]}>{t("loginHelpText")}</Text>
+      <View
+        style={[
+          styles.card,
+          {
+            backgroundColor: theme.backgroundSecondary,
+            shadowColor: theme.shadow,
+          },
+        ]}
+      >
+        <Text style={[styles.title, { color: theme.text }]}>
+          {t("logInButtonText")}
+        </Text>
+        <Text style={[styles.subtitle, { color: theme.textSecondary }]}>
+          {t("loginHelpText")}
+        </Text>
+
+        {authError && (
+          <Text style={[styles.errorText, { color: theme.error ?? "#dc2626" }]}>
+            {authError}
+          </Text>
+        )}
 
         <View style={styles.inputGroup}>
-          <Text style={[styles.label, { color: theme.text }]}>{t("email")}</Text>
+          <Text style={[styles.label, { color: theme.text }]}>
+            {t("email")}
+          </Text>
           <TextInput
-            style={[styles.input, { 
-              borderColor: theme.border,
-              backgroundColor: theme.inputBackground,
-              color: theme.text 
-            }]}
+            style={[
+              styles.input,
+              {
+                borderColor: theme.border,
+                backgroundColor: theme.inputBackground,
+                color: theme.text,
+              },
+            ]}
             value={userEmail}
             onChangeText={setUserEmail}
             placeholder={t("placeholderEmail")}
@@ -50,13 +70,18 @@ const Authentication = () => {
         </View>
 
         <View style={styles.inputGroup}>
-          <Text style={[styles.label, { color: theme.text }]}>{t("password")}</Text>
+          <Text style={[styles.label, { color: theme.text }]}>
+            {t("password")}
+          </Text>
           <TextInput
-            style={[styles.input, { 
-              borderColor: theme.border,
-              backgroundColor: theme.inputBackground,
-              color: theme.text 
-            }]}
+            style={[
+              styles.input,
+              {
+                borderColor: theme.border,
+                backgroundColor: theme.inputBackground,
+                color: theme.text,
+              },
+            ]}
             value={password}
             secureTextEntry
             onChangeText={setPassword}
@@ -106,7 +131,6 @@ const styles = StyleSheet.create({
     padding: 20,
   },
   card: {
-    
     padding: 20,
     borderRadius: 12,
     elevation: 4,
@@ -122,8 +146,10 @@ const styles = StyleSheet.create({
   },
   subtitle: {
     fontSize: 14,
-    
     marginBottom: 20,
+  },
+  errorText: {
+    marginBottom: 12,
   },
   inputGroup: {
     marginBottom: 16,
@@ -135,16 +161,15 @@ const styles = StyleSheet.create({
   },
   input: {
     borderWidth: 1,
-    
+
     borderRadius: 8,
     paddingHorizontal: 12,
     paddingVertical: 10,
     fontSize: 16,
-    
   },
   button: {
     marginTop: 12,
-    
+
     paddingVertical: 14,
     borderRadius: 8,
     alignItems: "center",
