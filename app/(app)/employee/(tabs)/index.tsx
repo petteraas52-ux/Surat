@@ -1,116 +1,86 @@
-// screens/AdminDashboard.tsx
-
-import { useAppTheme } from "@/hooks/useAppTheme";
-import { useI18n } from "@/hooks/useI18n";
-import React, { useState } from "react";
-import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
+import { useThemeColor } from '@/hooks/useThemeColor';
+import React, { useMemo, useState } from 'react';
+import { Dimensions, FlatList, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from "react-native-safe-area-context";
-import { CreateChildModal } from "../../../../components/modals/CreateChildModal";
-import { CreateEmployeeModal } from "../../../../components/modals/CreateEmployeeModal";
-import { CreateEventModal } from "../../../../components/modals/CreateEventModal";
-import { CreateParentModal } from "../../../../components/modals/CreateParentModal";
 
-const TABS = {
-  PARENT: "Parent",
-  EMPLOYEE: "Employee",
-  CHILD: "Child",
-  EVENT: "Event",
-};
+import { ChildCard } from '@/components/ChildCard';
+import { ChildDetailModal } from '@/components/modals/ChildDetailModal';
+import { UIChild, useAllChildrenData } from '@/hooks/useAllChildrenData';
+import { useCheckInOut } from '@/hooks/useCheckInOut';
 
-type TabKey = keyof typeof TABS;
+export default function EmployeeOverview() {
+  // --- Hooks kalles alltid først ---
+  const { children, loading, setChildren } = useAllChildrenData();
+  const { toggleOverlayChildCheckIn } = useCheckInOut({ children, setChildren });
+  const backgroundColor = useThemeColor({}, 'background');
 
-export default function AdminDashboardScreen() {
-  const [activeTab, setActiveTab] = useState<TabKey>("PARENT");
-  const theme = useAppTheme();
-  const { t } = useI18n();
+  const [isModalVisible, setModalVisible] = useState(false);
+  const [activeChildId, setActiveChildId] = useState<string | null>(null);
 
-  const renderContent = () => {
-    // Reverting to clean conditional rendering
-    switch (activeTab) {
-      case "PARENT":
-        return <CreateParentModal />;
-      case "EMPLOYEE":
-        return <CreateEmployeeModal />;
-      case "CHILD":
-        return <CreateChildModal />;
-      case "EVENT":
-        return <CreateEventModal />;
-      default:
-        return null;
-    }
+  const activeChild = useMemo<UIChild | undefined>(() => {
+    if (!activeChildId) return undefined;
+    return children.find(c => c.id === activeChildId);
+  }, [activeChildId, children]);
+
+  const getAbsenceLabel = (child: UIChild): string | null => {
+    if (!child.absenceType) return null;
+    return child.absenceType === 'sykdom' ? 'Syk' : 'Ferie';
   };
 
+  // --- Tidlig return etter at alle hooks er kalt ---
+  if (loading) return null;
+
+  const screenWidth = Dimensions.get('window').width;
+  const cardWidth = (screenWidth - 20 * 3) / 2; // padding mellom kolonner og kanter
+
   return (
-    <SafeAreaView
-      style={[styles.safeArea, { backgroundColor: theme.background }]}
-    >
-      <View style={styles.header}>
-        <Text style={[styles.headerTitle, { color: theme.text }]}>
-          {t("Admin Dashboard") || "Admin Dashboard"}
-        </Text>
-      </View>
+    <>
+      <SafeAreaView style={[styles.container, { backgroundColor }]}>
+        <Text style={styles.header}>Barn oversikt</Text>
+        <FlatList
+          data={children}
+          keyExtractor={(item) => item.id.toString()}
+          numColumns={2}
+          contentContainerStyle={{ paddingVertical: 16, paddingHorizontal: 16 }}
+          columnWrapperStyle={{ justifyContent: 'space-between', marginBottom: 16 }}
+          renderItem={({ item }) => (
+            <View style={{ width: cardWidth, marginBottom: 16 }}>
+             <ChildCard
+              child={{ ...item, selected: false }}
+              absenceLabel={getAbsenceLabel(item)}
+              onSelect={() => {}}
+              onPress={() => {
+                setActiveChildId(item.id);
+                setModalVisible(true);
+              }}
+              hideSelectButton={true}
+            />
+            </View>
+          )}
+        />
+      </SafeAreaView>
 
-      <View style={[styles.tabBar, { borderBottomColor: theme.border }]}>
-        {(Object.keys(TABS) as TabKey[]).map((key) => (
-          <Pressable
-            key={key}
-            style={[
-              styles.tabItem,
-              activeTab === key && { borderBottomColor: theme.primary },
-            ]}
-            onPress={() => setActiveTab(key)}
-          >
-            <Text
-              style={[
-                styles.tabText,
-                {
-                  color:
-                    activeTab === key ? theme.primary : theme.textSecondary,
-                },
-              ]}
-            >
-              {t(`${key.toLowerCase()}`) || TABS[key]}
-            </Text>
-          </Pressable>
-        ))}
-      </View>
-
-      <ScrollView style={styles.contentContainer}>{renderContent()}</ScrollView>
-    </SafeAreaView>
+      <ChildDetailModal
+        isVisible={isModalVisible}
+        activeChild={activeChild}
+        onClose={() => setModalVisible(false)}
+        getAbsenceLabel={getAbsenceLabel}
+        onOpenGuestLinkModal={() => {}}
+        onToggleCheckIn={toggleOverlayChildCheckIn}
+        hideGuestButton
+      />
+    </>
   );
 }
 
 const styles = StyleSheet.create({
-  safeArea: {
+  container: {
     flex: 1,
   },
   header: {
-    paddingHorizontal: 20,
-    paddingVertical: 10,
-    flexDirection: "row",
-    justifyContent: "flex-start",
-    alignItems: "center",
-  },
-  headerTitle: {
     fontSize: 24,
-    fontWeight: "bold",
-  },
-  tabBar: {
-    flexDirection: "row",
-    borderBottomWidth: 1,
-    marginBottom: 10,
-  },
-  tabItem: {
-    flex: 1,
-    paddingVertical: 12,
-    alignItems: "center",
-    borderBottomWidth: 3,
-    borderBottomColor: "transparent",
-  },
-  tabText: {
-    fontWeight: "600",
-  },
-  contentContainer: {
-    flex: 1,
+    fontWeight: '700',
+    marginBottom: 20,
   },
 });
+
