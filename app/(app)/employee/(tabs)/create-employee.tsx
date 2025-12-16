@@ -1,39 +1,27 @@
-import { createParent } from "@/api/parents";
-import { auth } from "@/firebaseConfig";
-import { useAppTheme } from "@/hooks/useAppTheme";
-import { useI18n } from "@/hooks/useI18n";
-import { signOut } from "firebase/auth";
-import { useState } from "react";
-import {
-  Alert,
-  Pressable,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  View,
-} from "react-native";
+// create-employee.tsx
 
-export default function CreateParentScreen() {
+import { createEmployee } from "@/api/employees";
+import { useState } from "react";
+import { Alert, Text, TextInput, TouchableOpacity, View } from "react-native";
+
+export default function CreateEmployeeScreen() {
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
+  const [department, setDepartment] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
-  const theme = useAppTheme();
-  const { t } = useI18n();
 
-  const handleLogout = async () => {
-    try {
-      await signOut(auth);
-      console.log("User logged out");
-    } catch (error) {
-      console.error("Logout failed:", error);
-    }
-  };
-
-  const handleCreateParent = async () => {
-    if (!firstName || !lastName || !email || !phone || !password) {
+  const handleCreateEmployee = async () => {
+    if (
+      !firstName ||
+      !lastName ||
+      !email ||
+      !phone ||
+      !department ||
+      !password
+    ) {
       Alert.alert("Missing fields", "Please fill in all fields.");
       return;
     }
@@ -41,25 +29,26 @@ export default function CreateParentScreen() {
     try {
       setLoading(true);
 
-      await createParent(email, password, {
+      await createEmployee(email, password, {
         firstName,
         lastName,
         eMail: email,
         phone,
+        department,
         imageUri: "",
-        children: [],
       });
 
-      Alert.alert("Success", "Parent account created successfully.");
+      Alert.alert("Success", "Employee account created successfully.");
 
       setFirstName("");
       setLastName("");
       setEmail("");
       setPhone("");
+      setDepartment("");
       setPassword("");
     } catch (error: any) {
       console.error(error);
-      Alert.alert("Error", error.message || "Failed to create parent.");
+      Alert.alert("Error", error.message || "Failed to create employee.");
     } finally {
       setLoading(false);
     }
@@ -68,7 +57,7 @@ export default function CreateParentScreen() {
   return (
     <View style={{ flex: 1, padding: 20, justifyContent: "center" }}>
       <Text style={{ fontSize: 24, fontWeight: "bold", marginBottom: 20 }}>
-        Create Parent Account
+        Create Employee Account
       </Text>
 
       <TextInput
@@ -103,6 +92,13 @@ export default function CreateParentScreen() {
       />
 
       <TextInput
+        placeholder="Department"
+        value={department}
+        onChangeText={setDepartment}
+        style={styles.input}
+      />
+
+      <TextInput
         placeholder="Temporary Password"
         value={password}
         onChangeText={setPassword}
@@ -111,7 +107,7 @@ export default function CreateParentScreen() {
       />
 
       <TouchableOpacity
-        onPress={handleCreateParent}
+        onPress={handleCreateEmployee}
         disabled={loading}
         style={{
           backgroundColor: loading ? "#ccc" : "#2563eb",
@@ -122,15 +118,9 @@ export default function CreateParentScreen() {
         }}
       >
         <Text style={{ color: "white", fontWeight: "bold" }}>
-          {loading ? "Creating..." : "Create Parent"}
+          {loading ? "Creating..." : "Create Employee"}
         </Text>
       </TouchableOpacity>
-      <Pressable
-        style={[styles.button, { backgroundColor: theme.primary }]}
-        onPress={handleLogout}
-      >
-        <Text>{t("logout")}</Text>
-      </Pressable>
     </View>
   );
 }
@@ -142,16 +132,5 @@ const styles = {
     padding: 12,
     borderRadius: 8,
     marginBottom: 12,
-  },
-  button: {
-    marginTop: 30,
-    paddingVertical: 12,
-    paddingHorizontal: 50,
-    borderRadius: 25,
-  },
-  buttonText: {
-    color: "#fff",
-    fontWeight: "600",
-    fontSize: 16,
   },
 };

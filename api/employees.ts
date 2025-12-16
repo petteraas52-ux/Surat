@@ -1,52 +1,68 @@
-import { db } from "@/firebaseConfig";
+import { auth, db } from "@/firebaseConfig";
+import { EmployeeProps } from "@/types/employee";
+import { createUserWithEmailAndPassword } from "firebase/auth";
 import {
-  addDoc,
   collection,
   deleteDoc,
   doc,
   getDoc,
   getDocs,
-  query,
+  setDoc,
   updateDoc,
-  where,
 } from "firebase/firestore";
+import { uploadImageToFirebase } from "./imageApi";
 
-export type EmployeeDoc = {
-  name: string;
-  role?: string;
-  email?: string;
-  phoneNumber?: string;
-  groupName?: string;
-  createdAt: number;
+const employeesCol = collection(db, "employees");
+
+type BaseEmployeeData = Omit<EmployeeProps, "id" | "children"> & {
+  children?: string[];
 };
 
-const employeesCol = collection(db, "emplyees");
+export const createEmployee = async (
+  email: string,
+  temporaryPassword: string,
+  data: Omit<EmployeeProps, "id">
+): Promise<string> => {
+  const { user } = await createUserWithEmailAndPassword(
+    auth,
+    email,
+    temporaryPassword
+  );
 
-export const createEmployee = async (data: EmployeeDoc) => {
-  const docRef = await addDoc(employeesCol, data);
-  return docRef.id;
+  const uid = user.uid;
+
+  await setDoc(doc(db, "employees", uid), {
+    ...data,
+    eMail: email,
+    children: data.children || [],
+  });
+
+  return uid;
 };
 
-export const getEmployee = async (id: string) => {
+export const getEmployee = async (
+  id: string
+): Promise<EmployeeProps | null> => {
   const snap = await getDoc(doc(db, "employees", id));
   if (!snap.exists()) return null;
-  return { id: snap.id, ...(snap.data() as EmployeeDoc) };
+
+  return {
+    id: snap.id,
+    ...(snap.data() as Omit<EmployeeProps, "id">),
+  };
 };
 
-export const getAllEmployees = async () => {
+export const getAllEmployees = async (): Promise<EmployeeProps[]> => {
   const snap = await getDocs(employeesCol);
-  return snap.docs.map((d) => ({ id: d.id, ...(d.data() as EmployeeDoc) }));
-};
-
-export const getEmployeesForGroup = async (groupName: string) => {
-  const q = query(employeesCol, where("groupName", "==", groupName));
-  const snap = await getDocs(q);
-  return snap.docs.map((d) => ({ id: d.id, ...(d.data() as EmployeeDoc) }));
+  return snap.docs.map((d) => ({
+    id: d.id,
+    ...(d.data() as Omit<EmployeeProps, "id">),
+  }));
 };
 
 export const updateEmployee = async (
   id: string,
-  data: Partial<EmployeeDoc>
+  data: Partial<Omit<EmployeeProps, "id">>
 ) => {
   const employeeRef = doc(db, "employees", id);
   await updateDoc(employeeRef, data);
@@ -55,4 +71,21 @@ export const updateEmployee = async (
 export const deleteEmployee = async (id: string) => {
   const employeeRef = doc(db, "employees", id);
   await deleteDoc(employeeRef);
+};
+
+export const updateEmployeeProfileImage = async (
+  employeeId: string,
+  imageUri: string
+): Promise<boolean> => {
+  try {
+    const storagePath = await uploadImageToFirebase(imageUri);
+    if (!storagePath) return false;
+
+    await updateEmployee(employeeId, { imageUri: storagePath });
+    console.log("Employee profile image updated successfully");
+    return true;
+  } catch (e) {
+    console.error("Error updating employee profile image:", e);
+    return false;
+  }
 };

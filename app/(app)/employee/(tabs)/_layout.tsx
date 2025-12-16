@@ -64,6 +64,20 @@ export default function TabBar() {
           ),
         }}
       />
+      <Tabs.Screen
+        name="create-employee"
+        options={{
+          title: t("tabTitleEmployee"),
+          headerShown: false,
+          tabBarIcon: ({ focused }) => (
+            <Ionicons
+              name="person-circle"
+              size={24}
+              color={focused ? theme.tabIconSelected : theme.tabIconDefault}
+            />
+          ),
+        }}
+      />
     </Tabs>
   );
 }
