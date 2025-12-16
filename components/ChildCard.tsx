@@ -5,18 +5,23 @@ import { useI18n } from "@/hooks/useI18n";
 import React from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
+
 interface ChildCardProps {
   child: UIChild;
   onSelect: () => void;
   onPress: () => void;
   absenceLabel: string | null;
+  hideSelectButton?: boolean;
 }
+
+
 
 export const ChildCard: React.FC<ChildCardProps> = ({
   child,
   onSelect,
   onPress,
   absenceLabel,
+  hideSelectButton = false,
 }) => {
   const { t } = useI18n();
   const theme = useAppTheme();

@@ -1,7 +1,8 @@
-// components/modals/ChildDetailModal.tsx
 
+// components/modals/ChildDetailModal.tsx
 import CommentBox from "@/components/commentBox";
 import ProfilePicture from "@/components/image/ProfilePicture";
+import { useAppTheme } from "@/hooks/useAppTheme";
 import { UIChild } from "@/hooks/useChildData";
 import { useI18n } from "@/hooks/useI18n";
 import React from "react";
@@ -13,7 +14,6 @@ import {
   Text,
   View,
 } from "react-native";
-import { useAppTheme } from "@/hooks/useAppTheme";
 
 interface ChildDetailModalProps {
   isVisible: boolean;
@@ -22,6 +22,8 @@ interface ChildDetailModalProps {
   getAbsenceLabel: (child: UIChild) => string | null;
   onOpenGuestLinkModal: () => void;
   onToggleCheckIn: (childId: string | null) => Promise<void>;
+  /** NY: Skjul gjeste-hent knappen */
+  hideGuestButton?: boolean;
 }
 
 export const ChildDetailModal: React.FC<ChildDetailModalProps> = ({
@@ -31,6 +33,7 @@ export const ChildDetailModal: React.FC<ChildDetailModalProps> = ({
   getAbsenceLabel,
   onOpenGuestLinkModal,
   onToggleCheckIn,
+  hideGuestButton = false, // default: vis knappen som før
 }) => {
 
   const { t } = useI18n();
@@ -79,6 +82,7 @@ export const ChildDetailModal: React.FC<ChildDetailModalProps> = ({
                   >
                     {t("absence")}:{" "}
                     {activeChild.checkedIn ? "Sjekket inn" : "Sjekket ut"}
+                    Status: {activeChild.checkedIn ? "Sjekket inn" : "Sjekket ut"}
                   </Text>
                 )}
                 <Text style={[styles.groupText, { color: theme.textSecondary }]}>
@@ -100,12 +104,15 @@ export const ChildDetailModal: React.FC<ChildDetailModalProps> = ({
                 }]}>{checkInText}</Text>
               </Pressable>
 
-              <Pressable
-                style={[styles.actionButton, { backgroundColor: theme.primary }]}
-                onPress={onOpenGuestLinkModal}
-              >
-                <Text style={styles.actionButtonText}>{t("guestPickup")}</Text>
-              </Pressable>
+              {/* Vis gjeste-hent bare hvis den ikke er skjult */}
+              {!hideGuestButton && (
+                <Pressable
+                  style={[styles.actionButton, { backgroundColor: theme.primary }]}
+                  onPress={onOpenGuestLinkModal}
+                >
+                  <Text style={styles.actionButtonText}>Gjeste-hent</Text>
+                </Pressable>
+              )}
             </View>
 
             <View style={[styles.divider, { backgroundColor: theme.borderLight }]} />
