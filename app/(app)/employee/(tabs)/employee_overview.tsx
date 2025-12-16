@@ -45,16 +45,16 @@ export default function EmployeeOverview() {
           columnWrapperStyle={{ justifyContent: 'space-between', marginBottom: 16 }}
           renderItem={({ item }) => (
             <View style={{ width: cardWidth, marginBottom: 16 }}>
-              <ChildCard
-                child={{ ...item, selected: false }}
-                absenceLabel={getAbsenceLabel(item)}
-                onSelect={() => {}}
-                onPress={() => {
-                  setActiveChildId(item.id);
-                  setModalVisible(true);
-                }}
-                hideSelectButton
-              />
+             <ChildCard
+              child={{ ...item, selected: false }}
+              absenceLabel={getAbsenceLabel(item)}
+              onSelect={() => {}}
+              onPress={() => {
+                setActiveChildId(item.id);
+                setModalVisible(true);
+              }}
+              hideSelectButton={true}
+            />
             </View>
           )}
         />
