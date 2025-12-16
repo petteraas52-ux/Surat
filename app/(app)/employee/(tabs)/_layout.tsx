@@ -25,25 +25,11 @@ export default function TabBar() {
       <Tabs.Screen
         name="index"
         options={{
-          title: t("tabTitleChildren"),
+          title: t("tabTitleDepartment"),
           headerShown: false,
           tabBarIcon: ({ focused }) => (
             <AntDesign
               name="home"
-              size={24}
-              color={focused ? theme.tabIconSelected : theme.tabIconDefault}
-            />
-          ),
-        }}
-      />
-      <Tabs.Screen
-        name="adminDashBoard"
-        options={{
-          title: t("tabTitleAdmin"),
-          headerShown: false,
-          tabBarIcon: ({ focused }) => (
-            <Ionicons
-              name="person-circle"
               size={24}
               color={focused ? theme.tabIconSelected : theme.tabIconDefault}
             />
@@ -58,6 +44,20 @@ export default function TabBar() {
           tabBarIcon: ({ focused }) => (
             <Ionicons
               name="person-circle"
+              size={24}
+              color={focused ? theme.tabIconSelected : theme.tabIconDefault}
+            />
+          ),
+        }}
+      />
+      <Tabs.Screen
+        name="adminDashBoard"
+        options={{
+          title: t("tabTitleAdmin"),
+          headerShown: false,
+          tabBarIcon: ({ focused }) => (
+            <Ionicons
+              name="build-outline"
               size={24}
               color={focused ? theme.tabIconSelected : theme.tabIconDefault}
             />

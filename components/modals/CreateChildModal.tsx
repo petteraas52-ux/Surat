@@ -1,9 +1,13 @@
+// modules/CreateChildModule.tsx
+
+// --- NEW IMPORT ---
+import DropDownPicker from "react-native-dropdown-picker";
+
 import { createChild } from "@/api/children";
 import { addChildToParent, getAllParents } from "@/api/parents";
 import { useAppTheme } from "@/hooks/useAppTheme";
 import { useI18n } from "@/hooks/useI18n";
 import { ParentProps } from "@/types/parent";
-import { Picker } from "@react-native-picker/picker";
 import { useEffect, useState } from "react";
 import {
   ActivityIndicator,
@@ -17,6 +21,8 @@ import { styles } from "./commonStyles";
 
 export function CreateChildModal() {
   const [parents, setParents] = useState<ParentProps[]>([]);
+
+  const [open, setOpen] = useState(false);
   const [selectedParent, setSelectedParent] = useState<string>("");
 
   const [firstName, setFirstName] = useState("");
@@ -46,6 +52,12 @@ export function CreateChildModal() {
     loadParents();
   }, []);
 
+  // Format parent data for DropDownPicker
+  const parentItems = parents.map((parent) => ({
+    label: `${parent.firstName} ${parent.lastName}`,
+    value: parent.id,
+  }));
+
   const handleCreateChild = async () => {
     if (!firstName || !lastName || !selectedParent) {
       Alert.alert(t("missingFieldsTitle"), t("completeRequiredFields"));
@@ -67,11 +79,15 @@ export function CreateChildModal() {
         department,
       });
 
+      console.log("Child created successfully with UID:", childUid);
+
       if (!childUid) {
         throw new Error("Child creation failed to return a UID.");
       }
 
       await addChildToParent(selectedParent, childUid);
+
+      console.log("Parent update complete (child ID added).");
 
       Alert.alert(t("successTitle"), t("childCreatedMessage"));
 
@@ -81,10 +97,7 @@ export function CreateChildModal() {
       setDepartment("");
     } catch (err: any) {
       console.error("Error during child creation/parent update:", err);
-      Alert.alert(
-        t("errorTitle") || "Error",
-        err.message || t("childCreationFailed")
-      );
+      Alert.alert(t("errorTitle"), err.message || t("childCreationFailed"));
     } finally {
       setLoading(false);
     }
@@ -138,30 +151,37 @@ export function CreateChildModal() {
       />
 
       <Text style={styles.label}>{t("assignParent")}:</Text>
-      <View
-        style={[
-          styles.input,
-          styles.pickerWrapper,
-          { backgroundColor: theme.inputBackground },
-        ]}
-      >
-        <Picker
-          selectedValue={selectedParent}
-          onValueChange={(value) => setSelectedParent(value)}
-          style={{ color: theme.text }}
-        >
-          {parents.length > 0 ? (
-            parents.map((parent) => (
-              <Picker.Item
-                key={parent.id}
-                label={`${parent.firstName} ${parent.lastName}`}
-                value={parent.id}
-              />
-            ))
-          ) : (
-            <Picker.Item label={t("noParentsFound")} value="" />
-          )}
-        </Picker>
+
+      <View style={{ zIndex: 10 }}>
+        <DropDownPicker
+          open={open}
+          value={selectedParent}
+          items={parentItems}
+          setOpen={setOpen}
+          setValue={setSelectedParent}
+          placeholder={t("selectParent")}
+          searchable={true}
+          searchPlaceholder={t("searchParentPlaceholder")}
+          style={[
+            styles.input,
+            {
+              backgroundColor: theme.inputBackground,
+              borderColor: theme.border,
+              height: 50,
+              paddingHorizontal: 0,
+            },
+          ]}
+          containerStyle={{
+            height: open ? 250 : 50,
+            marginBottom: open ? 10 : 0,
+          }}
+          textStyle={{ color: theme.text }}
+          dropDownContainerStyle={{
+            backgroundColor: theme.inputBackground,
+            borderColor: theme.border,
+          }}
+          listMode="SCROLLVIEW"
+        />
       </View>
 
       <TouchableOpacity

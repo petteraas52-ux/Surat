@@ -83,6 +83,8 @@
   "assignParent": "Tildel forelder",
   "noParentsFound": "Ingen foreldre funnet",
   "createChild": "Opprett barn",
+  "tabTitleDepartment": "Min Avdeling",
+  "searchParentPlaceholder": "Søk etter foresatt",
 
   "close": "Lukk",
   "calendarHeader": "Kalender og Arrangementer",
