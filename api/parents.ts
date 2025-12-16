@@ -79,16 +79,16 @@ export const deleteParent = async (id: string) => {
 export const updateParentProfileImage = async (
   parentId: string,
   imageUri: string
-): Promise<boolean> => {
+): Promise<string | null> => { 
   try {
     const storagePath = await uploadImageToFirebase(imageUri);
-    if (!storagePath) return false;
+    if (!storagePath) return null;
 
     await updateParent(parentId, { imageUri: storagePath });
     console.log("Parent profile image updated successfully");
-    return true;
+    return storagePath; 
   } catch (e) {
     console.error("Error updating parent profile image:", e);
-    return false;
+    return null;
   }
 };

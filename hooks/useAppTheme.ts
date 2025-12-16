@@ -67,5 +67,10 @@ export function useAppTheme() {
     
     // Shadow
     shadow: useThemeColor({}, 'shadow'),
+
+    // Image edit overlay
+    imageEditOverlay: useThemeColor({}, 'imageEditOverlay'),
+    imageEditIconBackground: useThemeColor({}, 'imageEditIconBackground'),
+    imageUploadingOverlay: useThemeColor({}, 'imageUploadingOverlay'),
   };
 }

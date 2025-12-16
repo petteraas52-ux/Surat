@@ -115,18 +115,20 @@ export default function ProfileScreen() {
         <Text style={[styles.title, { color: theme.pageHeaderText }]}>
           {t("myProfileHeader")}
         </Text>
-        <View
-          style={[
-            styles.profilePictureWrapper,
-            { backgroundColor: theme.inputBackground },
-          ]}
-        >
-          <ProfilePicture
-            showEdit={isEditing}
-            userId={uid}
-            userType="parent"
-            initialImagePath={parentData?.imageUri}
-          />
+        <View style={styles.profilePictureContainer}>
+          <View
+            style={[
+              styles.profilePictureWrapper,
+              { backgroundColor: theme.inputBackground },
+            ]}
+          >
+            <ProfilePicture
+              showEdit={isEditing}
+              userId={uid}
+              userType="parent"
+              initialImagePath={parentData?.imageUri}
+            />
+          </View>
         </View>
 
         <View style={styles.row}>
@@ -234,12 +236,19 @@ const styles = StyleSheet.create({
     textAlign: "center",
     marginBottom: 25,
   },
+  profilePictureContainer: {
+    width: 170, // Litt større enn bildet for å gi plass til edit-knappen
+    height: 170,
+    marginBottom: 20,
+    justifyContent: "center",
+    alignItems: "center",
+    // INGEN overflow: hidden her
+  },
   profilePictureWrapper: {
     width: 160,
     height: 160,
     borderRadius: 80,
-    marginBottom: 20,
-    overflow: "hidden",
+    overflow: "hidden", // overflow hidden KUN på bildet
   },
   row: {
     flexDirection: "row",

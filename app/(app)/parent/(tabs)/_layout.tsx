@@ -56,7 +56,7 @@ export default function TabBar() {
         options={{
           title: "Alle barn",
           headerShown: false,
-          tabBarIcon: () => <AntDesign name="team" size={24} color="purple" />,
+          tabBarIcon: (focused) => <AntDesign name="team" size={24} color={focused ? theme.tabIconSelected : theme.tabIconDefault} />,
         }}
       />
     </Tabs>

@@ -121,6 +121,10 @@ export const Colors = {
     
     // Shadow
     shadow: '#000000',
+
+    imageEditOverlay: 'rgba(0, 0, 0, 0.4)',
+    imageEditIconBackground: 'rgba(255, 255, 255, 0.9)',
+    imageUploadingOverlay: 'rgba(0, 0, 0, 0.5)',
   },
   dark: {
     // Basis farger
@@ -187,6 +191,10 @@ export const Colors = {
     
     // Shadow
     shadow: '#000000',
+
+    imageEditOverlay: 'rgba(0, 0, 0, 0.6)',
+    imageEditIconBackground: 'rgba(58, 53, 80, 0.95)',
+    imageUploadingOverlay: 'rgba(0, 0, 0, 0.7)',
   },
 };
 
