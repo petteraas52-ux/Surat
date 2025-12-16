@@ -79,3 +79,15 @@ export const updateChildProfileImage = async (
     return false;
   }
 };
+
+export const getChildrenForDepartment = async (
+  department: string
+): Promise<ChildProps[]> => {
+  const q = query(childrenCol, where("department", "==", department));
+  const snap = await getDocs(q);
+
+  return snap.docs.map((d) => ({
+    id: d.id,
+    ...(d.data() as Omit<ChildProps, "id">),
+  }));
+};
