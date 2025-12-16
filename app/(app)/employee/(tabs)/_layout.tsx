@@ -39,7 +39,7 @@ export default function TabBar() {
       <Tabs.Screen
         name="adminDashBoard"
         options={{
-          title: t("tabTitleChild"),
+          title: t("tabTitleAdmin"),
           headerShown: false,
           tabBarIcon: ({ focused }) => (
             <Ionicons

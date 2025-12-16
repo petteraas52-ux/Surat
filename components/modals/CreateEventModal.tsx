@@ -1,14 +1,13 @@
 // modules/CreateEventModule.tsx
 
 import { createEvent } from "@/api/event";
+import { useAppTheme } from "@/hooks/useAppTheme";
+import { useI18n } from "@/hooks/useI18n";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import { Timestamp } from "firebase/firestore";
 import React, { useState } from "react";
 import { Alert, Pressable, Text, TextInput, View } from "react-native";
-import { styles } from "./commonStyles"; // Import common styles
-import { useI18n } from "@/hooks/useI18n";
-import { useAppTheme } from "@/hooks/useAppTheme";
-
+import { styles } from "./commonStyles";
 
 export function CreateEventModal() {
   const [title, setTitle] = useState("");
@@ -22,7 +21,7 @@ export function CreateEventModal() {
 
   const handleCreateEvent = async () => {
     if (!title || !department || !description) {
-      Alert.alert(t("errorTitle") || "Error", t("fillAllFields") || "Fyll ut alle feltene.");
+      Alert.alert(t("errorTitle"), t("fillAllFields"));
       return;
     }
 
@@ -34,15 +33,15 @@ export function CreateEventModal() {
         description,
         date: Timestamp.fromDate(date),
       });
-      Alert.alert(t("successTitle") || "Suksess", t("eventCreated") || "Hendelse opprettet!");
-      // reset form
+      Alert.alert(t("successTitle"), t("eventCreated"));
+
       setTitle("");
       setDepartment("");
       setDescription("");
       setDate(new Date());
     } catch (err) {
       console.error(err);
-      Alert.alert(t("errorTitle") || "Error", t("eventCreationFailed") || "Kunne ikke opprette hendelse");
+      Alert.alert(t("errorTitle"), t("eventCreationFailed"));
     } finally {
       setLoading(false);
     }
@@ -50,29 +49,42 @@ export function CreateEventModal() {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>{t("createEventTitle") || "Create Event"}</Text>
+      <Text style={styles.title}>{t("createEventTitle")}</Text>
 
-      <Text style={styles.label}>{t("title") || "Tittel"}:</Text>
-      <TextInput style={styles.input} value={title} onChangeText={setTitle} placeholder={t("writeTitle") || "Skriv tittel"} />
+      <Text style={styles.label}>{t("title")}:</Text>
+      <TextInput
+        style={styles.input}
+        value={title}
+        onChangeText={setTitle}
+        placeholder={t("writeTitle")}
+      />
 
-      <Text style={styles.label}>{t("department") || "Avdeling"}:</Text>
-      <TextInput style={styles.input} value={department} onChangeText={setDepartment} placeholder={t("writeDepartment") || "Skriv avdeling"} />
+      <Text style={styles.label}>{t("department")}:</Text>
+      <TextInput
+        style={styles.input}
+        value={department}
+        onChangeText={setDepartment}
+        placeholder={t("writeDepartment")}
+      />
 
-      <Text style={styles.label}>{t("description") || "Beskrivelse"}:</Text>
+      <Text style={styles.label}>{t("description")}:</Text>
       <TextInput
         style={[styles.input, styles.descriptionInput, { height: 100 }]}
         value={description}
         onChangeText={setDescription}
-        placeholder={t("writeDescription") || "Skriv beskrivelse"}
+        placeholder={t("writeDescription")}
         multiline
       />
 
-      <Text style={styles.label}>{t("date") || "Dato"}:</Text>
+      <Text style={styles.label}>{t("date")}:</Text>
       <Pressable
-        style={[styles.datePickerButton, {backgroundColor: theme.inputBackground}]}
+        style={[
+          styles.datePickerButton,
+          { backgroundColor: theme.inputBackground },
+        ]}
         onPress={() => setShowPicker(true)}
       >
-        <Text style={{color: theme.text}}>{date.toDateString()}</Text>
+        <Text style={{ color: theme.text }}>{date.toDateString()}</Text>
       </Pressable>
 
       {showPicker && (
@@ -96,7 +108,7 @@ export function CreateEventModal() {
         disabled={loading}
       >
         <Text style={styles.createButtonText}>
-          {loading ? t("saving") || "Lagrer..." : t("createEvent") || "Opprett hendelse"}
+          {loading ? t("saving") : t("createEvent") || "Opprett hendelse"}
         </Text>
       </Pressable>
     </View>

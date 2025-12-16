@@ -39,10 +39,7 @@ export function CreateChildModal() {
         if (data.length > 0) setSelectedParent(data[0].id);
       } catch (err) {
         console.error("Error loading parents:", err);
-        Alert.alert(
-          t("errorTitle") || "Error",
-          t("failedToLoadParents") || "Failed to load parents"
-        );
+        Alert.alert(t("errorTitle"), t("failedToLoadParents"));
       } finally {
         setLoadingParents(false);
       }
@@ -53,10 +50,7 @@ export function CreateChildModal() {
 
   const handleCreateChild = async () => {
     if (!firstName || !lastName || !selectedParent) {
-      Alert.alert(
-        t("missingFieldsTitle") || "Missing fields",
-        t("completeRequiredFields") || "Please complete all required fields."
-      );
+      Alert.alert(t("missingFieldsTitle"), t("completeRequiredFields"));
       return;
     }
 
@@ -81,10 +75,7 @@ export function CreateChildModal() {
 
       await addChildToParent(selectedParent, childUid);
 
-      Alert.alert(
-        t("successTitle") || "Success",
-        t("childCreatedMessage") || "Child created successfully"
-      );
+      Alert.alert(t("successTitle"), t("childCreatedMessage"));
 
       setFirstName("");
       setLastName("");
@@ -94,7 +85,7 @@ export function CreateChildModal() {
       console.error("Error during child creation/parent update:", err);
       Alert.alert(
         t("errorTitle") || "Error",
-        err.message || t("childCreationFailed") || "Failed to create child"
+        err.message || t("childCreationFailed")
       );
     } finally {
       setLoading(false);
@@ -106,7 +97,7 @@ export function CreateChildModal() {
       <View style={styles.center}>
         <ActivityIndicator size="large" color={theme.primary} />
         <Text style={{ color: theme.textSecondary, marginTop: 10 }}>
-          {t("loadingParents") || "Loading parents..."}
+          {t("loadingParents")}
         </Text>
       </View>
     );
@@ -114,11 +105,9 @@ export function CreateChildModal() {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>
-        {t("createChildTitle") || "Create Child"}
-      </Text>
+      <Text style={styles.title}>{t("createChildTitle")}</Text>
 
-      <Text style={styles.label}>{t("firstName") || "First Name"}:</Text>
+      <Text style={styles.label}>{t("firstName")}:</Text>
       <TextInput
         placeholder={t("firstName")}
         value={firstName}
@@ -126,7 +115,7 @@ export function CreateChildModal() {
         style={styles.input}
       />
 
-      <Text style={styles.label}>{t("lastName") || "Last Name"}:</Text>
+      <Text style={styles.label}>{t("lastName")}:</Text>
       <TextInput
         placeholder={t("lastName")}
         value={lastName}
@@ -134,15 +123,15 @@ export function CreateChildModal() {
         style={styles.input}
       />
 
-      <Text style={styles.label}>{t("dateOfBirth") || "Date of Birth"}:</Text>
+      <Text style={styles.label}>{t("dateOfBirth")}:</Text>
       <TextInput
-        placeholder={t("dateOfBirthPlaceholder") || "YYYY-MM-DD"}
+        placeholder={t("dateOfBirthPlaceholder")}
         value={dateOfBirth}
         onChangeText={setDateOfBirth}
         style={styles.input}
       />
 
-      <Text style={styles.label}>{t("department") || "Department"}:</Text>
+      <Text style={styles.label}>{t("department")}:</Text>
       <TextInput
         placeholder={t("department")}
         value={department}
@@ -150,7 +139,7 @@ export function CreateChildModal() {
         style={styles.input}
       />
 
-      <Text style={styles.label}>{t("assignParent") || "Assign Parent"}:</Text>
+      <Text style={styles.label}>{t("assignParent")}:</Text>
       <View
         style={[
           styles.input,
@@ -172,10 +161,7 @@ export function CreateChildModal() {
               />
             ))
           ) : (
-            <Picker.Item
-              label={t("noParentsFound") || "No parents found"}
-              value=""
-            />
+            <Picker.Item label={t("noParentsFound")} value="" />
           )}
         </Picker>
       </View>
@@ -189,9 +175,7 @@ export function CreateChildModal() {
         ]}
       >
         <Text style={styles.createButtonText}>
-          {loading
-            ? t("creating") || "Creating..."
-            : t("createChild") || "Create Child"}
+          {loading ? t("creating") : t("createChild")}
         </Text>
       </TouchableOpacity>
     </View>

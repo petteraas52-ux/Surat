@@ -27,10 +27,7 @@ export function CreateEmployeeModal() {
       !department ||
       !password
     ) {
-      Alert.alert(
-        t("missingFieldsTitle") || "Missing fields",
-        t("missingFieldsMessage") || "Please fill in all fields."
-      );
+      Alert.alert(t("missingFieldsTitle"), t("missingFieldsMessage"));
       return;
     }
 
@@ -46,10 +43,7 @@ export function CreateEmployeeModal() {
         imageUri: "",
       });
 
-      Alert.alert(
-        t("successTitle") || "Success",
-        t("employeeCreatedMessage") || "Employee account created successfully."
-      );
+      Alert.alert(t("successTitle"), t("employeeCreatedMessage"));
 
       setFirstName("");
       setLastName("");
@@ -60,10 +54,8 @@ export function CreateEmployeeModal() {
     } catch (error: any) {
       console.error(error);
       Alert.alert(
-        t("errorTitle") || "Error",
-        error.message ||
-          t("employeeCreationFailed") ||
-          "Failed to create employee."
+        t("errorTitle"),
+        error.message || t("employeeCreationFailed")
       );
     } finally {
       setLoading(false);
@@ -72,11 +64,9 @@ export function CreateEmployeeModal() {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>
-        {t("createEmployeeTitle") || "Create Employee Account"}
-      </Text>
+      <Text style={styles.title}>{t("createEmployeeTitle")}</Text>
 
-      <Text style={styles.label}>{t("firstName") || "First Name"}:</Text>
+      <Text style={styles.label}>{t("firstName")}:</Text>
       <TextInput
         placeholder={t("firstName")}
         value={firstName}
@@ -84,7 +74,7 @@ export function CreateEmployeeModal() {
         style={styles.input}
       />
 
-      <Text style={styles.label}>{t("lastName") || "Last Name"}:</Text>
+      <Text style={styles.label}>{t("lastName")}:</Text>
       <TextInput
         placeholder={t("lastName")}
         value={lastName}
@@ -92,7 +82,7 @@ export function CreateEmployeeModal() {
         style={styles.input}
       />
 
-      <Text style={styles.label}>{t("email") || "Email"}:</Text>
+      <Text style={styles.label}>{t("email")}:</Text>
       <TextInput
         placeholder={t("email")}
         value={email}
@@ -102,7 +92,7 @@ export function CreateEmployeeModal() {
         style={styles.input}
       />
 
-      <Text style={styles.label}>{t("phone") || "Phone"}:</Text>
+      <Text style={styles.label}>{t("phone")}:</Text>
       <TextInput
         placeholder={t("phone")}
         value={phone}
@@ -111,7 +101,7 @@ export function CreateEmployeeModal() {
         style={styles.input}
       />
 
-      <Text style={styles.label}>{t("department") || "Department"}:</Text>
+      <Text style={styles.label}>{t("department")}:</Text>
       <TextInput
         placeholder={t("department")}
         value={department}
@@ -119,9 +109,7 @@ export function CreateEmployeeModal() {
         style={styles.input}
       />
 
-      <Text style={styles.label}>
-        {t("tempPassword") || "Temporary Password"}:
-      </Text>
+      <Text style={styles.label}>{t("tempPassword")}:</Text>
       <TextInput
         placeholder={t("tempPassword")}
         value={password}
@@ -139,9 +127,7 @@ export function CreateEmployeeModal() {
         ]}
       >
         <Text style={styles.createButtonText}>
-          {loading
-            ? t("creating") || "Creating..."
-            : t("createEmployee") || "Create Employee"}
+          {loading ? t("creating") : t("createEmployee")}
         </Text>
       </Pressable>
     </View>

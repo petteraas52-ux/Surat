@@ -46,7 +46,7 @@ export default function AdminDashboardScreen() {
     >
       <View style={styles.header}>
         <Text style={[styles.headerTitle, { color: theme.text }]}>
-          {t("Admin Dashboard") || "Admin Dashboard"}
+          {t("adminDashBoardTitle")}
         </Text>
       </View>
 
@@ -69,7 +69,7 @@ export default function AdminDashboardScreen() {
                 },
               ]}
             >
-              {t(`${key.toLowerCase()}`) || TABS[key]}
+              {t(`${key.toLowerCase()}`)}
             </Text>
           </Pressable>
         ))}

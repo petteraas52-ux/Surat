@@ -19,10 +19,7 @@ export function CreateParentModal() {
 
   const handleCreateParent = async () => {
     if (!firstName || !lastName || !email || !phone || !password) {
-      Alert.alert(
-        t("missingFieldsTitle") || "Missing fields",
-        t("missingFieldsMessage") || "Please fill in all fields."
-      );
+      Alert.alert(t("missingFieldsTitle"), t("missingFieldsMessage"));
       return;
     }
 
@@ -38,10 +35,7 @@ export function CreateParentModal() {
         children: [],
       });
 
-      Alert.alert(
-        t("successTitle") || "Success",
-        t("parentCreatedMessage") || "Parent account created successfully."
-      );
+      Alert.alert(t("successTitle"), t("parentCreatedMessage"));
 
       setFirstName("");
       setLastName("");
@@ -50,10 +44,7 @@ export function CreateParentModal() {
       setPassword("");
     } catch (error: any) {
       console.error(error);
-      Alert.alert(
-        t("errorTitle") || "Error",
-        error.message || t("parentCreationFailed") || "Failed to create parent."
-      );
+      Alert.alert(t("errorTitle"), error.message || t("parentCreationFailed"));
     } finally {
       setLoading(false);
     }
@@ -61,11 +52,9 @@ export function CreateParentModal() {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>
-        {t("createParentTitle") || "Create Parent Account"}
-      </Text>
+      <Text style={styles.title}>{t("createParentTitle")}</Text>
 
-      <Text style={styles.label}>{t("firstName") || "First Name"}:</Text>
+      <Text style={styles.label}>{t("firstName")}:</Text>
       <TextInput
         placeholder={t("firstName")}
         value={firstName}
@@ -73,7 +62,7 @@ export function CreateParentModal() {
         style={styles.input}
       />
 
-      <Text style={styles.label}>{t("lastName") || "Last Name"}:</Text>
+      <Text style={styles.label}>{t("lastName")}:</Text>
       <TextInput
         placeholder={t("lastName")}
         value={lastName}
@@ -81,7 +70,7 @@ export function CreateParentModal() {
         style={styles.input}
       />
 
-      <Text style={styles.label}>{t("email") || "Email"}:</Text>
+      <Text style={styles.label}>{t("email")}:</Text>
       <TextInput
         placeholder={t("email")}
         value={email}
@@ -91,7 +80,7 @@ export function CreateParentModal() {
         style={styles.input}
       />
 
-      <Text style={styles.label}>{t("phone") || "Phone"}:</Text>
+      <Text style={styles.label}>{t("phone")}:</Text>
       <TextInput
         placeholder={t("phone")}
         value={phone}
@@ -100,9 +89,7 @@ export function CreateParentModal() {
         style={styles.input}
       />
 
-      <Text style={styles.label}>
-        {t("tempPassword") || "Temporary Password"}:
-      </Text>
+      <Text style={styles.label}>{t("tempPassword")}:</Text>
       <TextInput
         placeholder={t("tempPassword")}
         value={password}
@@ -120,9 +107,7 @@ export function CreateParentModal() {
         ]}
       >
         <Text style={styles.createButtonText}>
-          {loading
-            ? t("creating") || "Creating..."
-            : t("createParent") || "Create Parent"}
+          {loading ? t("creating") : t("createParent")}
         </Text>
       </Pressable>
     </View>
