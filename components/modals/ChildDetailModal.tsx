@@ -13,6 +13,7 @@ import {
   Text,
   View,
 } from "react-native";
+import { useAppTheme } from "@/hooks/useAppTheme";
 
 interface ChildDetailModalProps {
   isVisible: boolean;
@@ -36,7 +37,7 @@ export const ChildDetailModal: React.FC<ChildDetailModalProps> = ({
 }) => {
 
   const { t } = useI18n();
-  
+  const theme = useAppTheme();
   if (!activeChild) return null;
 
   const absenceLabel = getAbsenceLabel(activeChild);
@@ -48,13 +49,13 @@ export const ChildDetailModal: React.FC<ChildDetailModalProps> = ({
 
   return (
     <Modal visible={isVisible} transparent animationType="slide">
-      <View style={styles.overlayBackdrop}>
+      <View style={[styles.overlayBackdrop, { backgroundColor: theme.modalOverlay }]}>
         <Pressable style={StyleSheet.absoluteFill} onPress={onClose} />
 
-        <View style={styles.overlayCard}>
+        <View style={[styles.overlayCard, { backgroundColor: theme.background }]}>
           <ScrollView contentContainerStyle={styles.contentContainer}>
             <View style={styles.headerRow}>
-              <View style={styles.profilePictureContainer}>
+              <View style={[styles.profilePictureContainer, { backgroundColor: theme.inputBackground }]}>
                 <ProfilePicture
                   showEdit={true}
                   userId={activeChild.id}
@@ -63,20 +64,20 @@ export const ChildDetailModal: React.FC<ChildDetailModalProps> = ({
                 />
               </View>
               <View style={styles.infoBlock}>
-                <Text style={styles.childName}>
+                <Text style={[styles.childName, { color: theme.text }]}>
                   {activeChild.firstName} {activeChild.lastName}
                 </Text>
 
                 {absenceLabel ? (
-                  <Text style={styles.statusAbsent}>
+                  <Text style={[styles.statusAbsent, { color: theme.warning }]}>
                     {t("absence")}: {absenceLabel}
                   </Text>
                 ) : (
                   <Text
                     style={
                       activeChild.checkedIn
-                        ? styles.statusCheckedIn
-                        : styles.statusCheckedOut
+                        ? [styles.statusCheckedIn, { color: theme.success }]
+                        : [styles.statusCheckedOut, { color: theme.error }]
                     }
                   >
                     {t("absence")}:{" "}
@@ -84,7 +85,7 @@ export const ChildDetailModal: React.FC<ChildDetailModalProps> = ({
                     Status: {activeChild.checkedIn ? "Sjekket inn" : "Sjekket ut"}
                   </Text>
                 )}
-                <Text style={styles.groupText}>
+                <Text style={[styles.groupText, { color: theme.textSecondary }]}>
                   {t("department")}: {activeChild.department}
                 </Text>
               </View>
@@ -92,15 +93,19 @@ export const ChildDetailModal: React.FC<ChildDetailModalProps> = ({
 
             <View style={styles.actionRow}>
               <Pressable
-                style={styles.actionButton}
+                style={[styles.actionButton, { 
+                  backgroundColor: absenceLabel ? theme.inputBackground : theme.primary,
+                }]}
                 onPress={handleToggleCheckIn}
                 disabled={!!absenceLabel}
               >
-                <Text style={styles.actionButtonText}>{checkInText}</Text>
+                <Text style={[styles.actionButtonText, {
+                  color: absenceLabel ? theme.textMuted : "#fff"
+                }]}>{checkInText}</Text>
               </Pressable>
 
               <Pressable
-                style={[styles.actionButton, styles.guestButton]}
+                style={[styles.actionButton, { backgroundColor: theme.primary }]}
                 onPress={onOpenGuestLinkModal}
               >
                 <Text style={styles.actionButtonText}>{t("guestPickup")}</Text>
@@ -116,12 +121,12 @@ export const ChildDetailModal: React.FC<ChildDetailModalProps> = ({
               )}
             </View>
 
-            <View style={styles.divider} />
+            <View style={[styles.divider, { backgroundColor: theme.borderLight }]} />
 
             {activeChild.id && <CommentBox childId={activeChild.id} />}
           </ScrollView>
 
-          <Pressable style={styles.closeButton} onPress={onClose}>
+          <Pressable style={[styles.closeButton, { backgroundColor: theme.primary }]} onPress={onClose}>
             <Text style={styles.closeButtonText}>{t("close")}</Text>
           </Pressable>
         </View>
@@ -133,7 +138,6 @@ export const ChildDetailModal: React.FC<ChildDetailModalProps> = ({
 const styles = StyleSheet.create({
   overlayBackdrop: {
     flex: 1,
-    backgroundColor: "rgba(0,0,0,0.45)",
     justifyContent: "center",
     alignItems: "center",
     paddingHorizontal: 24,
@@ -141,7 +145,6 @@ const styles = StyleSheet.create({
   overlayCard: {
     width: "100%",
     maxHeight: "85%",
-    backgroundColor: "#FFF7ED",
     borderRadius: 20,
     padding: 20,
     elevation: 6,
@@ -159,7 +162,6 @@ const styles = StyleSheet.create({
     height: 80,
     borderRadius: 12,
     marginRight: 15,
-    backgroundColor: "#eee",
     overflow: "hidden",
   },
   infoBlock: {
@@ -172,22 +174,18 @@ const styles = StyleSheet.create({
   },
   statusCheckedIn: {
     fontSize: 14,
-    color: "#28a745",
     fontWeight: "600",
   },
   statusCheckedOut: {
     fontSize: 14,
-    color: "#dc3545",
     fontWeight: "600",
   },
   statusAbsent: {
     fontSize: 14,
-    color: "#E65100",
     fontWeight: "600",
   },
   groupText: {
     fontSize: 14,
-    color: "#666",
     marginTop: 2,
   },
   actionRow: {
@@ -197,14 +195,10 @@ const styles = StyleSheet.create({
   },
   actionButton: {
     flex: 1,
-    backgroundColor: "#57507F",
     paddingVertical: 12,
     borderRadius: 30,
     alignItems: "center",
     marginHorizontal: 4,
-  },
-  guestButton: {
-    backgroundColor: "#57507F",
   },
   actionButtonText: {
     color: "#fff",
@@ -213,13 +207,11 @@ const styles = StyleSheet.create({
   },
   divider: {
     height: 1,
-    backgroundColor: "#eee",
     marginVertical: 10,
   },
   closeButton: {
     marginTop: 15,
     paddingVertical: 10,
-    backgroundColor: "#57507F",
     borderRadius: 30,
     alignItems: "center",
   },

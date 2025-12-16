@@ -13,43 +13,60 @@ import {
   TouchableWithoutFeedback,
   View,
 } from "react-native";
+import { useAppTheme } from "@/hooks/useAppTheme";
+
 const Authentication = () => {
   const [userEmail, setUserEmail] = useState("");
   const [password, setPassword] = useState("");
 
   const { signIn } = useAuthSession();
   const { t } = useI18n();
+  const theme = useAppTheme();
+
   const content = (
     <View style={styles.inner}>
-      <View style={styles.card}>
-        <Text style={styles.title}>{t("logInButtonText")}</Text>
-        <Text style={styles.subtitle}>{t("loginHelpText")}</Text>
+      <View style={[styles.card, { 
+        backgroundColor: theme.backgroundSecondary,
+        shadowColor: theme.shadow 
+      }]}>
+        <Text style={[styles.title, { color: theme.text }]}>{t("logInButtonText")}</Text>
+        <Text style={[styles.subtitle, { color: theme.textSecondary }]}>{t("loginHelpText")}</Text>
 
         <View style={styles.inputGroup}>
-          <Text style={styles.label}>{t("email")}</Text>
+          <Text style={[styles.label, { color: theme.text }]}>{t("email")}</Text>
           <TextInput
-            style={styles.input}
+            style={[styles.input, { 
+              borderColor: theme.border,
+              backgroundColor: theme.inputBackground,
+              color: theme.text 
+            }]}
             value={userEmail}
             onChangeText={setUserEmail}
             placeholder={t("placeholderEmail")}
+            placeholderTextColor={theme.placeholder}
             keyboardType="email-address"
             autoCapitalize="none"
           />
         </View>
 
         <View style={styles.inputGroup}>
-          <Text style={styles.label}>{t("password")}</Text>
+          <Text style={[styles.label, { color: theme.text }]}>{t("password")}</Text>
           <TextInput
-            style={styles.input}
+            style={[styles.input, { 
+              borderColor: theme.border,
+              backgroundColor: theme.inputBackground,
+              color: theme.text 
+            }]}
             value={password}
             secureTextEntry
             onChangeText={setPassword}
             placeholder={t("placeholderPassword")}
+            placeholderTextColor={theme.placeholder}
           />
         </View>
 
         <Pressable
-          style={styles.button}
+          style={[styles.button, { backgroundColor: theme.primary }]}
           onPress={() => {
             signIn(userEmail, password);
           }}
@@ -62,7 +79,7 @@ const Authentication = () => {
 
   return (
     <KeyboardAvoidingView
-      style={styles.container}
+      style={[styles.container, { backgroundColor: theme.background }]}
       behavior={Platform.OS === "ios" ? "padding" : "height"}
       keyboardVerticalOffset={Platform.OS === "ios" ? 80 : 0}
     >
@@ -89,7 +106,7 @@ const styles = StyleSheet.create({
     padding: 20,
   },
   card: {
-    backgroundColor: "#fff",
+    
     padding: 20,
     borderRadius: 12,
     elevation: 4,
@@ -105,7 +122,7 @@ const styles = StyleSheet.create({
   },
   subtitle: {
     fontSize: 14,
-    color: "#666",
+    
     marginBottom: 20,
   },
   inputGroup: {
@@ -118,16 +135,16 @@ const styles = StyleSheet.create({
   },
   input: {
     borderWidth: 1,
-    borderColor: "#ddd",
+    
     borderRadius: 8,
     paddingHorizontal: 12,
     paddingVertical: 10,
     fontSize: 16,
-    backgroundColor: "#fafafa",
+    
   },
   button: {
     marginTop: 12,
-    backgroundColor: "#2563eb",
+    
     paddingVertical: 14,
     borderRadius: 8,
     alignItems: "center",

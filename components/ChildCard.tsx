@@ -1,4 +1,5 @@
 import ProfilePicture from "@/components/image/ProfilePicture";
+import { useAppTheme } from "@/hooks/useAppTheme";
 import { UIChild } from "@/hooks/useChildData";
 import { useI18n } from "@/hooks/useI18n";
 import React from "react";
@@ -23,31 +24,57 @@ export const ChildCard: React.FC<ChildCardProps> = ({
   hideSelectButton = false,
 }) => {
   const { t } = useI18n();
-
+  const theme = useAppTheme();
   const isAbsent = !!absenceLabel;
-
+ 
   const dynamicCardStyle = [
     styles.card,
-    child.selected && styles.cardSelected,
-    isAbsent && styles.cardAbsent,
+    { 
+      backgroundColor: isAbsent 
+        ? theme.card + '6d' // semi-transparent when absent
+        : child.selected 
+          ? theme.cardSelected 
+          : theme.card,
+      shadowColor: theme.shadow 
+    },
   ];
 
   const dynamicStatusTextStyle = [
     styles.statusText,
-    child.checkedIn ? styles.statusTextCheckedIn : styles.statusTextCheckedOut,
+    child.checkedIn 
+    ? { color: theme.success }  
+    : { color: theme.error },
   ];
 
   return (
     <Pressable style={styles.cardWrapper} onPress={onPress}>
       <View style={dynamicCardStyle}>
-        {!hideSelectButton && (
-          <Pressable style={styles.selectButton} onPress={onSelect}>
-            {child.selected && <View style={styles.selectedMarker} />}
-          </Pressable>
-        )}
+        <Pressable
+          style={[
+            styles.selectButton,
+            {
+              borderColor: theme.selectButtonBorder,
+              backgroundColor: theme.selectButton,
+            },
+          ]}
+          onPress={onSelect}
+        >
+          {child.selected && (
+            <View
+              style={[
+                styles.selectedMarker,
+                { backgroundColor: theme.selectedMarker },
+              ]}
+            />
+          )}
+        </Pressable>
 
-
-        <View style={styles.avatarContainer}>
+        <View
+          style={[
+            styles.avatarContainer,
+            { backgroundColor: theme.avatarBackground },
+          ]}
+        >
           <ProfilePicture
             showEdit={false}
             userId={child.id}
@@ -57,7 +84,10 @@ export const ChildCard: React.FC<ChildCardProps> = ({
         </View>
 
         <View style={styles.textContainer}>
-          <Text style={styles.nameText} numberOfLines={1}>
+          <Text
+            style={[styles.nameText, { color: theme.text }]}
+            numberOfLines={1}
+          >
             {child.firstName} {child.lastName}
           </Text>
 
@@ -66,7 +96,7 @@ export const ChildCard: React.FC<ChildCardProps> = ({
           </Text>
 
           {isAbsent && (
-            <Text style={styles.absenceLabelText} numberOfLines={1}>
+            <Text style={[styles.absenceLabelText, { color: theme.primaryLight }]} numberOfLines={1}>
               {absenceLabel}
             </Text>
           )}
@@ -84,9 +114,7 @@ const styles = StyleSheet.create({
   card: {
     padding: 16,
     borderRadius: 12,
-    backgroundColor: "#5B5682",
     elevation: 3,
-    shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 3.84,
@@ -94,12 +122,6 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "flex-start",
     alignItems: "center",
-  },
-  cardSelected: {
-    backgroundColor: "#9E92FF",
-  },
-  cardAbsent: {
-    backgroundColor: "#5b56826d",
   },
   selectButton: {
     position: "absolute",
@@ -109,24 +131,20 @@ const styles = StyleSheet.create({
     height: 24,
     borderRadius: 12,
     borderWidth: 2,
-    borderColor: "#5B5682",
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: "#FFF7ED",
     zIndex: 10,
   },
   selectedMarker: {
     width: 14,
     height: 14,
     borderRadius: 7,
-    backgroundColor: "#5B5682",
   },
   avatarContainer: {
     width: 48,
     height: 48,
     borderRadius: 8,
     marginRight: 12,
-    backgroundColor: "#FFF7ED",
     overflow: "hidden",
   },
   textContainer: {
@@ -135,7 +153,6 @@ const styles = StyleSheet.create({
   },
   nameText: {
     fontSize: 16,
-    color: "#ffff",
     fontWeight: "900",
     marginBottom: 2,
     textAlign: "left",
@@ -144,15 +161,7 @@ const styles = StyleSheet.create({
     fontSize: 12,
     textAlign: "left",
   },
-  statusTextCheckedIn: {
-    color: "#28a745",
-  },
-  statusTextCheckedOut: {
-    color: "#dc3545",
-    fontWeight: "700",
-  },
   absenceLabelText: {
-    color: "#5B5682",
     fontSize: 12,
     fontWeight: "600",
     marginTop: 2,

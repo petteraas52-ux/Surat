@@ -1,6 +1,7 @@
 import nb from "./locales/nb/translation.json";
 import en from "./locales/en/translation.json";
-import uk from "./locales/uk/translation.json"
+import uk from "./locales/uk/translation.json";
+import sv from "./locales/sv/translation.json";
 
 export const resources = {
   nb: {
@@ -11,5 +12,8 @@ export const resources = {
   },
   uk: {
     translation: uk,
+  },
+  sv:{
+    translation: sv,
   }
 } as const;
