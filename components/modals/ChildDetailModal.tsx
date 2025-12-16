@@ -90,7 +90,7 @@ export const ChildDetailModal: React.FC<ChildDetailModalProps> = ({
                         : [styles.statusCheckedOut, { color: theme.error }]
                     }
                   >
-                    {t("absence")}:{" "}
+                    {t("status")}:{" "}
                     {activeChild.checkedIn ? t("checkedIn") : t("checkedOut")}
                   </Text>
                 )}
