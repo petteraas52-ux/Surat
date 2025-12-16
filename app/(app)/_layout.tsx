@@ -1,10 +1,10 @@
 import { Redirect, Stack } from "expo-router";
 import "react-native-reanimated";
 
-import { useAuthSession } from "@/providers/authctx";
-import { ActivityIndicator, Text, View, StyleSheet } from "react-native";
-import { useI18n } from "@/hooks/useI18n";
 import { useAppTheme } from "@/hooks/useAppTheme";
+import { useI18n } from "@/hooks/useI18n";
+import { useAuthSession } from "@/providers/authctx";
+import { ActivityIndicator, StyleSheet, Text, View } from "react-native";
 
 export default function RootLayout() {
   const { user, isLoading } = useAuthSession();
@@ -13,9 +13,13 @@ export default function RootLayout() {
 
   if (isLoading) {
     return (
-      <View style={[styles.loadingContainer, { backgroundColor: theme.background }]}>
+      <View
+        style={[styles.loadingContainer, { backgroundColor: theme.background }]}
+      >
         <ActivityIndicator size="large" color={theme.primary} />
-        <Text style={[styles.loadingText, { color: theme.text }]}>{t("loadingUser")}</Text>
+        <Text style={[styles.loadingText, { color: theme.text }]}>
+          {t("loadingUser")}
+        </Text>
       </View>
     );
   }
@@ -35,13 +39,13 @@ export default function RootLayout() {
 
   return (
     <Stack
-    screenOptions={{
+      screenOptions={{
         headerStyle: {
           backgroundColor: theme.backgroundSecondary,
         },
         headerTintColor: theme.text,
         headerTitleStyle: {
-          fontWeight: '600',
+          fontWeight: "600",
         },
         contentStyle: {
           backgroundColor: theme.background,
@@ -49,12 +53,19 @@ export default function RootLayout() {
       }}
     >
       <Stack.Screen
-        name="(tabs)"
+        name="employee/(tabs)"
+        options={{
+          headerShown: false,
+        }}
+      />
+      <Stack.Screen
+        name="parent/(tabs)"
         options={{
           headerShown: false,
         }}
       />
       <Stack.Screen name="+not-found" />
+      <Stack.Screen name="role-error" options={{ title: "Account Issue" }} />
     </Stack>
   );
 }
