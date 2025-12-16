@@ -1,5 +1,5 @@
-// components/modals/ChildDetailModal.tsx
 
+// components/modals/ChildDetailModal.tsx
 import CommentBox from "@/components/commentBox";
 import ProfilePicture from "@/components/image/ProfilePicture";
 import { UIChild } from "@/hooks/useChildData";
@@ -20,6 +20,8 @@ interface ChildDetailModalProps {
   getAbsenceLabel: (child: UIChild) => string | null;
   onOpenGuestLinkModal: () => void;
   onToggleCheckIn: (childId: string | null) => Promise<void>;
+  /** NY: Skjul gjeste-hent knappen */
+  hideGuestButton?: boolean;
 }
 
 export const ChildDetailModal: React.FC<ChildDetailModalProps> = ({
@@ -29,6 +31,7 @@ export const ChildDetailModal: React.FC<ChildDetailModalProps> = ({
   getAbsenceLabel,
   onOpenGuestLinkModal,
   onToggleCheckIn,
+  hideGuestButton = false, // default: vis knappen som før
 }) => {
   if (!activeChild) return null;
 
@@ -72,8 +75,7 @@ export const ChildDetailModal: React.FC<ChildDetailModalProps> = ({
                         : styles.statusCheckedOut
                     }
                   >
-                    Status:{" "}
-                    {activeChild.checkedIn ? "Sjekket inn" : "Sjekket ut"}
+                    Status: {activeChild.checkedIn ? "Sjekket inn" : "Sjekket ut"}
                   </Text>
                 )}
                 <Text style={styles.groupText}>
@@ -91,12 +93,15 @@ export const ChildDetailModal: React.FC<ChildDetailModalProps> = ({
                 <Text style={styles.actionButtonText}>{checkInText}</Text>
               </Pressable>
 
-              <Pressable
-                style={[styles.actionButton, styles.guestButton]}
-                onPress={onOpenGuestLinkModal}
-              >
-                <Text style={styles.actionButtonText}>Gjeste-hent</Text>
-              </Pressable>
+              {/* Vis gjeste-hent bare hvis den ikke er skjult */}
+              {!hideGuestButton && (
+                <Pressable
+                  style={[styles.actionButton, styles.guestButton]}
+                  onPress={onOpenGuestLinkModal}
+                >
+                  <Text style={styles.actionButtonText}>Gjeste-hent</Text>
+                </Pressable>
+              )}
             </View>
 
             <View style={styles.divider} />

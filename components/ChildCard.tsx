@@ -3,19 +3,25 @@ import { UIChild } from "@/hooks/useChildData";
 import React from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
+
 interface ChildCardProps {
   child: UIChild;
   onSelect: () => void;
   onPress: () => void;
   absenceLabel: string | null;
+  hideSelectButton?: boolean;
 }
+
+
 
 export const ChildCard: React.FC<ChildCardProps> = ({
   child,
   onSelect,
   onPress,
   absenceLabel,
+  hideSelectButton = false,
 }) => {
+
   const isAbsent = !!absenceLabel;
 
   const dynamicCardStyle = [
@@ -32,9 +38,12 @@ export const ChildCard: React.FC<ChildCardProps> = ({
   return (
     <Pressable style={styles.cardWrapper} onPress={onPress}>
       <View style={dynamicCardStyle}>
-        <Pressable style={styles.selectButton} onPress={onSelect}>
-          {child.selected && <View style={styles.selectedMarker} />}
-        </Pressable>
+        {!hideSelectButton && (
+          <Pressable style={styles.selectButton} onPress={onSelect}>
+            {child.selected && <View style={styles.selectedMarker} />}
+          </Pressable>
+        )}
+
 
         <View style={styles.avatarContainer}>
           <ProfilePicture
