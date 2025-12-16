@@ -1,8 +1,8 @@
-
+import { useAppTheme } from "@/hooks/useAppTheme";
+import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { CameraView, useCameraPermissions } from "expo-camera";
 import * as ImagePicker from "expo-image-picker";
 import { useRef } from "react";
-import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
 /* Basert på kode fra kyrssplattform https://github.com/studBrage/Kryssplattform-HK-H25/blob/main/components/SelectImageModal.tsx */
 
@@ -17,7 +17,7 @@ export default function SelectImageModal({
 }: SelectImageModalProps) {
   const [permission, requestPermission] = useCameraPermissions();
   const cameraRef = useRef<CameraView>(null);
-
+  const theme = useAppTheme();
   if (!permission) {
     return <View />;
   }
@@ -25,12 +25,20 @@ export default function SelectImageModal({
   // denne bør vel huskes, og endres andre steder?
   if (!permission.granted) {
     return (
-      <View style={styles.container}>
-        <Text>Vi trenger tillatelse til å bruke kameraet</Text>
-        <TouchableOpacity style={styles.button} onPress={requestPermission}>
+      <View style={[styles.container, { backgroundColor: theme.background }]}>
+        <Text style={[styles.message, { color: theme.text }]}>
+          Vi trenger tillatelse til å bruke kameraet
+        </Text>
+        <TouchableOpacity
+          style={[styles.button, { backgroundColor: theme.primary }]}
+          onPress={requestPermission}
+        >
           <Text style={styles.buttonText}>Gi tillatelse</Text>
         </TouchableOpacity>
-        <TouchableOpacity style={styles.button} onPress={() => closeModal()}>
+        <TouchableOpacity
+          style={[styles.button, { backgroundColor: theme.error }]}
+          onPress={() => closeModal()}
+        >
           <Text style={styles.buttonText}>Avbryt</Text>
         </TouchableOpacity>
       </View>
@@ -46,7 +54,7 @@ export default function SelectImageModal({
     });
 
     if (!result.canceled) {
-      setImage(result.assets[0].uri); 
+      setImage(result.assets[0].uri);
       closeModal();
     }
   }
@@ -83,13 +91,13 @@ export default function SelectImageModal({
     <View style={styles.container}>
       <CameraView style={styles.camera} facing="front" ref={cameraRef} />
       <View style={styles.buttonContainer}>
-        <TouchableOpacity style={styles.button} onPress={() => closeModal()}>
+        <TouchableOpacity style={[styles.button, { backgroundColor: theme.error }]} onPress={() => closeModal()}>
           <Text style={styles.buttonText}>Avbryt</Text>
         </TouchableOpacity>
-        <TouchableOpacity style={styles.button} onPress={() => captureImage()}>
+        <TouchableOpacity style={[styles.button, { backgroundColor: theme.primary }]} onPress={() => captureImage()}>
           <MaterialIcons name="camera" size={24} color="white" />
         </TouchableOpacity>
-        <TouchableOpacity style={styles.button} onPress={() => pickImage()}>
+        <TouchableOpacity style={[styles.button, { backgroundColor: theme.primary }]} onPress={() => pickImage()}>
           <Text style={styles.buttonText}>Bilder</Text>
         </TouchableOpacity>
       </View>
@@ -98,7 +106,7 @@ export default function SelectImageModal({
 }
 
 const styles = StyleSheet.create({
-   container: {
+  container: {
     flex: 1,
     justifyContent: "center",
   },
@@ -117,14 +125,12 @@ const styles = StyleSheet.create({
     width: "100%",
     justifyContent: "center",
     alignItems: "center",
-  }, 
+  },
   button: {
     marginHorizontal: 12,
-    backgroundColor: "#5c578f",
     paddingVertical: 12,
     paddingHorizontal: 16,
     borderRadius: 25,
-    
   },
   buttonText: {
     color: "#fff",

@@ -1,5 +1,8 @@
 import { getParent, updateParent } from "@/api/parents";
 import ProfilePicture from "@/components/image/ProfilePicture";
+import { LanguageSwitcher } from "@/components/LanguageSwitcher";
+import { useAppTheme } from "@/hooks/useAppTheme";
+import { useI18n } from "@/hooks/useI18n";
 import { ParentProps } from "@/types/parent";
 import { MaterialIcons } from "@expo/vector-icons";
 import { getAuth, signOut } from "firebase/auth";
@@ -19,6 +22,8 @@ import ChangePinModal from "@/components/modals/ChangePinModal";
 
 export default function ProfileScreen() {
   const auth = getAuth();
+  const { t } = useI18n();
+  const theme = useAppTheme();
   const uid = auth.currentUser?.uid;
 
   const [name, setName] = useState("");
@@ -84,27 +89,40 @@ export default function ProfileScreen() {
 
   if (loading) {
     return (
-      <SafeAreaView style={styles.safe}>
-        <ActivityIndicator size="large" color="#5c578f" />
+      <SafeAreaView
+        style={[styles.safe, { backgroundColor: theme.background }]}
+      >
+        <ActivityIndicator size="large" color={theme.primary} />
       </SafeAreaView>
     );
   }
 
   if (!uid) {
     return (
-      <SafeAreaView style={styles.safe}>
+      <SafeAreaView
+        style={[styles.safe, { backgroundColor: theme.background }]}
+      >
         <View style={styles.container}>
-          <Text style={styles.title}>Ingen bruker logget inn</Text>
+          <Text style={[styles.title, { color: theme.text }]}>
+            {t("noUserLoggedIn")}
+          </Text>
         </View>
       </SafeAreaView>
     );
   }
 
   return (
-    <SafeAreaView style={styles.safe}>
+    <SafeAreaView style={[styles.safe, { backgroundColor: theme.background }]}>
       <ScrollView contentContainerStyle={styles.container}>
-        <Text style={styles.title}>Min profil</Text>
-        <View style={styles.profilePictureWrapper}>
+        <Text style={[styles.title, { color: theme.text }]}>
+          {t("myProfileHeader")}
+        </Text>
+        <View
+          style={[
+            styles.profilePictureWrapper,
+            { backgroundColor: theme.inputBackground },
+          ]}
+        >
           <ProfilePicture
             showEdit={isEditing}
             userId={uid}
@@ -114,43 +132,73 @@ export default function ProfileScreen() {
         </View>
 
         <View style={styles.row}>
-          <Text style={styles.label}>Navn</Text>
-          {isEditing && <MaterialIcons name="edit" size={20} color="#5c578f" />}
-        </View>
-        {isEditing ? (
-          <TextInput style={styles.input} value={name} onChangeText={setName} />
-        ) : (
-          <Text style={styles.value}>{name}</Text>
-        )}
-
-        <View style={styles.row}>
-          <Text style={styles.label}>Telefonnummer</Text>
-          {isEditing && <MaterialIcons name="edit" size={20} color="#5c578f" />}
+          <Text style={[styles.label, { color: theme.text }]}>{t("name")}</Text>
+          {isEditing && (
+            <MaterialIcons name="edit" size={20} color={theme.primary} />
+          )}
         </View>
         {isEditing ? (
           <TextInput
-            style={styles.input}
+            style={[
+              styles.input,
+              {
+                backgroundColor: theme.inputBackground,
+                color: theme.text,
+              },
+            ]}
+            value={name}
+            onChangeText={setName}
+            placeholderTextColor={theme.placeholder}
+          />
+        ) : (
+          <Text style={[styles.value, { 
+            backgroundColor: theme.inputBackground,
+            color: theme.text 
+          }]}>{name}</Text>
+        )}
+
+        <View style={styles.row}>
+          <Text style={[styles.label, { color: theme.text }]}>{t("phone")}</Text>
+          {isEditing && <MaterialIcons name="edit" size={20} color={theme.primary} />}
+        </View>
+        {isEditing ? (
+          <TextInput
+            style={[styles.input, { 
+              backgroundColor: theme.inputBackground,
+              color: theme.text 
+            }]}
             value={phone}
             onChangeText={setPhone}
             keyboardType="phone-pad"
+            placeholderTextColor={theme.placeholder}
           />
         ) : (
-          <Text style={styles.value}>{phone}</Text>
+          <Text style={[styles.value, { 
+            backgroundColor: theme.inputBackground,
+            color: theme.text 
+          }]}>{phone}</Text>
         )}
 
         <View style={styles.row}>
-          <Text style={styles.label}>E-post</Text>
-          {isEditing && <MaterialIcons name="edit" size={20} color="#5c578f" />}
+          <Text style={[styles.label, { color: theme.text }]}>{t("email")}</Text>
+          {isEditing && <MaterialIcons name="edit" size={20} color={theme.primary} />}
         </View>
         {isEditing ? (
           <TextInput
-            style={styles.input}
+            style={[styles.input, { 
+              backgroundColor: theme.inputBackground,
+              color: theme.text 
+            }]}
             value={email}
             onChangeText={setEmail}
             keyboardType="email-address"
+            placeholderTextColor={theme.placeholder}
           />
         ) : (
-          <Text style={styles.value}>{email}</Text>
+          <Text style={[styles.value, { 
+            backgroundColor: theme.inputBackground,
+            color: theme.text 
+          }]}>{email}</Text>
         )}
 
 
@@ -165,16 +213,19 @@ export default function ProfileScreen() {
         />
 
         <TouchableOpacity
-          style={styles.button}
+          style={[styles.button, { backgroundColor: theme.primary }]}
           onPress={() => (isEditing ? handleSave() : setIsEditing(true))}
         >
           <Text style={styles.buttonText}>
-            {isEditing ? "Lagre" : "Rediger"}
+            {isEditing ? t("save") : t("edit")}
           </Text>
           
         </TouchableOpacity>
-        <Pressable style={styles.button} onPress={handleLogout}>
-          <Text style={styles.buttonText}>Logg ut</Text>
+
+        <LanguageSwitcher />
+
+        <Pressable style={[styles.button, { backgroundColor: theme.primary }]} onPress={handleLogout}>
+          <Text style={styles.buttonText}>{t("logout")}</Text>
         </Pressable>
       </ScrollView>
     </SafeAreaView>
@@ -182,24 +233,28 @@ export default function ProfileScreen() {
 }
 
 const styles = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: "#FFF7ED", justifyContent: "center" },
-  container: { padding: 24, paddingBottom: 40, alignItems: "center" },
+  safe: { 
+    flex: 1, 
+    justifyContent: "center" 
+  },
+  container: { 
+    padding: 24, 
+    paddingBottom: 40, 
+    alignItems: "center" 
+  },
   title: {
     fontSize: 30,
     fontWeight: "700",
     textAlign: "center",
     marginBottom: 25,
   },
-
   profilePictureWrapper: {
     width: 160,
     height: 160,
     borderRadius: 80,
     marginBottom: 20,
     overflow: "hidden",
-    backgroundColor: "#eee",
   },
-
   row: {
     flexDirection: "row",
     alignItems: "center",
@@ -207,19 +262,20 @@ const styles = StyleSheet.create({
     width: "80%",
     marginBottom: 5,
   },
-  label: { fontSize: 16, fontWeight: "600" },
+  label: { 
+    fontSize: 16, 
+    fontWeight: "600" 
+  },
   value: {
     width: "80%",
     paddingVertical: 12,
     paddingHorizontal: 15,
     marginBottom: 15,
     fontSize: 16,
-    backgroundColor: "#f0f0f0",
     borderRadius: 10,
   },
   input: {
     width: "80%",
-    backgroundColor: "#f0f0f0",
     paddingVertical: 12,
     paddingHorizontal: 15,
     borderRadius: 10,
@@ -228,10 +284,13 @@ const styles = StyleSheet.create({
   },
   button: {
     marginTop: 30,
-    backgroundColor: "#5B5682",
     paddingVertical: 12,
     paddingHorizontal: 50,
     borderRadius: 25,
   },
-  buttonText: { color: "#fff", fontWeight: "600", fontSize: 16 },
+  buttonText: { 
+    color: "#fff", 
+    fontWeight: "600", 
+    fontSize: 16 
+  },
 });

@@ -2,6 +2,7 @@ import { uploadImageToFirebase } from "@/api/imageApi";
 import EvilIcons from "@expo/vector-icons/EvilIcons";
 import * as ImagePicker from "expo-image-picker";
 import { useState } from "react";
+import { useAppTheme } from "@/hooks/useAppTheme";
 import {
   Image,
   Modal,
@@ -19,7 +20,7 @@ export default function AddImageButtonSmall() {
   const [image, setImage] = useState<string | null>(null);
 
   const [isCameraOpen, setIsCameraOpen] = useState(false);
-
+  const theme = useAppTheme();
   async function pickImage() {
     let result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ["images"],
@@ -34,7 +35,7 @@ export default function AddImageButtonSmall() {
   }
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { backgroundColor: theme.background }]}>
 
         <Modal visible={isCameraOpen}>
             <SelectImageModal
@@ -45,7 +46,7 @@ export default function AddImageButtonSmall() {
             />
           </Modal>
 
-      <TouchableOpacity style={styles.button} onPress={() => setIsCameraOpen(true)}>
+      <TouchableOpacity style={[styles.button, { backgroundColor: theme.primary }]} onPress={() => setIsCameraOpen(true)}>
         <Text style={styles.buttonText}>Velg bilde fra fil</Text>
       </TouchableOpacity>
 
@@ -53,14 +54,14 @@ export default function AddImageButtonSmall() {
         {image ? (
           <Image source={{ uri: image }} style={styles.image} />
         ) : (
-          <EvilIcons name="image" size={80} color="purple" />
+          <EvilIcons name="image" size={80} color={theme.icon} />
         )}
         {image ? (
           <TouchableOpacity
-            style={styles.button}
+            style={[styles.button, { backgroundColor: theme.primary }]}
             onPress={() => uploadImageToFirebase(image)}
           >
-            <Text style={styles.buttonText}>Last opp til firebase</Text>
+            <Text style={[styles.text, { color: theme.textMuted }]}>Last opp til firebase</Text>
           </TouchableOpacity>
         ) : (
           <Text>Du må laste opp bilde først</Text>
@@ -78,7 +79,6 @@ const styles = StyleSheet.create({
   },
   button: {
     marginTop: 30,
-    backgroundColor: "#5c578f",
     paddingVertical: 12,
     paddingHorizontal: 50,
     borderRadius: 25,

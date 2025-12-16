@@ -3,6 +3,7 @@ import { db } from "@/firebaseConfig";
 import { getAuth } from "firebase/auth";
 import { addDoc, collection, serverTimestamp } from "firebase/firestore";
 import { useState } from "react";
+import { getErrorMessage } from "@/utils/error";
 
 export const useGuestLink = () => {
   const auth = getAuth();
