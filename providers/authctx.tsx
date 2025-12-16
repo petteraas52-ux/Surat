@@ -1,5 +1,6 @@
 import { createUser, setUserDisplayName, signIn, signOut } from "@/api/authApi";
 import { auth } from "@/firebaseConfig";
+import { getErrorMessage } from "@/utils/error";
 import { useRouter } from "expo-router";
 import { onAuthStateChanged, User } from "firebase/auth";
 import {
@@ -17,6 +18,7 @@ type AuthContextType = {
   userNameSession?: string | null;
   isLoading: boolean;
   user: User | null;
+  authError: string | null;
 };
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -36,6 +38,7 @@ export function AuthSessionProvider({ children }: { children: ReactNode }) {
   const [userSession, setUserSession] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [userAuthSession, setUserAuthSession] = useState<User | null>(null);
+  const [authError, setAuthError] = useState<string | null>(null);
 
   const router = useRouter();
 
@@ -68,25 +71,37 @@ export function AuthSessionProvider({ children }: { children: ReactNode }) {
     <AuthContext.Provider
       value={{
         signIn: (userEmail: string, password: string) => {
-          signIn(userEmail, password);
+          setAuthError(null);
+          signIn(userEmail, password).catch((err) => {
+            console.error("Sign-in failed:", err);
+            setAuthError(getErrorMessage("auth", "INVALID_CREDENTIALS"));
+          });
         },
         signOut: () => {
-          signOut();
+          signOut().catch((err) => {
+            console.error("Sign-out failed:", err);
+          });
         },
         createUser: async (
           email: string,
           password: string,
           displayName: string
         ) => {
-          const newUser = await createUser(email, password);
-          if (newUser) {
-            await setUserDisplayName(newUser, displayName);
-            setUserSession(displayName);
+          try {
+            const newUser = await createUser(email, password);
+            if (newUser) {
+              await setUserDisplayName(newUser, displayName);
+              setUserSession(displayName);
+              setAuthError(null);
+            }
+          } catch (err) {
+            console.error("Create user failed:", err);
           }
         },
         userNameSession: userSession,
         isLoading: isLoading,
         user: userAuthSession,
+        authError,
       }}
     >
       {children}
