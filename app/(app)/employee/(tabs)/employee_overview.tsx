@@ -1,6 +1,7 @@
 import { useThemeColor } from '@/hooks/useThemeColor';
 import React, { useMemo, useState } from 'react';
-import { Dimensions, FlatList, SafeAreaView, StyleSheet, Text, View } from 'react-native';
+import { Dimensions, FlatList, StyleSheet, Text, View } from 'react-native';
+import { SafeAreaView } from "react-native-safe-area-context";
 
 import { ChildCard } from '@/components/ChildCard';
 import { ChildDetailModal } from '@/components/modals/ChildDetailModal';
