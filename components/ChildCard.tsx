@@ -50,25 +50,27 @@ export const ChildCard: React.FC<ChildCardProps> = ({
   return (
     <Pressable style={styles.cardWrapper} onPress={onPress}>
       <View style={dynamicCardStyle}>
-        <Pressable
-          style={[
-            styles.selectButton,
-            {
-              borderColor: theme.selectButtonBorder,
-              backgroundColor: theme.selectButton,
-            },
-          ]}
-          onPress={onSelect}
-        >
-          {child.selected && (
-            <View
-              style={[
-                styles.selectedMarker,
-                { backgroundColor: theme.selectedMarker },
-              ]}
-            />
-          )}
-        </Pressable>
+        {!hideSelectButton && (
+          <Pressable
+            style={[
+              styles.selectButton,
+              {
+                borderColor: theme.selectButtonBorder,
+                backgroundColor: theme.selectButton,
+              },
+            ]}
+            onPress={onSelect}
+          >
+            {child.selected && (
+              <View
+                style={[
+                  styles.selectedMarker,
+                  { backgroundColor: theme.selectedMarker },
+                ]}
+              />
+            )}
+          </Pressable>
+        )}
 
         <View
           style={[

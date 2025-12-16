@@ -50,15 +50,6 @@ export default function TabBar() {
           ),
         }}
       />
-
-      <Tabs.Screen
-        name="employee_overview"
-        options={{
-          title: "Alle barn",
-          headerShown: false,
-          tabBarIcon: (focused) => <AntDesign name="team" size={24} color={focused ? theme.tabIconSelected : theme.tabIconDefault} />,
-        }}
-      />
     </Tabs>
   );
 }
