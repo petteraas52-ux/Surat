@@ -13,7 +13,7 @@ export function useAppTheme() {
     textSecondary: useThemeColor({}, 'textSecondary'),
     textTertiary: useThemeColor({}, 'textTertiary'),
     textMuted: useThemeColor({}, 'textMuted'),
-    
+    pageHeaderText: useThemeColor({}, 'pageHeaderText'),
     // Primary colors
     primary: useThemeColor({}, 'primary'),
     primaryDark: useThemeColor({}, 'primaryDark'),
@@ -30,7 +30,7 @@ export function useAppTheme() {
     cardSelected: useThemeColor({}, 'cardSelected'),
     cardAbsent: useThemeColor({}, 'cardAbsent'),
     textOnCard: useThemeColor({}, 'textOnCard'),
-    
+
     // UI elements
     border: useThemeColor({}, 'border'),
     borderLight: useThemeColor({}, 'borderLight'),

@@ -112,7 +112,7 @@ export default function ProfileScreen() {
   return (
     <SafeAreaView style={[styles.safe, { backgroundColor: theme.background }]}>
       <ScrollView contentContainerStyle={styles.container}>
-        <Text style={[styles.title, { color: theme.text }]}>
+        <Text style={[styles.title, { color: theme.pageHeaderText }]}>
           {t("myProfileHeader")}
         </Text>
         <View

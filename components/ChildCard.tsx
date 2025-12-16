@@ -1,4 +1,5 @@
 import ProfilePicture from "@/components/image/ProfilePicture";
+import { StaticColors } from "@/constants/Colors";
 import { useAppTheme } from "@/hooks/useAppTheme";
 import { UIChild } from "@/hooks/useChildData";
 import { useI18n } from "@/hooks/useI18n";
@@ -85,7 +86,7 @@ export const ChildCard: React.FC<ChildCardProps> = ({
 
         <View style={styles.textContainer}>
           <Text
-            style={[styles.nameText, { color: theme.text }]}
+            style={[styles.nameText, { color: StaticColors.white }]}
             numberOfLines={1}
           >
             {child.firstName} {child.lastName}

@@ -23,17 +23,24 @@ import { ChildDetailModal } from "@/components/modals/ChildDetailModal";
 import { GuestLinkModal } from "@/components/modals/GuestLinkModal";
 import { formatDateShort, parseTimestampToDateString } from "@/utils/date";
 
-import { SafeAreaView } from "react-native-safe-area-context";
-import { useI18n } from "@/hooks/useI18n";
+import { StaticColors } from "@/constants/Colors";
 import { useAppTheme } from "@/hooks/useAppTheme";
+import { useI18n } from "@/hooks/useI18n";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function Index() {
   const { t } = useI18n();
   const theme = useAppTheme();
-  const { children, setChildren, events, loading, toggleSelect, errorMessage: childDataError,
-    clearError: clearChildDataError, } =
-    useChildData();
-  
+  const {
+    children,
+    setChildren,
+    events,
+    loading,
+    toggleSelect,
+    errorMessage: childDataError,
+    clearError: clearChildDataError,
+  } = useChildData();
+
   const {
     anySelected,
     getButtonText,
@@ -111,9 +118,13 @@ export default function Index() {
 
   if (loading) {
     return (
-      <View style={[styles.loadingContainer, { backgroundColor: theme.background }]}>
+      <View
+        style={[styles.loadingContainer, { backgroundColor: theme.background }]}
+      >
         <ActivityIndicator size="large" color={theme.primary} />
-        <Text style={[styles.loadingText, { color: theme.text }]}>{t("loadingChildren")}</Text>
+        <Text style={[styles.loadingText, { color: theme.text }]}>
+          {t("loadingChildren")}
+        </Text>
       </View>
     );
   }
@@ -121,7 +132,9 @@ export default function Index() {
   return (
     <SafeAreaView style={[styles.safe, { backgroundColor: theme.background }]}>
       <ScrollView contentContainerStyle={styles.container}>
-        <Text style={[styles.headerTitle, { color: theme.text }]}>{t("childrenHeader")}</Text>
+        <Text style={[styles.headerTitle, { color: theme.pageHeaderText }]}>
+          {t("childrenHeader")}
+        </Text>
 
         {childDataError && (
           <Text style={styles.errorText} onPress={clearChildDataError}>
@@ -152,18 +165,30 @@ export default function Index() {
         </View>
 
         <View style={{ marginTop: 12, marginBottom: 12 }}>
-          <Text style={[styles.sectionHeader, { color: theme.text }]}>{t("upcommingEvent")}</Text>
-          <Pressable style={[styles.upcomingCard, { 
-            backgroundColor: theme.cardBackground,
-            shadowColor: theme.shadow 
-          }]} onPress={openCalendarModal}>
+          <Text style={[styles.sectionHeader, { color: theme.pageHeaderText }]}>
+            {t("upcommingEvent")}
+          </Text>
+          <Pressable
+            style={[
+              styles.upcomingCard,
+              {
+                backgroundColor: theme.cardBackground,
+                shadowColor: theme.shadow,
+              },
+            ]}
+            onPress={openCalendarModal}
+          >
             {nextEvent ? (
               <View>
                 <Text style={[styles.eventDate, { color: theme.primary }]}>
                   {formatDateShort(parseTimestampToDateString(nextEvent.date))}
                 </Text>
-                <Text style={[styles.eventTitle, { color: theme.text }]}>{nextEvent.title}</Text>
-                <Text style={[styles.eventSubtitle, { color: theme.textSecondary }]}>
+                <Text style={[styles.eventTitle, { color: theme.text }]}>
+                  {nextEvent.title}
+                </Text>
+                <Text
+                  style={[styles.eventSubtitle, { color: theme.textSecondary }]}
+                >
                   {t("department")}: {nextEvent.department}
                 </Text>
               </View>
@@ -178,16 +203,30 @@ export default function Index() {
         <View style={styles.footerButtonsRow}>
           <Pressable
             style={[
-            styles.absenceMainButtonWrapper,
-            { backgroundColor: anySelected ? theme.primary : theme.inputBackground },
-          ]}
+              styles.absenceMainButtonWrapper,
+              {
+                backgroundColor: anySelected
+                  ? theme.primary
+                  : theme.inputBackground,
+              },
+            ]}
             onPress={openAbsenceModal}
             disabled={!anySelected}
           >
-            <Text style={styles.footerButtonText}>{t("registerLeave")}</Text>
+            <Text
+              style={[
+                styles.footerButtonText,
+                { color: anySelected ? StaticColors.white : theme.text },
+              ]}
+            >
+              {t("registerLeave")}
+            </Text>
           </Pressable>
 
-          <Pressable style={[styles.checkoutWrapper, { backgroundColor: theme.primary }]} onPress={applyCheckInOut}>
+          <Pressable
+            style={[styles.checkoutWrapper, { backgroundColor: theme.primary }]}
+            onPress={applyCheckInOut}
+          >
             <Text style={styles.footerButtonText}>{getButtonText()}</Text>
           </Pressable>
         </View>
@@ -257,7 +296,7 @@ export default function Index() {
 }
 
 const styles = StyleSheet.create({
-  safe: { 
+  safe: {
     flex: 1,
   },
   container: {

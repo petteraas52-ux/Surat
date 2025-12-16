@@ -43,6 +43,18 @@ export const Colors = {
 const tintColorLight = '#5c578f';
 const tintColorDark = '#9A96FF';
 
+export const StaticColors = {
+  // Text farger
+  white: '#FFFFFF',
+  black: '#000000',
+  
+  // Card text (alltid hvit på fargede bakgrunner)
+  cardText: '#FFFFFF',
+  
+  // Button text (alltid hvit)
+  buttonText: '#FFFFFF',
+};
+
 export const Colors = {
   light: {
     // Basis farger
@@ -52,7 +64,7 @@ export const Colors = {
     textMuted: '#999999',
     background: '#FFF7ED',
     backgroundSecondary: '#FFFFFF',
-    
+    pageHeaderText: '#000000',
     // Tint og theme farger
     tint: tintColorLight,
     icon: '#687076',
@@ -118,7 +130,7 @@ export const Colors = {
     textMuted: '#666666',
     background: '#1a1625',
     backgroundSecondary: '#2a2435',
-    
+    pageHeaderText:'#ECEDEE',
     // Tint og theme farger
     tint: tintColorDark,
     icon: '#9BA1A6',
@@ -144,7 +156,7 @@ export const Colors = {
     cardAbsent: '#6b5b00',
     cardBackground: '#2a2435',
     textOnCard: '#FFFFFF',
-    
+
     // UI elements
     border: '#444444',
     borderLight: '#333333',

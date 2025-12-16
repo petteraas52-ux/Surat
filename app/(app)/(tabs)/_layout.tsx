@@ -44,10 +44,10 @@ export default function TabBar() {
       <Tabs.Screen
         name="employee_overview"
         options={{
-          title: "Alle barn",
+          title: t("allChildren"),
           headerShown: false,
-          tabBarIcon: () => (
-            <AntDesign name="team" size={24} color="purple" />
+          tabBarIcon: (focused) => (
+            <AntDesign name="team" size={24} color={focused ? theme.tabIconSelected : theme.tabIconDefault} />
           ),
         }}
       />
