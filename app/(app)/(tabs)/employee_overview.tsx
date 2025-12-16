@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from 'react';
-import { Dimensions, FlatList, View } from 'react-native';
+import { Dimensions, FlatList, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { ChildCard } from '@/components/ChildCard';
@@ -33,27 +33,27 @@ export default function EmployeeOverview() {
   return (
     <>
       <SafeAreaView style={{ flex: 1 }}>
+        <Text style={styles.header}>Barn oversikt</Text>
         <FlatList
           data={children}
-          keyExtractor={(item) => item.id}
+          keyExtractor={(item) => item.id.toString()}
           numColumns={2}
           contentContainerStyle={{ padding: 16 }}
           columnWrapperStyle={{ justifyContent: 'space-between', marginBottom: 16 }}
           renderItem={({ item }) => (
-        <View style={{ width: cardWidth, marginBottom: 16}}>
-          <ChildCard
-            child={{ ...item, selected: false }}
-            absenceLabel={getAbsenceLabel(item)}
-            onSelect={() => {}}
-            onPress={() => {
-              setActiveChildId(item.id);
-              setModalVisible(true);
-            }}
-            hideSelectButton
-          />
-        </View>
-)}
-
+            <View style={{ width: cardWidth, marginBottom: 16 }}>
+              <ChildCard
+                child={{ ...item, selected: false }}
+                absenceLabel={getAbsenceLabel(item)}
+                onSelect={() => {}}
+                onPress={() => {
+                  setActiveChildId(item.id);
+                  setModalVisible(true);
+                }}
+                hideSelectButton
+              />
+            </View>
+          )}
         />
       </SafeAreaView>
 
@@ -69,3 +69,12 @@ export default function EmployeeOverview() {
     </>
   );
 }
+
+const styles = StyleSheet.create({
+  header: {
+    fontSize: 24,
+    fontWeight: '700',
+    marginBottom: 20,
+    paddingHorizontal: 16,
+  },
+});
