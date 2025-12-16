@@ -1,6 +1,7 @@
 import { getParent, updateParent } from "@/api/parents";
 import ProfilePicture from "@/components/image/ProfilePicture";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
+import ChangePinModal from "@/components/modals/ChangePinModal";
 import { useAppTheme } from "@/hooks/useAppTheme";
 import { useI18n } from "@/hooks/useI18n";
 import { ParentProps } from "@/types/parent";
@@ -18,7 +19,6 @@ import {
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import ChangePinModal from "@/components/modals/ChangePinModal";
 
 export default function ProfileScreen() {
   const auth = getAuth();
@@ -201,17 +201,6 @@ export default function ProfileScreen() {
           }]}>{email}</Text>
         )}
 
-
-        <Pressable style={styles.button} onPress={() => setShowChangePin(true)}>
-          <Text style={styles.buttonText}>Endre PIN</Text>
-        </Pressable>
-
-        <ChangePinModal
-          uid={uid}
-          visible={showChangePin}
-          onClose={() => setShowChangePin(false)}
-        />
-
         <TouchableOpacity
           style={[styles.button, { backgroundColor: theme.primary }]}
           onPress={() => (isEditing ? handleSave() : setIsEditing(true))}
@@ -224,6 +213,16 @@ export default function ProfileScreen() {
 
         <LanguageSwitcher />
 
+        <Pressable style={[styles.button, {backgroundColor: theme.primary}]} onPress={() => setShowChangePin(true)}>
+          <Text style={[styles.buttonText, { color: "white"}]}>Endre PIN</Text>
+        </Pressable>
+
+        <ChangePinModal
+          uid={uid}
+          visible={showChangePin}
+          onClose={() => setShowChangePin(false)}
+        />
+        
         <Pressable style={[styles.button, { backgroundColor: theme.primary }]} onPress={handleLogout}>
           <Text style={styles.buttonText}>{t("logout")}</Text>
         </Pressable>

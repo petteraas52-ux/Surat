@@ -1,6 +1,9 @@
 import { Redirect, Stack } from "expo-router";
 import "react-native-reanimated";
 
+import { useState } from "react";
+import PinCheck from "@/components/PinCheck";
+
 import { useAppTheme } from "@/hooks/useAppTheme";
 import { useI18n } from "@/hooks/useI18n";
 import { useAuthSession } from "@/providers/authctx";
@@ -10,6 +13,7 @@ export default function RootLayout() {
   const { user, isLoading } = useAuthSession();
   const { t } = useI18n();
   const theme = useAppTheme();
+  const [pinUnlocked, setPinUnlocked] = useState(false);
 
   if (isLoading) {
     return (
