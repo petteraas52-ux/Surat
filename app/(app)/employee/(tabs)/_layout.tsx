@@ -37,7 +37,7 @@ export default function TabBar() {
         }}
       />
       <Tabs.Screen
-        name="create-child"
+        name="adminDashBoard"
         options={{
           title: t("tabTitleChild"),
           headerShown: false,
@@ -50,49 +50,6 @@ export default function TabBar() {
           ),
         }}
       />
-      <Tabs.Screen
-        name="create-event"
-        options={{
-          title: t("tabTitleEvent"),
-          headerShown: false,
-          tabBarIcon: ({ focused }) => (
-            <Ionicons
-              name="person-circle"
-              size={24}
-              color={focused ? theme.tabIconSelected : theme.tabIconDefault}
-            />
-          ),
-        }}
-      />
-      <Tabs.Screen
-        name="create-employee"
-        options={{
-          title: t("tabTitleEmployee"),
-          headerShown: false,
-          tabBarIcon: ({ focused }) => (
-            <Ionicons
-              name="person-circle"
-              size={24}
-              color={focused ? theme.tabIconSelected : theme.tabIconDefault}
-            />
-          ),
-        }}
-      />
-      <Tabs.Screen
-        name="employee_overview" 
-        options={{
-          title: t("tabTitleOverviewChildren"), 
-          headerShown: false,
-          tabBarIcon: ({ focused }) => (
-            <AntDesign
-              name="team"
-              size={24}
-              color={focused ? theme.tabIconSelected : theme.tabIconDefault}
-            />
-          ),
-        }}
-      />
-
     </Tabs>
   );
 }

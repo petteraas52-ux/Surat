@@ -1,6 +1,7 @@
 import { getParent, updateParent } from "@/api/parents";
 import ProfilePicture from "@/components/image/ProfilePicture";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
+import ChangePinModal from "@/components/modals/ChangePinModal";
 import { useAppTheme } from "@/hooks/useAppTheme";
 import { useI18n } from "@/hooks/useI18n";
 import { ParentProps } from "@/types/parent";
@@ -31,6 +32,7 @@ export default function ProfileScreen() {
   const [isEditing, setIsEditing] = useState(false);
   const [loading, setLoading] = useState(true);
   const [parentData, setParentData] = useState<ParentProps | null>(null);
+  const [showChangePin, setShowChangePin] = useState(false);
 
   const handleLogout = async () => {
     try {
@@ -206,10 +208,21 @@ export default function ProfileScreen() {
           <Text style={styles.buttonText}>
             {isEditing ? t("save") : t("edit")}
           </Text>
+          
         </TouchableOpacity>
 
         <LanguageSwitcher />
 
+        <Pressable style={[styles.button, {backgroundColor: theme.primary}]} onPress={() => setShowChangePin(true)}>
+          <Text style={[styles.buttonText, { color: "white"}]}>Endre PIN</Text>
+        </Pressable>
+
+        <ChangePinModal
+          uid={uid}
+          visible={showChangePin}
+          onClose={() => setShowChangePin(false)}
+        />
+        
         <Pressable style={[styles.button, { backgroundColor: theme.primary }]} onPress={handleLogout}>
           <Text style={styles.buttonText}>{t("logout")}</Text>
         </Pressable>

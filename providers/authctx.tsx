@@ -75,7 +75,7 @@ export function AuthSessionProvider({ children }: { children: ReactNode }) {
           setUserRole(role);
         } catch (error) {
           console.error("Failed to fetch user role:", error);
-          setAuthError("Failed to load user profile. Please try again.");
+          setAuthError(getErrorMessage("general", "UNKNOWN"));
         }
       } else {
         setUserSession(null);
