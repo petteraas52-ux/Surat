@@ -2,6 +2,7 @@
 // components/modals/ChildDetailModal.tsx
 import CommentBox from "@/components/commentBox";
 import ProfilePicture from "@/components/image/ProfilePicture";
+import { useAppTheme } from "@/hooks/useAppTheme";
 import { UIChild } from "@/hooks/useChildData";
 import { useI18n } from "@/hooks/useI18n";
 import React from "react";
@@ -13,7 +14,6 @@ import {
   Text,
   View,
 } from "react-native";
-import { useAppTheme } from "@/hooks/useAppTheme";
 
 interface ChildDetailModalProps {
   isVisible: boolean;
@@ -104,16 +104,10 @@ export const ChildDetailModal: React.FC<ChildDetailModalProps> = ({
                 }]}>{checkInText}</Text>
               </Pressable>
 
-              <Pressable
-                style={[styles.actionButton, { backgroundColor: theme.primary }]}
-                onPress={onOpenGuestLinkModal}
-              >
-                <Text style={styles.actionButtonText}>{t("guestPickup")}</Text>
-              </Pressable>
               {/* Vis gjeste-hent bare hvis den ikke er skjult */}
               {!hideGuestButton && (
                 <Pressable
-                  style={[styles.actionButton, styles.guestButton]}
+                  style={[styles.actionButton, { backgroundColor: theme.primary }]}
                   onPress={onOpenGuestLinkModal}
                 >
                   <Text style={styles.actionButtonText}>Gjeste-hent</Text>

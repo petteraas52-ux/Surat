@@ -28,7 +28,7 @@ export default function EmployeeOverview() {
 
   // Hent skjermbredde for å sette bredden på hver kolonne
   const screenWidth = Dimensions.get('window').width;
-  const cardWidth = (screenWidth - 16 * 3) / 2; // padding mellom kolonner og kanter
+  const cardWidth = (screenWidth - 20 * 3) / 2; // padding mellom kolonner og kanter
 
   return (
     <>
@@ -36,7 +36,7 @@ export default function EmployeeOverview() {
         <FlatList
           data={children}
           keyExtractor={(item) => item.id}
-          numColumns={2} // ← to kolonner
+          numColumns={2}
           contentContainerStyle={{ padding: 16 }}
           columnWrapperStyle={{ justifyContent: 'space-between', marginBottom: 16 }}
           renderItem={({ item }) => (
