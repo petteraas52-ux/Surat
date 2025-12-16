@@ -24,8 +24,11 @@ import { GuestLinkModal } from "@/components/modals/GuestLinkModal";
 import { formatDateShort, parseTimestampToDateString } from "@/utils/date";
 
 import { SafeAreaView } from "react-native-safe-area-context";
+import { useI18n } from "@/hooks/useI18n";
+import { useAppTheme } from "@/hooks/useAppTheme";
 
 export default function Index() {
+<<<<<<< HEAD
   const {
     children,
     setChildren,
@@ -36,6 +39,12 @@ export default function Index() {
     clearError: clearChildDataError,
   } = useChildData();
 
+=======
+  const { t } = useI18n();
+  const theme = useAppTheme();
+  const { children, setChildren, events, loading, toggleSelect } =
+    useChildData();
+>>>>>>> upstream/main
   const {
     anySelected,
     getButtonText,
@@ -49,6 +58,8 @@ export default function Index() {
     absenceModalVisible,
     vacationDays,
     setVacationDays,
+    vacationStartDate,
+    setVacationStartDate,
     getAbsenceLabel,
     openAbsenceModal,
     closeAbsenceModal,
@@ -80,10 +91,12 @@ export default function Index() {
     onCalendarDayPress,
     openCalendarModal,
     closeCalendarModal,
+    openCalendarModalForDate,
   } = useCalendarEvents({ events });
 
   const [overlayVisible, setOverlayVisible] = useState(false);
   const [overlayChildId, setOverlayChildId] = useState<string | null>(null);
+  const [isSelectingVacationDate, setIsSelectingVacationDate] = useState(false);
 
   const activeChild = overlayChildId
     ? children.find((c) => c.id === overlayChildId)
@@ -101,19 +114,25 @@ export default function Index() {
     openGuestLinkModal();
   };
 
+  const handleOpenVacationDatePicker = () => {
+    closeAbsenceModal();
+    setIsSelectingVacationDate(true);
+    openCalendarModalForDate(vacationStartDate);
+  };
+
   if (loading) {
     return (
-      <View style={[styles.loadingContainer, styles.container]}>
-        <ActivityIndicator size="large" color="#57507F" />
-        <Text style={{ marginTop: 16 }}>Laster inn barnedata...</Text>
+      <View style={[styles.loadingContainer, { backgroundColor: theme.background }]}>
+        <ActivityIndicator size="large" color={theme.primary} />
+        <Text style={[styles.loadingText, { color: theme.text }]}>{t("loadingChildren")}</Text>
       </View>
     );
   }
 
   return (
-    <SafeAreaView style={styles.safe}>
+    <SafeAreaView style={[styles.safe, { backgroundColor: theme.background }]}>
       <ScrollView contentContainerStyle={styles.container}>
-        <Text style={styles.headerTitle}>Mine Barn</Text>
+        <Text style={[styles.headerTitle, { color: theme.text }]}>{t("childrenHeader")}</Text>
 
         {childDataError && (
           <Text style={styles.errorText} onPress={clearChildDataError}>
@@ -144,21 +163,24 @@ export default function Index() {
         </View>
 
         <View style={{ marginTop: 12, marginBottom: 12 }}>
-          <Text style={styles.sectionHeader}>Kommende hendelse</Text>
-          <Pressable style={styles.upcomingCard} onPress={openCalendarModal}>
+          <Text style={[styles.sectionHeader, { color: theme.text }]}>{t("upcommingEvent")}</Text>
+          <Pressable style={[styles.upcomingCard, { 
+            backgroundColor: theme.cardBackground,
+            shadowColor: theme.shadow 
+          }]} onPress={openCalendarModal}>
             {nextEvent ? (
               <View>
-                <Text style={styles.eventDate}>
+                <Text style={[styles.eventDate, { color: theme.primary }]}>
                   {formatDateShort(parseTimestampToDateString(nextEvent.date))}
                 </Text>
-                <Text style={styles.eventTitle}>{nextEvent.title}</Text>
-                <Text style={styles.eventSubtitle}>
-                  Avdeling: {nextEvent.department}
+                <Text style={[styles.eventTitle, { color: theme.text }]}>{nextEvent.title}</Text>
+                <Text style={[styles.eventSubtitle, { color: theme.textSecondary }]}>
+                  {t("department")}: {nextEvent.department}
                 </Text>
               </View>
             ) : (
-              <Text style={styles.noEventText}>
-                Ingen kommende arrangementer registrert.
+              <Text style={[styles.noEventText, { color: theme.textMuted }]}>
+                {t("noEvents")}
               </Text>
             )}
           </Pressable>
@@ -167,16 +189,16 @@ export default function Index() {
         <View style={styles.footerButtonsRow}>
           <Pressable
             style={[
-              styles.absenceMainButtonWrapper,
-              !anySelected && styles.absenceMainButtonDisabled,
-            ]}
+            styles.absenceMainButtonWrapper,
+            { backgroundColor: anySelected ? theme.primary : theme.inputBackground },
+          ]}
             onPress={openAbsenceModal}
             disabled={!anySelected}
           >
-            <Text style={styles.footerButtonText}>Registrer fravær</Text>
+            <Text style={styles.footerButtonText}>{t("registerLeave")}</Text>
           </Pressable>
 
-          <Pressable style={styles.checkoutWrapper} onPress={applyCheckInOut}>
+          <Pressable style={[styles.checkoutWrapper, { backgroundColor: theme.primary }]} onPress={applyCheckInOut}>
             <Text style={styles.footerButtonText}>{getButtonText()}</Text>
           </Pressable>
         </View>
@@ -197,6 +219,8 @@ export default function Index() {
         selectedChildrenCount={children.filter((c) => c.selected).length}
         vacationDays={vacationDays}
         setVacationDays={setVacationDays}
+        vacationStartDate={vacationStartDate}
+        onOpenStartDatePicker={handleOpenVacationDatePicker}
         onRegisterSickness={registerSicknessTodayForSelected}
         onRegisterVacation={registerVacationForSelected}
       />
@@ -216,18 +240,37 @@ export default function Index() {
 
       <CalendarModal
         isVisible={calendarModalVisible}
-        onClose={closeCalendarModal}
+        onClose={() => {
+          if (isSelectingVacationDate) {
+            setIsSelectingVacationDate(false);
+            closeCalendarModal();
+            openAbsenceModal();
+          } else {
+            closeCalendarModal();
+          }
+        }}
         markedDates={markedDates}
         selectedDate={selectedDateInCalendar}
         eventsForSelectedDate={eventsForSelectedDate}
-        onDayPress={onCalendarDayPress}
+        onDayPress={(day) => {
+          if (isSelectingVacationDate) {
+            setVacationStartDate(day.dateString);
+            setIsSelectingVacationDate(false);
+            closeCalendarModal();
+            openAbsenceModal();
+          } else {
+            onCalendarDayPress(day);
+          }
+        }}
       />
     </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: "#FFF7ED" },
+  safe: { 
+    flex: 1,
+  },
   container: {
     padding: 16,
     paddingBottom: 40,
@@ -236,6 +279,9 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
+  },
+  loadingText: {
+    marginTop: 16,
   },
   headerTitle: {
     fontSize: 24,
@@ -255,11 +301,9 @@ const styles = StyleSheet.create({
     fontSize: 16,
   },
   upcomingCard: {
-    backgroundColor: "#EEEEED",
     padding: 16,
     borderRadius: 12,
     elevation: 2,
-    shadowColor: "#000",
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.2,
     shadowRadius: 1.41,
@@ -267,7 +311,6 @@ const styles = StyleSheet.create({
   eventDate: {
     fontSize: 14,
     fontWeight: "600",
-    color: "#57507F",
   },
   eventTitle: {
     fontSize: 18,
@@ -276,11 +319,9 @@ const styles = StyleSheet.create({
   },
   eventSubtitle: {
     fontSize: 14,
-    color: "#666",
     marginTop: 2,
   },
   noEventText: {
-    color: "#999",
     textAlign: "center",
     paddingVertical: 10,
   },
@@ -290,18 +331,13 @@ const styles = StyleSheet.create({
   },
   absenceMainButtonWrapper: {
     flex: 1,
-    backgroundColor: "#57507F",
     marginRight: 8,
     paddingVertical: 14,
     borderRadius: 30,
     alignItems: "center",
   },
-  absenceMainButtonDisabled: {
-    backgroundColor: "#ddd",
-  },
   checkoutWrapper: {
     flex: 1,
-    backgroundColor: "#57507F",
     marginLeft: 8,
     paddingVertical: 14,
     borderRadius: 30,

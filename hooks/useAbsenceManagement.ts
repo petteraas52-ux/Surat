@@ -24,12 +24,18 @@ export const useAbsenceManagement = ({
 }: UseAbsenceManagementProps) => {
   const [absenceModalVisible, setAbsenceModalVisible] = useState(false);
   const [vacationDays, setVacationDays] = useState<number>(7);
+<<<<<<< HEAD
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+=======
+  const [vacationStartDate, setVacationStartDate] = useState<string>(
+    getTodayStr()
+  );
+>>>>>>> upstream/main
 
   const anySelected = children.some((c) => c.selected);
 
   const openAbsenceModal = () => {
-    if (!anySelected) return;
+    if (!anySelected && !absenceModalVisible) return;
     setAbsenceModalVisible(true);
   };
 
@@ -100,7 +106,8 @@ export const useAbsenceManagement = ({
   const registerVacationForSelected = async () => {
     if (!anySelected) return;
 
-    const start = getTodayStr();
+    const start = vacationStartDate;
+
     const end = addDays(start, Math.max(1, vacationDays) - 1);
     const selectedChildren = children.filter((c) => c.selected);
 
@@ -146,6 +153,8 @@ export const useAbsenceManagement = ({
     setAbsenceModalVisible,
     vacationDays,
     setVacationDays,
+    vacationStartDate,
+    setVacationStartDate,
     anySelected,
     getAbsenceLabel,
     openAbsenceModal,

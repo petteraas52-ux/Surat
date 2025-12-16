@@ -1,29 +1,42 @@
+import { useI18n } from "@/hooks/useI18n";
 import AntDesign from "@expo/vector-icons/AntDesign";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import { Tabs } from "expo-router";
+import { useAppTheme } from "@/hooks/useAppTheme"; 
 
 export default function TabBar() {
+  const { t } = useI18n();
+  const theme = useAppTheme();
   return (
     <Tabs
       screenOptions={{
-        title: "Mine barn",
+        title: t("tabTitleChildren"),
+        tabBarActiveTintColor: theme.tabIconSelected, 
+        tabBarInactiveTintColor: theme.tabIconDefault, 
+        tabBarStyle: {
+          backgroundColor: theme.backgroundSecondary, 
+        },
+        headerStyle: {
+          backgroundColor: theme.backgroundSecondary, 
+        },
+        headerTintColor: theme.text,
       }}
     >
       <Tabs.Screen
         name="index"
         options={{
-          title: "Mine barn",
+          title: t("tabTitleChildren"),
           headerShown: false,
-          tabBarIcon: () => <AntDesign name="home" size={24} color="purple" />,
+          tabBarIcon: ({ focused }) => <AntDesign name="home" size={24} color={focused ? theme.tabIconSelected : theme.tabIconDefault} />,
         }}
       />
       <Tabs.Screen
         name="profile"
         options={{
-          title: "Profil",
+          title: t("tabTitleProfile"),
           headerShown: false,
-          tabBarIcon: () => (
-            <Ionicons name="person-circle" size={24} color="purple" />
+          tabBarIcon: ({ focused }) => (
+            <Ionicons name="person-circle" size={24} color={focused ? theme.tabIconSelected : theme.tabIconDefault} />
           ),
         }}
       />
