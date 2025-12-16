@@ -1,4 +1,3 @@
-
 // components/modals/ChildDetailModal.tsx
 import CommentBox from "@/components/commentBox";
 import ProfilePicture from "@/components/image/ProfilePicture";
@@ -35,7 +34,6 @@ export const ChildDetailModal: React.FC<ChildDetailModalProps> = ({
   onToggleCheckIn,
   hideGuestButton = false, // default: vis knappen som før
 }) => {
-
   const { t } = useI18n();
   const theme = useAppTheme();
   if (!activeChild) return null;
@@ -49,13 +47,25 @@ export const ChildDetailModal: React.FC<ChildDetailModalProps> = ({
 
   return (
     <Modal visible={isVisible} transparent animationType="slide">
-      <View style={[styles.overlayBackdrop, { backgroundColor: theme.modalOverlay }]}>
+      <View
+        style={[
+          styles.overlayBackdrop,
+          { backgroundColor: theme.modalOverlay },
+        ]}
+      >
         <Pressable style={StyleSheet.absoluteFill} onPress={onClose} />
 
-        <View style={[styles.overlayCard, { backgroundColor: theme.background }]}>
+        <View
+          style={[styles.overlayCard, { backgroundColor: theme.background }]}
+        >
           <ScrollView contentContainerStyle={styles.contentContainer}>
             <View style={styles.headerRow}>
-              <View style={[styles.profilePictureContainer, { backgroundColor: theme.inputBackground }]}>
+              <View
+                style={[
+                  styles.profilePictureContainer,
+                  { backgroundColor: theme.inputBackground },
+                ]}
+              >
                 <ProfilePicture
                   showEdit={true}
                   userId={activeChild.id}
@@ -81,11 +91,12 @@ export const ChildDetailModal: React.FC<ChildDetailModalProps> = ({
                     }
                   >
                     {t("absence")}:{" "}
-                    {activeChild.checkedIn ? "Sjekket inn" : "Sjekket ut"}
-                    Status: {activeChild.checkedIn ? "Sjekket inn" : "Sjekket ut"}
+                    {activeChild.checkedIn ? t("checkedIn") : t("checkedOut")}
                   </Text>
                 )}
-                <Text style={[styles.groupText, { color: theme.textSecondary }]}>
+                <Text
+                  style={[styles.groupText, { color: theme.textSecondary }]}
+                >
                   {t("department")}: {activeChild.department}
                 </Text>
               </View>
@@ -93,21 +104,36 @@ export const ChildDetailModal: React.FC<ChildDetailModalProps> = ({
 
             <View style={styles.actionRow}>
               <Pressable
-                style={[styles.actionButton, { 
-                  backgroundColor: absenceLabel ? theme.inputBackground : theme.primary,
-                }]}
+                style={[
+                  styles.actionButton,
+                  {
+                    backgroundColor: absenceLabel
+                      ? theme.inputBackground
+                      : theme.primary,
+                  },
+                ]}
                 onPress={handleToggleCheckIn}
                 disabled={!!absenceLabel}
               >
-                <Text style={[styles.actionButtonText, {
-                  color: absenceLabel ? theme.textMuted : "#fff"
-                }]}>{checkInText}</Text>
+                <Text
+                  style={[
+                    styles.actionButtonText,
+                    {
+                      color: absenceLabel ? theme.textMuted : "#fff",
+                    },
+                  ]}
+                >
+                  {checkInText}
+                </Text>
               </Pressable>
 
               {/* Vis gjeste-hent bare hvis den ikke er skjult */}
               {!hideGuestButton && (
                 <Pressable
-                  style={[styles.actionButton, { backgroundColor: theme.primary }]}
+                  style={[
+                    styles.actionButton,
+                    { backgroundColor: theme.primary },
+                  ]}
                   onPress={onOpenGuestLinkModal}
                 >
                   <Text style={styles.actionButtonText}>Gjeste-hent</Text>
@@ -115,12 +141,17 @@ export const ChildDetailModal: React.FC<ChildDetailModalProps> = ({
               )}
             </View>
 
-            <View style={[styles.divider, { backgroundColor: theme.borderLight }]} />
+            <View
+              style={[styles.divider, { backgroundColor: theme.borderLight }]}
+            />
 
             {activeChild.id && <CommentBox childId={activeChild.id} />}
           </ScrollView>
 
-          <Pressable style={[styles.closeButton, { backgroundColor: theme.primary }]} onPress={onClose}>
+          <Pressable
+            style={[styles.closeButton, { backgroundColor: theme.primary }]}
+            onPress={onClose}
+          >
             <Text style={styles.closeButtonText}>{t("close")}</Text>
           </Pressable>
         </View>
