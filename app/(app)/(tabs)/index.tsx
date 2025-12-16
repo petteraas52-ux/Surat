@@ -28,23 +28,12 @@ import { useI18n } from "@/hooks/useI18n";
 import { useAppTheme } from "@/hooks/useAppTheme";
 
 export default function Index() {
-<<<<<<< HEAD
-  const {
-    children,
-    setChildren,
-    events,
-    loading,
-    toggleSelect,
-    errorMessage: childDataError,
-    clearError: clearChildDataError,
-  } = useChildData();
-
-=======
   const { t } = useI18n();
   const theme = useAppTheme();
-  const { children, setChildren, events, loading, toggleSelect } =
+  const { children, setChildren, events, loading, toggleSelect, errorMessage: childDataError,
+    clearError: clearChildDataError, } =
     useChildData();
->>>>>>> upstream/main
+  
   const {
     anySelected,
     getButtonText,

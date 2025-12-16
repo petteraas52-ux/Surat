@@ -15,11 +15,8 @@ export const useCheckInOut = ({
   setChildren,
 }: UseCheckInOutProps) => {
   const anySelected = children.some((c) => c.selected);
-<<<<<<< HEAD
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
-=======
   const { t } = useI18n();
->>>>>>> upstream/main
 
   const getButtonText = (): string => {
     const selected = children.filter((c) => c.selected);
