@@ -1,4 +1,5 @@
 import { createComment, getComments } from "@/api/commentApi";
+import { useAppTheme } from "@/hooks/useAppTheme";
 import { useI18n } from "@/hooks/useI18n";
 import { useAuthSession } from "@/providers/authctx";
 import { Comment } from "@/types/comment";
@@ -20,6 +21,7 @@ type CommentBoxProps = {
 export default function CommentBox({ childId }: CommentBoxProps) {
   const { user } = useAuthSession();
   const { t } = useI18n();
+  const theme = useAppTheme(); 
   const [comments, setComments] = useState<Comment[]>([]);
   const [text, setText] = useState("");
   const [loading, setLoading] = useState(false);
@@ -55,24 +57,24 @@ export default function CommentBox({ childId }: CommentBoxProps) {
   if (initialLoading) {
     return (
       <View style={styles.center}>
-        <ActivityIndicator />
+        <ActivityIndicator color={theme.primary}/>
       </View>
     );
   }
 
   return (
     <View style={styles.container}>
-      <Text style={styles.header}>{t("commentsComponentHeader")}</Text>
+      <Text style={[styles.header, { color: theme.text }]}>{t("commentsComponentHeader")}</Text>
 
       <ScrollView style={styles.list}>
         {comments.length === 0 && (
-          <Text style={styles.noComments}>{t("noComments")}</Text>
+          <Text style={[styles.noComments, { color: theme.textMuted }]}>{t("noComments")}</Text>
         )}
 
         {comments.map((c) => (
-          <View key={c.id} style={styles.comment}>
-            <Text style={styles.commentText}>{c.text}</Text>
-            <Text style={styles.meta}>
+          <View key={c.id} style={[styles.comment, { backgroundColor: theme.commentBackground }]}>
+            <Text style={[styles.commentText, { color: theme.commentText }]}>{c.text}</Text>
+            <Text style={[styles.meta, { color: theme.commentMeta }]}>
               {c.createdByName} •{" "}
               {c.createdAt
                 ? c.createdAt.toDate().toLocaleString("nb-NO")
@@ -87,7 +89,11 @@ export default function CommentBox({ childId }: CommentBoxProps) {
           value={text}
           onChangeText={setText}
           placeholder={t("writeAComment")}
-          style={styles.input}
+          style={[styles.input, { 
+            borderColor: theme.border,
+            backgroundColor: theme.inputBackground,
+            color: theme.text 
+          }]}
           multiline
         />
         <Pressable
@@ -95,6 +101,7 @@ export default function CommentBox({ childId }: CommentBoxProps) {
           disabled={loading || !text.trim()}
           style={[
             styles.button,
+            { backgroundColor: theme.primary },
             (loading || !text.trim()) && styles.buttonDisabled,
           ]}
         >
@@ -114,32 +121,30 @@ const styles = StyleSheet.create({
   header: { fontSize: 18, fontWeight: "700", marginBottom: 6 },
   list: { maxHeight: 300, marginBottom: 10 },
   comment: {
-    backgroundColor: "#EFEFEF",
     padding: 10,
     borderRadius: 8,
     marginBottom: 8,
   },
   commentText: { fontSize: 14, marginBottom: 4 },
-  meta: { fontSize: 11, color: "#555" },
-  noComments: { color: "#777" },
+  meta: { fontSize: 11 },
+  noComments: { textAlign: "center", marginTop: 10 },
   inputRow: { flexDirection: "row", gap: 8, alignItems: "center" },
   input: {
     flex: 1,
     borderWidth: 1,
-    borderColor: "#ccc",
     borderRadius: 8,
     paddingHorizontal: 8,
     paddingVertical: 6,
     minHeight: 40,
   },
   button: {
-    backgroundColor: "#57507F",
     paddingHorizontal: 16,
     paddingVertical: 10,
     borderRadius: 8,
   },
   buttonText: {
     color: "white",
+    fontWeight: "600",
   },
   buttonDisabled: { opacity: 0.6 },
   center: { alignItems: "center", marginTop: 20 },

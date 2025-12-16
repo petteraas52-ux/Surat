@@ -13,6 +13,7 @@ import {
   ViewStyle,
 } from "react-native";
 import SelectImageModal from "./SelectImageModal";
+import { useAppTheme } from "@/hooks/useAppTheme";
 
 type ProfilePictureProps = {
   showEdit?: boolean;
@@ -33,7 +34,7 @@ export default function ProfilePicture({
   const [isCameraOpen, setIsCameraOpen] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [loading, setLoading] = useState(true);
-
+  const theme = useAppTheme(); 
   useEffect(() => {
     async function loadImage() {
       if (initialImagePath) {
@@ -50,7 +51,7 @@ export default function ProfilePicture({
   if (loading) {
     return (
       <View style={[styles.container, style]}>
-        <ActivityIndicator size="large" color="#5c578f" />
+        <ActivityIndicator size="large" color={theme.primary} />
       </View>
     );
   }
@@ -71,22 +72,26 @@ export default function ProfilePicture({
           <Image source={{ uri: image }} style={styles.image} />
         ) : (
           <View style={styles.placeholderContainer}>
-            <Ionicons name="person-circle" size={45} color="grey" />
+            <Ionicons name="person-circle" size={45} color={theme.icon} />
           </View>
         )}
         {uploading && (
           <View style={styles.uploadingOverlay}>
-            <ActivityIndicator size="large" color="white" />
+            <ActivityIndicator size="large" color={theme.primary} />
           </View>
         )}
       </Pressable>
       {showEdit && (
         <TouchableOpacity
-          style={styles.editButton}
+          style={[styles.editButton, { 
+            backgroundColor: theme.backgroundSecondary + 'be', // semi-transparent
+            borderColor: theme.primaryLight,
+            shadowColor: theme.shadow 
+          }]}
           onPress={() => setIsCameraOpen(true)}
           disabled={uploading}
         >
-          <FontAwesome5 name="edit" size={18} color="#5B5682" />
+          <FontAwesome5 name="edit" size={18} color={theme.primaryLight}/>
         </TouchableOpacity>
       )}
     </View>
@@ -122,12 +127,9 @@ const styles = StyleSheet.create({
     width: 32,
     height: 32,
     borderRadius: 16,
-    backgroundColor: "#ffffffbe",
     alignItems: "center",
     justifyContent: "center",
     borderWidth: 2,
-    borderColor: "#5B5682",
-    shadowColor: "#000",
     shadowOpacity: 0.25,
     shadowRadius: 4,
     shadowOffset: { width: 0, height: 2 },

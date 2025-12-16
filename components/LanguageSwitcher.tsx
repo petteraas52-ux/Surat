@@ -1,3 +1,4 @@
+import { useAppTheme } from "@/hooks/useAppTheme";
 import { useI18n } from "@/hooks/useI18n";
 import { spacing } from "@/theme/tokens";
 import { useState } from "react";
@@ -24,6 +25,7 @@ export function LanguageSwitcher() {
   const [modalVisible, setModalVisible] = useState(false);
   const selectedLanguage = languages.find((lang) => lang.value === language);
   const { t } = useI18n();
+  const theme = useAppTheme();
   const handleSelect = (value: string) => {
     setLanguage(value);
     setModalVisible(false);
@@ -32,7 +34,7 @@ export function LanguageSwitcher() {
   return (
     <>
       <TouchableOpacity
-        style={styles.button}
+        style={[styles.button, { backgroundColor: theme.primaryLight }]}
         onPress={() => setModalVisible(true)}
         activeOpacity={0.7}
       >
@@ -46,12 +48,15 @@ export function LanguageSwitcher() {
         onRequestClose={() => setModalVisible(false)}
       >
         <Pressable
-          style={styles.modalOverlay}
+          style={[styles.modalOverlay, { backgroundColor: theme.modalOverlay }]}
           onPress={() => setModalVisible(false)}
         >
-          <View style={styles.modalContent}>
-            <View style={styles.modalHeader}>
-              <Text style={styles.modalHeaderText}>{t("languageModalHeader")}</Text>
+          <View style={[styles.modalContent, { backgroundColor: theme.modalBackground }]}>
+            <View style={[styles.modalHeader, { 
+              borderBottomColor: theme.borderLight,
+              backgroundColor: theme.modalHeader 
+            }]}>
+              <Text style={[styles.modalHeaderText, { color: theme.text }]}>{t("languageModalHeader")}</Text>
             </View>
             <FlatList
               data={languages}
@@ -60,14 +65,22 @@ export function LanguageSwitcher() {
                 <TouchableOpacity
                   style={[
                     styles.listItem,
-                    item.value === language && styles.listItemSelected,
+                    { borderBottomColor: theme.borderLight },
+                    item.value === language && [
+                      styles.listItemSelected,
+                      { backgroundColor: theme.listItemBackground }
+                    ],
                   ]}
                   onPress={() => handleSelect(item.value)}
                 >
                   <Text
                     style={[
                       styles.listItemText,
-                      item.value === language && styles.listItemTextSelected,
+                      { color: theme.text },
+                      item.value === language && [
+                        styles.listItemTextSelected,
+                        { color: theme.primary }
+                      ],
                     ]}
                   >
                     {item.label}
@@ -85,7 +98,6 @@ export function LanguageSwitcher() {
 const styles = StyleSheet.create({
   button: {
     borderRadius: 999,
-    backgroundColor: "#57507F",
     paddingVertical: spacing.sm,
     paddingHorizontal: spacing.lg,
     marginTop: 30,
@@ -98,16 +110,18 @@ const styles = StyleSheet.create({
     color: "#fff",
     fontWeight: "600",
     fontSize: 16,
-    fontFamily: Platform.OS === "ios" ? "System" : "Roboto",
+    fontFamily: Platform.select({
+      ios: 'System',
+      android: 'Roboto',
+      web: 'system-ui',
+    }),
   },
   modalOverlay: {
     flex: 1,
-    backgroundColor: "rgba(0, 0, 0, 0.5)",
     justifyContent: "center",
     alignItems: "center",
   },
   modalContent: {
-    backgroundColor: "#fff",
     borderRadius: 12,
     width: "80%",
     maxHeight: "50%",
@@ -117,32 +131,35 @@ const styles = StyleSheet.create({
     paddingVertical: spacing.md,
     paddingHorizontal: spacing.lg,
     borderBottomWidth: 1,
-    borderBottomColor: "#e0e0e0",
-    backgroundColor: "#f9f9f9",
   },
   modalHeaderText: {
     fontSize: 16,
     fontWeight: "600",
-    color: "#333",
     textAlign: "center",
-    fontFamily: Platform.OS === "ios" ? "System" : "Roboto",
+    fontFamily: Platform.select({
+      ios: 'System',
+      android: 'Roboto',
+      web: 'system-ui',
+    }),
   },
   listItem: {
     paddingVertical: spacing.md,
     paddingHorizontal: spacing.lg,
     borderBottomWidth: 1,
-    borderBottomColor: "#e0e0e0",
   },
   listItemSelected: {
-    backgroundColor: "#f0f0f0",
+    // backgroundColor settes dynamisk
   },
   listItemText: {
     fontSize: 16,
-    fontFamily: Platform.OS === "ios" ? "System" : "Roboto",
-    color: "#000",
+    fontFamily: Platform.select({
+      ios: 'System',
+      android: 'Roboto',
+      web: 'system-ui',
+    }),
   },
   listItemTextSelected: {
     fontWeight: "600",
-    color: "#57507F",
+    // color settes dynamisk
   },
 });

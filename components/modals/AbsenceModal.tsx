@@ -2,6 +2,7 @@ import { formatDateShort } from "@/utils/date";
 import React from "react";
 import { Modal, Pressable, StyleSheet, Text, View } from "react-native";
 import { useI18n } from "@/hooks/useI18n";
+import { useAppTheme } from "@/hooks/useAppTheme";
 
 interface AbsenceModalProps {
   isVisible: boolean;
@@ -27,62 +28,67 @@ export const AbsenceModal: React.FC<AbsenceModalProps> = ({
   onRegisterVacation,
 }) => {
   const { t } = useI18n();
+  const theme = useAppTheme();
+
   return (
     <Modal visible={isVisible} transparent animationType="fade">
-      <View style={styles.overlayBackdrop}>
+      <View style={[styles.overlayBackdrop, { backgroundColor: theme.modalOverlay }]}>
         <Pressable style={StyleSheet.absoluteFill} onPress={onClose} />
-        <View style={styles.overlayCard}>
-          <Text style={styles.absenceModalTitle}>{t("registerLeave")}</Text>
-          <Text style={styles.absenceModalSubtitle}>
+        <View style={[styles.overlayCard, { backgroundColor: theme.modalBackground }]}>
+          <Text style={[styles.absenceModalTitle, { color: theme.text }]}>{t("registerLeave")}</Text>
+          <Text style={[styles.absenceModalSubtitle, { color: theme.textSecondary }]}>
             {selectedChildrenCount} {t("numOfChildren")}
           </Text>
-          <View style={styles.absenceSection}>
+          <View style={[styles.absenceSection, { backgroundColor: theme.cardBackground }]}>
             <Pressable
-              style={styles.absenceOption}
+              style={[styles.absenceOption, { borderColor: theme.primary }]}
               onPress={onRegisterSickness}
             >
-              <Text style={styles.absenceOptionText}>{t("sickToday")}</Text>
+              <Text style={[styles.absenceOptionText, { color: theme.primary }]}>{t("sickToday")}</Text>
             </Pressable>
 
             <View style={styles.vacationBlock}>
-              <Text style={styles.vacationLabel}>{t("vacation")}</Text>
+              <Text style={[styles.vacationLabel, { color: theme.text }]}>{t("vacation")}</Text>
 
               <Pressable
-                style={styles.vacationDateSelect}
+                style={[styles.vacationDateSelect, { 
+                  backgroundColor: theme.inputBackground,
+                  borderColor: theme.primary 
+                }]}
                 onPress={onOpenStartDatePicker}
               >
-                <Text style={styles.vacationDateLabel}>{t("startdate")}:</Text>
-                <Text style={styles.vacationDateValue}>
+                <Text style={[styles.vacationDateLabel, { color: theme.text }]}>{t("startdate")}:</Text>
+                <Text style={[styles.vacationDateValue, { color: theme.primary }]}>
                   {formatDateShort(vacationStartDate)}
                 </Text>
               </Pressable>
 
               <View style={styles.vacationRow}>
-                <Text style={[styles.vacationLabel, { flex: 1 }]}>
+                <Text style={[styles.vacationLabel, { flex: 1, color: theme.text }]}>
                   {t("numOfDays")}:
                 </Text>
                 <Pressable
-                  style={styles.vacationAdjustButton}
+                  style={[styles.vacationAdjustButton, { borderColor: theme.primary }]}
                   onPress={() => setVacationDays((d) => Math.max(1, d - 1))}
                 >
-                  <Text style={styles.vacationAdjustText}>-</Text>
+                  <Text style={[styles.vacationAdjustText, { color: theme.primary }]}>-</Text>
                 </Pressable>
 
-                <Text style={styles.vacationDaysText}>{vacationDays}</Text>
+                <Text style={[styles.vacationDaysText, { color: theme.text }]}>{vacationDays}</Text>
 
                 <Pressable
-                  style={styles.vacationAdjustButton}
+                  style={[styles.vacationAdjustButton, { borderColor: theme.primary }]}
                   onPress={() => setVacationDays((d) => Math.min(30, d + 1))}
                 >
-                  <Text style={styles.vacationAdjustText}>+</Text>
+                  <Text style={[styles.vacationAdjustText, { color: theme.primary }]}>+</Text>
                 </Pressable>
               </View>
 
               <Pressable
-                style={[styles.absenceOption, { marginTop: 8 }]}
+                style={[styles.absenceOption, { marginTop: 8, borderColor: theme.primary }]}
                 onPress={onRegisterVacation}
               >
-                <Text style={styles.absenceOptionText}>{t("registerVacation")}</Text>
+                <Text style={[styles.absenceOptionText, { color: theme.primary }]}>{t("registerVacation")}</Text>
               </Pressable>
             </View>
           </View>
@@ -95,14 +101,12 @@ export const AbsenceModal: React.FC<AbsenceModalProps> = ({
 const styles = StyleSheet.create({
   overlayBackdrop: {
     flex: 1,
-    backgroundColor: "rgba(0,0,0,0.35)",
     justifyContent: "center",
     alignItems: "center",
     paddingHorizontal: 24,
   },
   overlayCard: {
     width: "100%",
-    backgroundColor: "white",
     borderRadius: 20,
     padding: 20,
     elevation: 6,
@@ -118,7 +122,6 @@ const styles = StyleSheet.create({
     color: "#555",
   },
   absenceSection: {
-    backgroundColor: "#F5F3FF",
     borderRadius: 16,
     padding: 12,
   },
@@ -126,13 +129,11 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
     borderRadius: 999,
     borderWidth: 1,
-    borderColor: "#57507F",
     alignItems: "center",
     marginBottom: 8,
   },
   absenceOptionText: {
     fontSize: 14,
-    color: "#57507F",
     fontWeight: "600",
   },
   vacationBlock: {
@@ -141,28 +142,23 @@ const styles = StyleSheet.create({
   vacationLabel: {
     fontSize: 14,
     marginBottom: 4,
-    color: "#312E81",
   },
   vacationDateSelect: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
     padding: 10,
-    backgroundColor: "#EFEFFF",
     borderRadius: 8,
     marginBottom: 8,
     borderWidth: 1,
-    borderColor: "#57507F",
   },
   vacationDateLabel: {
     fontSize: 14,
     fontWeight: "600",
-    color: "#312E81",
   },
   vacationDateValue: {
     fontSize: 14,
     fontWeight: "700",
-    color: "#57507F",
   },
   vacationRow: {
     flexDirection: "row",
@@ -174,14 +170,12 @@ const styles = StyleSheet.create({
     height: 32,
     borderRadius: 16,
     borderWidth: 1,
-    borderColor: "#57507F",
     alignItems: "center",
     justifyContent: "center",
   },
   vacationAdjustText: {
     fontSize: 18,
     fontWeight: "700",
-    color: "#57507F",
   },
   vacationDaysText: {
     marginHorizontal: 12,
