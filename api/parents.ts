@@ -1,3 +1,5 @@
+// CRUD File (api/parents.ts)
+
 import { auth, db } from "@/firebaseConfig";
 import { ParentProps } from "@/types/parent";
 import { createUserWithEmailAndPassword } from "firebase/auth";
@@ -47,12 +49,24 @@ export const getParent = async (id: string): Promise<ParentProps | null> => {
   };
 };
 
+// --- The key function, updated with logging and error handling ---
 export const addChildToParent = async (parentUid: string, childUid: string) => {
+  console.log(`[addChildToParent] Attempting to add child ${childUid} to parent ${parentUid}`);
   const parentRef = doc(db, "parents", parentUid);
-  await updateDoc(parentRef, {
-    children: arrayUnion(childUid),
-  });
+  
+  try {
+    await updateDoc(parentRef, {
+      children: arrayUnion(childUid),
+    });
+    console.log(`[addChildToParent] Successfully updated parent ${parentUid}`);
+  } catch (error) {
+    console.error(`[addChildToParent] Failed to update parent ${parentUid}:`, error);
+    // Re-throw the error so it can be caught in the modal
+    throw error;
+  }
 };
+// -----------------------------------------------------------------
+
 
 export const getAllParents = async (): Promise<ParentProps[]> => {
   const snap = await getDocs(parentsCol);
