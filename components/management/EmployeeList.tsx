@@ -20,7 +20,9 @@ interface EmployeeListProps {
 
 export function EmployeeList({ onEdit }: EmployeeListProps) {
   const [employees, setEmployees] = useState<EmployeeProps[]>([]);
+  const [displayQuery, setDisplayQuery] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
+  const [isDebouncing, setIsDebouncing] = useState(false);
   const [loading, setLoading] = useState(true);
   const { t } = useI18n();
   const theme = useAppTheme();
@@ -28,6 +30,17 @@ export function EmployeeList({ onEdit }: EmployeeListProps) {
   useEffect(() => {
     fetchEmployees();
   }, []);
+
+  useEffect(() => {
+    if (displayQuery !== searchQuery) {
+      setIsDebouncing(true);
+    }
+    const handler = setTimeout(() => {
+      setSearchQuery(displayQuery);
+      setIsDebouncing(false);
+    }, 500);
+    return () => clearTimeout(handler);
+  }, [displayQuery]);
 
   const fetchEmployees = async () => {
     try {
@@ -77,19 +90,41 @@ export function EmployeeList({ onEdit }: EmployeeListProps) {
 
   return (
     <View style={{ paddingHorizontal: 20 }}>
-      <TextInput
-        placeholder={t("searchEmployeePlaceholder") || "Search employee..."}
-        value={searchQuery}
-        onChangeText={setSearchQuery}
+      <View
         style={[
           styles.input,
           {
             backgroundColor: theme.inputBackground,
-            color: theme.text,
+            flexDirection: "row",
+            alignItems: "center",
+            paddingRight: 15,
             marginBottom: 10,
           },
         ]}
-      />
+      >
+        <TextInput
+          placeholder={t("searchEmployeePlaceholder") || "Search employee..."}
+          value={displayQuery}
+          onChangeText={setDisplayQuery}
+          style={{
+            flex: 1,
+            color: theme.text,
+            height: "100%",
+          }}
+        />
+        {isDebouncing ? (
+          <ActivityIndicator size="small" color={theme.primary} />
+        ) : displayQuery.length > 0 ? (
+          <TouchableOpacity onPress={() => setDisplayQuery("")}>
+            <Ionicons
+              name="close-circle"
+              size={18}
+              color={theme.textSecondary}
+            />
+          </TouchableOpacity>
+        ) : null}
+      </View>
+
       {filtered.map((emp) => (
         <View
           key={emp.id}

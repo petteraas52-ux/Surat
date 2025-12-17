@@ -108,6 +108,10 @@
   "failedToLoadChildren": "Feil ved henting av barn!",
   "updateSuccessful": "Oppdatering fullført!",
   "OK": "Ok",
+  "noResultsFound": "Ingen funnet!",
+  "childOverview": "Avdelings oversikt",
+  "all": "Alle",
+  "clearAll": "Fjern alle filter",
 
   "close": "Lukk",
   "calendarHeader": "Kalender og Arrangementer",
