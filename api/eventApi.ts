@@ -1,5 +1,5 @@
 import { db } from "@/firebaseConfig";
-import { EventProps } from "@/types/event";
+import { EventProps } from "@/types/eventData";
 import {
   addDoc,
   collection,

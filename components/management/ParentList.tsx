@@ -1,8 +1,8 @@
-import { deleteParent, getAllParents } from "@/api/parents";
+import { deleteParent, getAllParents } from "@/api/parentApi";
 import { styles } from "@/components/modals/commonStyles";
 import { useAppTheme } from "@/hooks/useAppTheme";
 import { useI18n } from "@/hooks/useI18n";
-import { ParentProps } from "@/types/parent";
+import { ParentProps } from "@/types/parentData";
 import { Ionicons } from "@expo/vector-icons";
 import React, { useEffect, useState } from "react";
 import {

@@ -1,8 +1,8 @@
-import { getAllDepartments } from "@/api/department";
-import { createEvent } from "@/api/event";
+import { getAllDepartments } from "@/api/departmentApi";
+import { createEvent } from "@/api/eventApi";
 import { useAppTheme } from "@/hooks/useAppTheme";
 import { useI18n } from "@/hooks/useI18n";
-import { DepartmentProps } from "@/types/department";
+import { DepartmentProps } from "@/types/departmentData";
 import { Ionicons } from "@expo/vector-icons";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import { Timestamp } from "firebase/firestore";

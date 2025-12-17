@@ -1,12 +1,12 @@
-import { updateChild } from "@/api/children";
-import { getAllDepartments, updateDepartment } from "@/api/department";
-import { updateEmployee } from "@/api/employees";
-import { updateEvent } from "@/api/event";
-import { updateParent } from "@/api/parents";
+import { updateChild } from "@/api/childrenApi";
+import { getAllDepartments, updateDepartment } from "@/api/departmentApi";
+import { updateEmployee } from "@/api/employeApi";
+import { updateEvent } from "@/api/eventApi";
+import { updateParent } from "@/api/parentApi";
 import { styles } from "@/components/modals/commonStyles";
 import { useAppTheme } from "@/hooks/useAppTheme";
 import { useI18n } from "@/hooks/useI18n";
-import { DepartmentProps } from "@/types/department";
+import { DepartmentProps } from "@/types/departmentData";
 import React, { useEffect, useState } from "react";
 import {
   ActivityIndicator,

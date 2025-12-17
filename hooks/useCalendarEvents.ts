@@ -1,4 +1,4 @@
-import { EventProps } from "@/types/event";
+import { EventProps } from "@/types/eventData";
 import { parseISODateToLocal, parseTimestampToDateString } from "@/utils/date";
 import { useMemo, useState } from "react";
 import { DateData } from "react-native-calendars";

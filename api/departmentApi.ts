@@ -1,5 +1,5 @@
 import { db } from "@/firebaseConfig";
-import { DepartmentProps } from "@/types/department";
+import { DepartmentProps } from "@/types/departmentData";
 import {
   addDoc,
   collection,

@@ -1,8 +1,8 @@
-import { getAllDepartments } from "@/api/department";
-import { createEmployee } from "@/api/employees";
+import { getAllDepartments } from "@/api/departmentApi";
+import { createEmployee } from "@/api/employeApi";
 import { useAppTheme } from "@/hooks/useAppTheme";
 import { useI18n } from "@/hooks/useI18n";
-import { DepartmentProps } from "@/types/department";
+import { DepartmentProps } from "@/types/departmentData";
 import { useEffect, useState } from "react";
 import {
   ActivityIndicator,

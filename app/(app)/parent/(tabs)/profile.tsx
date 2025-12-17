@@ -1,10 +1,10 @@
-import { getParent, updateParent } from "@/api/parents";
+import { getParent, updateParent } from "@/api/parentApi";
 import ProfilePicture from "@/components/image/ProfilePicture";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 import ChangePinModal from "@/components/modals/ChangePinModal";
 import { useAppTheme } from "@/hooks/useAppTheme";
 import { useI18n } from "@/hooks/useI18n";
-import { ParentProps } from "@/types/parent";
+import { ParentProps } from "@/types/parentData";
 import { MaterialIcons } from "@expo/vector-icons";
 import { getAuth, signOut } from "firebase/auth";
 import { useEffect, useState } from "react";
@@ -151,54 +151,89 @@ export default function ProfileScreen() {
             placeholderTextColor={theme.placeholder}
           />
         ) : (
-          <Text style={[styles.value, { 
-            backgroundColor: theme.inputBackground,
-            color: theme.text 
-          }]}>{name}</Text>
+          <Text
+            style={[
+              styles.value,
+              {
+                backgroundColor: theme.inputBackground,
+                color: theme.text,
+              },
+            ]}
+          >
+            {name}
+          </Text>
         )}
 
         <View style={styles.row}>
-          <Text style={[styles.label, { color: theme.text }]}>{t("phone")}</Text>
-          {isEditing && <MaterialIcons name="edit" size={20} color={theme.primary} />}
+          <Text style={[styles.label, { color: theme.text }]}>
+            {t("phone")}
+          </Text>
+          {isEditing && (
+            <MaterialIcons name="edit" size={20} color={theme.primary} />
+          )}
         </View>
         {isEditing ? (
           <TextInput
-            style={[styles.input, { 
-              backgroundColor: theme.inputBackground,
-              color: theme.text 
-            }]}
+            style={[
+              styles.input,
+              {
+                backgroundColor: theme.inputBackground,
+                color: theme.text,
+              },
+            ]}
             value={phone}
             onChangeText={setPhone}
             keyboardType="phone-pad"
             placeholderTextColor={theme.placeholder}
           />
         ) : (
-          <Text style={[styles.value, { 
-            backgroundColor: theme.inputBackground,
-            color: theme.text 
-          }]}>{phone}</Text>
+          <Text
+            style={[
+              styles.value,
+              {
+                backgroundColor: theme.inputBackground,
+                color: theme.text,
+              },
+            ]}
+          >
+            {phone}
+          </Text>
         )}
 
         <View style={styles.row}>
-          <Text style={[styles.label, { color: theme.text }]}>{t("email")}</Text>
-          {isEditing && <MaterialIcons name="edit" size={20} color={theme.primary} />}
+          <Text style={[styles.label, { color: theme.text }]}>
+            {t("email")}
+          </Text>
+          {isEditing && (
+            <MaterialIcons name="edit" size={20} color={theme.primary} />
+          )}
         </View>
         {isEditing ? (
           <TextInput
-            style={[styles.input, { 
-              backgroundColor: theme.inputBackground,
-              color: theme.text 
-            }]}
+            style={[
+              styles.input,
+              {
+                backgroundColor: theme.inputBackground,
+                color: theme.text,
+              },
+            ]}
             value={email}
             onChangeText={setEmail}
             keyboardType="email-address"
             placeholderTextColor={theme.placeholder}
           />
         ) : (
-          <Text style={[styles.value, { 
-            backgroundColor: theme.inputBackground,
-            color: theme.text 
-          }]}>{email}</Text>
+          <Text
+            style={[
+              styles.value,
+              {
+                backgroundColor: theme.inputBackground,
+                color: theme.text,
+              },
+            ]}
+          >
+            {email}
+          </Text>
         )}
 
         <TouchableOpacity
@@ -208,13 +243,15 @@ export default function ProfileScreen() {
           <Text style={styles.buttonText}>
             {isEditing ? t("save") : t("edit")}
           </Text>
-          
         </TouchableOpacity>
 
         <LanguageSwitcher />
 
-        <Pressable style={[styles.button, {backgroundColor: theme.primary}]} onPress={() => setShowChangePin(true)}>
-          <Text style={[styles.buttonText, { color: "white"}]}>Endre PIN</Text>
+        <Pressable
+          style={[styles.button, { backgroundColor: theme.primary }]}
+          onPress={() => setShowChangePin(true)}
+        >
+          <Text style={[styles.buttonText, { color: "white" }]}>Endre PIN</Text>
         </Pressable>
 
         <ChangePinModal
@@ -222,8 +259,11 @@ export default function ProfileScreen() {
           visible={showChangePin}
           onClose={() => setShowChangePin(false)}
         />
-        
-        <Pressable style={[styles.button, { backgroundColor: theme.primary }]} onPress={handleLogout}>
+
+        <Pressable
+          style={[styles.button, { backgroundColor: theme.primary }]}
+          onPress={handleLogout}
+        >
           <Text style={styles.buttonText}>{t("logout")}</Text>
         </Pressable>
       </ScrollView>
@@ -232,14 +272,14 @@ export default function ProfileScreen() {
 }
 
 const styles = StyleSheet.create({
-  safe: { 
-    flex: 1, 
-    justifyContent: "center" 
+  safe: {
+    flex: 1,
+    justifyContent: "center",
   },
-  container: { 
-    padding: 24, 
-    paddingBottom: 40, 
-    alignItems: "center" 
+  container: {
+    padding: 24,
+    paddingBottom: 40,
+    alignItems: "center",
   },
   title: {
     fontSize: 30,
@@ -261,9 +301,9 @@ const styles = StyleSheet.create({
     width: "80%",
     marginBottom: 5,
   },
-  label: { 
-    fontSize: 16, 
-    fontWeight: "600" 
+  label: {
+    fontSize: 16,
+    fontWeight: "600",
   },
   value: {
     width: "80%",
@@ -287,9 +327,9 @@ const styles = StyleSheet.create({
     paddingHorizontal: 50,
     borderRadius: 25,
   },
-  buttonText: { 
-    color: "#fff", 
-    fontWeight: "600", 
-    fontSize: 16 
+  buttonText: {
+    color: "#fff",
+    fontWeight: "600",
+    fontSize: 16,
   },
 });

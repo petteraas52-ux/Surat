@@ -1,4 +1,4 @@
-import { getParent } from "@/api/parents";
+import { getParent } from "@/api/parentApi";
 import { db } from "@/firebaseConfig";
 import { getErrorMessage } from "@/utils/error";
 import { getAuth } from "firebase/auth";

@@ -1,23 +1,21 @@
-import { getImageUrl, invalidateImageCache, uploadImageToFirebase } from "@/api/imageApi";
+import { updateChildProfileImage } from "@/api/childrenApi";
+import { getImageUrl, invalidateImageCache } from "@/api/imageApi";
+import { updateParentProfileImage } from "@/api/parentApi";
+import { useAppTheme } from "@/hooks/useAppTheme";
 import FontAwesome5 from "@expo/vector-icons/FontAwesome5";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import { useEffect, useRef, useState } from "react";
 import {
   ActivityIndicator,
-  Alert,
   Animated,
   Image,
   Modal,
   Pressable,
   StyleSheet,
-  TouchableOpacity,
   View,
   ViewStyle,
 } from "react-native";
 import SelectImageModal from "./SelectImageModal";
-import { useAppTheme } from "@/hooks/useAppTheme";
-import { updateParentProfileImage } from "@/api/parents";
-import { updateChildProfileImage } from "@/api/children";
 
 type ProfilePictureProps = {
   showEdit?: boolean;
@@ -39,7 +37,7 @@ export default function ProfilePicture({
   const [uploading, setUploading] = useState(false);
   const [loading, setLoading] = useState(true);
   const [isPressed, setIsPressed] = useState(false);
-  const theme = useAppTheme(); 
+  const theme = useAppTheme();
   const fadeAnim = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
@@ -78,44 +76,45 @@ export default function ProfilePicture({
   }, [showEdit]);
 
   async function handleImageSelected(imageUri: string) {
-  console.log("ProfilePicture: Handling image selection:", imageUri);
-  setUploading(true);
-  
-  try {
-    // Kall update-funksjoner som returnerer den nye storage path
-    let newStoragePath: string | null = null;
-    
-    if (userType === 'parent') {
-      newStoragePath = await updateParentProfileImage(userId, imageUri);
-    } else if (userType === 'child') {
-      newStoragePath = await updateChildProfileImage(userId, imageUri);
+    console.log("ProfilePicture: Handling image selection:", imageUri);
+    setUploading(true);
+
+    try {
+      // Kall update-funksjoner som returnerer den nye storage path
+      let newStoragePath: string | null = null;
+
+      if (userType === "parent") {
+        newStoragePath = await updateParentProfileImage(userId, imageUri);
+      } else if (userType === "child") {
+        newStoragePath = await updateChildProfileImage(userId, imageUri);
+      }
+
+      if (!newStoragePath) {
+        throw new Error("Failed to upload and update profile image");
+      }
+
+      console.log(
+        "ProfilePicture: Image uploaded successfully. New path:",
+        newStoragePath
+      );
+
+      // Invalider cache for det gamle bildet
+      if (initialImagePath) {
+        await invalidateImageCache(initialImagePath);
+      }
+
+      // Last ned og vis det nye bildet fra Firebase Storage
+      const newImageUrl = await getImageUrl(newStoragePath);
+      if (newImageUrl) {
+        setImage(newImageUrl);
+        console.log("ProfilePicture: New image loaded and displayed");
+      }
+    } catch (error) {
+      console.error("ProfilePicture: Error uploading/updating image:", error);
+    } finally {
+      setUploading(false);
     }
-
-    if (!newStoragePath) {
-      throw new Error("Failed to upload and update profile image");
-    }
-
-    console.log("ProfilePicture: Image uploaded successfully. New path:", newStoragePath);
-
-    // Invalider cache for det gamle bildet
-    if (initialImagePath) {
-      await invalidateImageCache(initialImagePath);
-    }
-
-    // Last ned og vis det nye bildet fra Firebase Storage
-    const newImageUrl = await getImageUrl(newStoragePath);
-    if (newImageUrl) {
-      setImage(newImageUrl);
-      console.log("ProfilePicture: New image loaded and displayed");
-    }
-
-    
-  } catch (error) {
-    console.error("ProfilePicture: Error uploading/updating image:", error);
-  } finally {
-    setUploading(false);
   }
-}
 
   return (
     <View style={[styles.container, style]}>
@@ -128,7 +127,7 @@ export default function ProfilePicture({
           }}
         />
       </Modal>
-      <Pressable 
+      <Pressable
         style={styles.imageWrapper}
         onPress={() => showEdit && setIsCameraOpen(true)}
         onPressIn={() => setIsPressed(true)}
@@ -150,19 +149,24 @@ export default function ProfilePicture({
       </Pressable>
       {showEdit && (isPressed || fadeAnim) && !uploading && (
         <Animated.View
-        pointerEvents="none"
+          pointerEvents="none"
           style={[
-            styles.editOverlay, 
-            { 
+            styles.editOverlay,
+            {
               backgroundColor: theme.imageEditOverlay,
               opacity: isPressed ? 1 : fadeAnim, // Full opacity ved press, ellers animated
-            }
+            },
           ]}
         >
-          <View style={[styles.editIconContainer, { 
-            backgroundColor: theme.imageEditIconBackground,
-            borderColor: theme.primaryLight 
-          }]}>
+          <View
+            style={[
+              styles.editIconContainer,
+              {
+                backgroundColor: theme.imageEditIconBackground,
+                borderColor: theme.primaryLight,
+              },
+            ]}
+          >
             <FontAwesome5 name="edit" size={24} color={theme.primaryLight} />
           </View>
         </Animated.View>
@@ -183,7 +187,7 @@ const styles = StyleSheet.create({
     height: "100%",
     overflow: "hidden",
   },
-   loadingContainer: {
+  loadingContainer: {
     justifyContent: "center",
     alignItems: "center",
   },

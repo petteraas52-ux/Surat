@@ -1,4 +1,4 @@
-import { createDepartment } from "@/api/department";
+import { createDepartment } from "@/api/departmentApi";
 import { useAppTheme } from "@/hooks/useAppTheme";
 import { useI18n } from "@/hooks/useI18n";
 import React, { useState } from "react";

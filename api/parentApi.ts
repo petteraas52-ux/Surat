@@ -1,5 +1,5 @@
 import { auth, db } from "@/firebaseConfig";
-import { ParentProps } from "@/types/parent";
+import { ParentProps } from "@/types/parentData";
 import { createUserWithEmailAndPassword } from "firebase/auth";
 import {
   arrayUnion,

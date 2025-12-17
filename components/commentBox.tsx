@@ -2,7 +2,7 @@ import { createComment, getComments } from "@/api/commentApi";
 import { useAppTheme } from "@/hooks/useAppTheme";
 import { useI18n } from "@/hooks/useI18n";
 import { useAuthSession } from "@/providers/authctx";
-import { Comment } from "@/types/comment";
+import { Comment } from "@/types/commentData";
 import { useEffect, useState } from "react";
 import {
   ActivityIndicator,
@@ -21,7 +21,7 @@ type CommentBoxProps = {
 export default function CommentBox({ childId }: CommentBoxProps) {
   const { user } = useAuthSession();
   const { t } = useI18n();
-  const theme = useAppTheme(); 
+  const theme = useAppTheme();
   const [comments, setComments] = useState<Comment[]>([]);
   const [text, setText] = useState("");
   const [loading, setLoading] = useState(false);
@@ -57,23 +57,35 @@ export default function CommentBox({ childId }: CommentBoxProps) {
   if (initialLoading) {
     return (
       <View style={styles.center}>
-        <ActivityIndicator color={theme.primary}/>
+        <ActivityIndicator color={theme.primary} />
       </View>
     );
   }
 
   return (
     <View style={styles.container}>
-      <Text style={[styles.header, { color: theme.text }]}>{t("commentsComponentHeader")}</Text>
+      <Text style={[styles.header, { color: theme.text }]}>
+        {t("commentsComponentHeader")}
+      </Text>
 
       <ScrollView style={styles.list}>
         {comments.length === 0 && (
-          <Text style={[styles.noComments, { color: theme.textMuted }]}>{t("noComments")}</Text>
+          <Text style={[styles.noComments, { color: theme.textMuted }]}>
+            {t("noComments")}
+          </Text>
         )}
 
         {comments.map((c) => (
-          <View key={c.id} style={[styles.comment, { backgroundColor: theme.commentBackground }]}>
-            <Text style={[styles.commentText, { color: theme.commentText }]}>{c.text}</Text>
+          <View
+            key={c.id}
+            style={[
+              styles.comment,
+              { backgroundColor: theme.commentBackground },
+            ]}
+          >
+            <Text style={[styles.commentText, { color: theme.commentText }]}>
+              {c.text}
+            </Text>
             <Text style={[styles.meta, { color: theme.commentMeta }]}>
               {c.createdByName} •{" "}
               {c.createdAt
@@ -89,11 +101,14 @@ export default function CommentBox({ childId }: CommentBoxProps) {
           value={text}
           onChangeText={setText}
           placeholder={t("writeAComment")}
-          style={[styles.input, { 
-            borderColor: theme.border,
-            backgroundColor: theme.inputBackground,
-            color: theme.text 
-          }]}
+          style={[
+            styles.input,
+            {
+              borderColor: theme.border,
+              backgroundColor: theme.inputBackground,
+              color: theme.text,
+            },
+          ]}
           multiline
         />
         <Pressable

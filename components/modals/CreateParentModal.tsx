@@ -1,4 +1,4 @@
-import { createParent } from "@/api/parents";
+import { createParent } from "@/api/parentApi";
 import { useAppTheme } from "@/hooks/useAppTheme";
 import { useI18n } from "@/hooks/useI18n";
 import { useState } from "react";

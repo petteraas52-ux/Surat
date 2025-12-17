@@ -1,6 +1,6 @@
-import { getAllChildren } from "@/api/children";
+import { getAllChildren } from "@/api/childrenApi";
 import { auth } from "@/firebaseConfig";
-import { ChildProps } from "@/types/child";
+import { ChildProps } from "@/types/childData";
 import { useCallback, useEffect, useRef, useState } from "react";
 
 type AbsenceType = "sykdom" | "ferie" | null;

@@ -1,8 +1,8 @@
-import { deleteEvent, getAllEvents } from "@/api/event";
+import { deleteEvent, getAllEvents } from "@/api/eventApi";
 import { styles } from "@/components/modals/commonStyles";
 import { useAppTheme } from "@/hooks/useAppTheme";
 import { useI18n } from "@/hooks/useI18n";
-import { EventProps } from "@/types/event";
+import { EventProps } from "@/types/eventData";
 import { Ionicons } from "@expo/vector-icons";
 import React, { useEffect, useState } from "react";
 import {

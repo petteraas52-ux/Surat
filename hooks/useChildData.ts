@@ -1,7 +1,7 @@
-import { getAllEvents } from "@/api/event";
+import { getAllEvents } from "@/api/eventApi";
 import { db } from "@/firebaseConfig";
-import { ChildProps } from "@/types/child";
-import { EventProps } from "@/types/event";
+import { ChildProps } from "@/types/childData";
+import { EventProps } from "@/types/eventData";
 import { getErrorMessage } from "@/utils/error";
 import { getAuth } from "firebase/auth";
 import { collection, getDocs, query, where } from "firebase/firestore";

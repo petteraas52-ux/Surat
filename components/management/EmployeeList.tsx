@@ -1,8 +1,8 @@
-import { deleteEmployee, getAllEmployees } from "@/api/employees";
+import { deleteEmployee, getAllEmployees } from "@/api/employeApi";
 import { styles } from "@/components/modals/commonStyles";
 import { useAppTheme } from "@/hooks/useAppTheme";
 import { useI18n } from "@/hooks/useI18n";
-import { EmployeeProps } from "@/types/employee";
+import { EmployeeProps } from "@/types/employeeData";
 import { Ionicons } from "@expo/vector-icons";
 import React, { useEffect, useState } from "react";
 import {

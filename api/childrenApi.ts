@@ -1,5 +1,5 @@
 import { db } from "@/firebaseConfig";
-import { ChildProps } from "@/types/child";
+import { ChildProps } from "@/types/childData";
 import {
   addDoc,
   collection,
@@ -66,14 +66,14 @@ export const deleteChild = async (id: string) => {
 export const updateChildProfileImage = async (
   childId: string,
   imageUri: string
-): Promise<string | null> => { 
+): Promise<string | null> => {
   try {
     const storagePath = await uploadImageToFirebase(imageUri);
     if (!storagePath) return null;
 
     await updateChild(childId, { imageUri: storagePath });
     console.log("Child profile image updated successfully");
-    return storagePath; 
+    return storagePath;
   } catch (e) {
     console.error("Error updating child profile image:", e);
     return null;

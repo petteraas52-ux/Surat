@@ -1,8 +1,8 @@
-import { deleteDepartment, getAllDepartments } from "@/api/department";
+import { deleteDepartment, getAllDepartments } from "@/api/departmentApi";
 import { styles } from "@/components/modals/commonStyles";
 import { useAppTheme } from "@/hooks/useAppTheme";
 import { useI18n } from "@/hooks/useI18n";
-import { DepartmentProps } from "@/types/department";
+import { DepartmentProps } from "@/types/departmentData";
 import { Ionicons } from "@expo/vector-icons";
 import React, { useEffect, useState } from "react";
 import {

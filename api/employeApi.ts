@@ -1,5 +1,5 @@
 import { auth, db } from "@/firebaseConfig";
-import { EmployeeProps } from "@/types/employee";
+import { EmployeeProps } from "@/types/employeeData";
 import { createUserWithEmailAndPassword } from "firebase/auth";
 import {
   collection,

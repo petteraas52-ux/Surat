@@ -1,8 +1,8 @@
+import { useAppTheme } from "@/hooks/useAppTheme";
 import { useI18n } from "@/hooks/useI18n";
-import { EventProps } from "@/types/event";
+import { EventProps } from "@/types/eventData";
 import { formatDateShort } from "@/utils/date";
 import React from "react";
-import { useAppTheme } from "@/hooks/useAppTheme";
 import {
   Modal,
   Pressable,
@@ -30,27 +30,51 @@ export const CalendarModal: React.FC<CalendarModalProps> = ({
   eventsForSelectedDate,
   onDayPress,
 }) => {
-
   const { t } = useI18n();
   const theme = useAppTheme();
   const renderEvent = (event: EventProps, index: number) => (
-    <View key={index} style={[styles.eventItem, { 
-        backgroundColor: theme.cardBackground,
-        borderLeftColor: theme.primary 
-      }]}>
-      <Text style={[styles.eventTitle, { color: theme.text }]}>{event.title}</Text>
-      <Text style={[styles.eventSubtitle, { color: theme.primary }]}>{t("department")}: {event.department}</Text>
+    <View
+      key={index}
+      style={[
+        styles.eventItem,
+        {
+          backgroundColor: theme.cardBackground,
+          borderLeftColor: theme.primary,
+        },
+      ]}
+    >
+      <Text style={[styles.eventTitle, { color: theme.text }]}>
+        {event.title}
+      </Text>
+      <Text style={[styles.eventSubtitle, { color: theme.primary }]}>
+        {t("department")}: {event.department}
+      </Text>
       {event.description && (
-        <Text style={[styles.eventDescription, { color: theme.textSecondary }]}>{event.description}</Text>
+        <Text style={[styles.eventDescription, { color: theme.textSecondary }]}>
+          {event.description}
+        </Text>
       )}
     </View>
   );
 
   return (
     <Modal visible={isVisible} transparent animationType="slide">
-      <View style={[styles.overlayBackdrop, { backgroundColor: theme.modalOverlay }]}>
-        <View style={[styles.overlayCard, { backgroundColor: theme.modalBackground }]}>
-          <Pressable style={[styles.backButton, { backgroundColor: theme.primary }]} onPress={onClose}>
+      <View
+        style={[
+          styles.overlayBackdrop,
+          { backgroundColor: theme.modalOverlay },
+        ]}
+      >
+        <View
+          style={[
+            styles.overlayCard,
+            { backgroundColor: theme.modalBackground },
+          ]}
+        >
+          <Pressable
+            style={[styles.backButton, { backgroundColor: theme.primary }]}
+            onPress={onClose}
+          >
             <Text style={styles.backButtonText}>{t("close")}</Text>
           </Pressable>
 
@@ -76,20 +100,28 @@ export const CalendarModal: React.FC<CalendarModalProps> = ({
               arrowColor: theme.primary,
               monthTextColor: theme.primary,
               indicatorColor: theme.primary,
-              textDayFontWeight: '400',
-              textMonthFontWeight: '700',
-              textDayHeaderFontWeight: '600',
+              textDayFontWeight: "400",
+              textMonthFontWeight: "700",
+              textDayHeaderFontWeight: "600",
               textDayFontSize: 16,
               textMonthFontSize: 18,
               textDayHeaderFontSize: 14,
             }}
-            style={[styles.calendarStyle, { 
-              shadowColor: theme.shadow,
-              backgroundColor: theme.backgroundSecondary 
-            }]}
+            style={[
+              styles.calendarStyle,
+              {
+                shadowColor: theme.shadow,
+                backgroundColor: theme.backgroundSecondary,
+              },
+            ]}
           />
 
-          <View style={[styles.eventsContainer, { borderTopColor: theme.borderLight }]}>
+          <View
+            style={[
+              styles.eventsContainer,
+              { borderTopColor: theme.borderLight },
+            ]}
+          >
             <Text style={[styles.eventsHeader, { color: theme.text }]}>
               {t("eventsPlural")}:{" "}
               {selectedDate ? formatDateShort(selectedDate) : t("choseDate")}
@@ -99,10 +131,7 @@ export const CalendarModal: React.FC<CalendarModalProps> = ({
                 eventsForSelectedDate.map(renderEvent)
               ) : (
                 <Text style={[styles.noEventsText, { color: theme.textMuted }]}>
-                  {selectedDate
-                    ? t("noEventsToday")
-                    : t("noDateSelected")
-                  }
+                  {selectedDate ? t("noEventsToday") : t("noDateSelected")}
                 </Text>
               )}
             </ScrollView>
@@ -126,7 +155,7 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     padding: 20,
     elevation: 6,
-    flex: 1,   
+    flex: 1,
   },
   backButton: {
     alignSelf: "flex-start",
@@ -135,9 +164,9 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     marginBottom: 16,
   },
-  backButtonText: { 
-    color: "#fff", 
-    fontWeight: "700" 
+  backButtonText: {
+    color: "#fff",
+    fontWeight: "700",
   },
   calendarModalTitle: {
     fontSize: 20,

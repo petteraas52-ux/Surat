@@ -1,10 +1,10 @@
-import { createChild } from "@/api/children";
-import { getAllDepartments } from "@/api/department";
-import { addChildToParent, getAllParents } from "@/api/parents";
+import { createChild } from "@/api/childrenApi";
+import { getAllDepartments } from "@/api/departmentApi";
+import { addChildToParent, getAllParents } from "@/api/parentApi";
 import { useAppTheme } from "@/hooks/useAppTheme";
 import { useI18n } from "@/hooks/useI18n";
-import { DepartmentProps } from "@/types/department";
-import { ParentProps } from "@/types/parent";
+import { DepartmentProps } from "@/types/departmentData";
+import { ParentProps } from "@/types/parentData";
 import { useEffect, useState } from "react";
 import {
   ActivityIndicator,
