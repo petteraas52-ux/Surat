@@ -1,12 +1,9 @@
-// modules/CreateChildModule.tsx
-
-// --- NEW IMPORT ---
-import DropDownPicker from "react-native-dropdown-picker";
-
 import { createChild } from "@/api/children";
+import { getAllDepartments } from "@/api/department";
 import { addChildToParent, getAllParents } from "@/api/parents";
 import { useAppTheme } from "@/hooks/useAppTheme";
 import { useI18n } from "@/hooks/useI18n";
+import { DepartmentProps } from "@/types/department";
 import { ParentProps } from "@/types/parent";
 import { useEffect, useState } from "react";
 import {
@@ -17,57 +14,70 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import DropDownPicker from "react-native-dropdown-picker";
 import { styles } from "./commonStyles";
 
 export function CreateChildModal() {
-  const [parents, setParents] = useState<ParentProps[]>([]);
+  const { t } = useI18n();
+  const theme = useAppTheme();
 
-  const [open, setOpen] = useState(false);
-  const [selectedParent, setSelectedParent] = useState<string>("");
+  const [parents, setParents] = useState<ParentProps[]>([]);
+  const [departments, setDepartments] = useState<DepartmentProps[]>([]);
+  const [loadingData, setLoadingData] = useState(true);
 
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [dateOfBirth, setDateOfBirth] = useState("");
-  const [department, setDepartment] = useState("");
-
   const [loading, setLoading] = useState(false);
-  const [loadingParents, setLoadingParents] = useState(true);
-  const { t } = useI18n();
-  const theme = useAppTheme();
+
+  const [parentOpen, setParentOpen] = useState(false);
+  const [selectedParent, setSelectedParent] = useState<string>("");
+
+  const [deptOpen, setDeptOpen] = useState(false);
+  const [selectedDept, setSelectedDept] = useState<string>("");
 
   useEffect(() => {
-    const loadParents = async () => {
+    const loadInitialData = async () => {
       try {
-        const data = await getAllParents();
-        setParents(data);
-        if (data.length > 0) setSelectedParent(data[0].id);
+        const [parentsData, deptsData] = await Promise.all([
+          getAllParents(),
+          getAllDepartments(),
+        ]);
+
+        setParents(parentsData);
+        setDepartments(deptsData);
+
+        if (parentsData.length > 0) setSelectedParent(parentsData[0].id);
+        if (deptsData.length > 0) setSelectedDept(deptsData[0].name);
       } catch (err) {
-        console.error("Error loading parents:", err);
+        console.error("Error loading data:", err);
         Alert.alert(t("errorTitle"), t("failedToLoadParents"));
       } finally {
-        setLoadingParents(false);
+        setLoadingData(false);
       }
     };
 
-    loadParents();
+    loadInitialData();
   }, []);
 
-  // Format parent data for DropDownPicker
-  const parentItems = parents.map((parent) => ({
-    label: `${parent.firstName} ${parent.lastName}`,
-    value: parent.id,
+  const parentItems = parents.map((p) => ({
+    label: `${p.firstName} ${p.lastName}`,
+    value: p.id,
+  }));
+
+  const deptItems = departments.map((d) => ({
+    label: d.name,
+    value: d.name,
   }));
 
   const handleCreateChild = async () => {
-    if (!firstName || !lastName || !selectedParent) {
+    if (!firstName || !lastName || !selectedParent || !selectedDept) {
       Alert.alert(t("missingFieldsTitle"), t("completeRequiredFields"));
       return;
     }
 
     try {
       setLoading(true);
-      console.log("Attempting to create child for parent ID:", selectedParent);
-
       const childUid = await createChild({
         firstName,
         lastName,
@@ -76,40 +86,29 @@ export function CreateChildModal() {
         imageUri: "",
         parents: [selectedParent],
         checkedIn: false,
-        department,
+        department: selectedDept,
       });
 
-      console.log("Child created successfully with UID:", childUid);
-
-      if (!childUid) {
-        throw new Error("Child creation failed to return a UID.");
-      }
+      if (!childUid) throw new Error("UID Error");
 
       await addChildToParent(selectedParent, childUid);
-
-      console.log("Parent update complete (child ID added).");
 
       Alert.alert(t("successTitle"), t("childCreatedMessage"));
 
       setFirstName("");
       setLastName("");
       setDateOfBirth("");
-      setDepartment("");
     } catch (err: any) {
-      console.error("Error during child creation/parent update:", err);
-      Alert.alert(t("errorTitle"), err.message || t("childCreationFailed"));
+      Alert.alert(t("errorTitle"), t("childCreationFailed"));
     } finally {
       setLoading(false);
     }
   };
 
-  if (loadingParents) {
+  if (loadingData) {
     return (
       <View style={styles.center}>
         <ActivityIndicator size="large" color={theme.primary} />
-        <Text style={{ color: theme.textSecondary, marginTop: 10 }}>
-          {t("loadingParents")}
-        </Text>
       </View>
     );
   }
@@ -143,44 +142,59 @@ export function CreateChildModal() {
       />
 
       <Text style={styles.label}>{t("department")}:</Text>
-      <TextInput
-        placeholder={t("department")}
-        value={department}
-        onChangeText={setDepartment}
-        style={styles.input}
-      />
-
-      <Text style={styles.label}>{t("assignParent")}:</Text>
-
-      <View style={{ zIndex: 10 }}>
+      <View style={{ zIndex: 2000 }}>
         <DropDownPicker
-          open={open}
-          value={selectedParent}
-          items={parentItems}
-          setOpen={setOpen}
-          setValue={setSelectedParent}
-          placeholder={t("selectParent")}
+          open={deptOpen}
+          value={selectedDept}
+          items={deptItems}
+          setOpen={setDeptOpen}
+          setValue={setSelectedDept}
+          placeholder={t("department")}
           searchable={true}
-          searchPlaceholder={t("searchParentPlaceholder")}
+          listMode="SCROLLVIEW"
+          onOpen={() => setParentOpen(false)}
           style={[
             styles.input,
             {
               backgroundColor: theme.inputBackground,
               borderColor: theme.border,
-              height: 50,
-              paddingHorizontal: 0,
             },
           ]}
-          containerStyle={{
-            height: open ? 250 : 50,
-            marginBottom: open ? 10 : 0,
-          }}
           textStyle={{ color: theme.text }}
           dropDownContainerStyle={{
             backgroundColor: theme.inputBackground,
             borderColor: theme.border,
           }}
+          containerStyle={{ marginBottom: deptOpen ? 150 : 15 }}
+        />
+      </View>
+
+      <Text style={styles.label}>{t("assignParent")}:</Text>
+      <View style={{ zIndex: 1000 }}>
+        <DropDownPicker
+          open={parentOpen}
+          value={selectedParent}
+          items={parentItems}
+          setOpen={setParentOpen}
+          setValue={setSelectedParent}
+          placeholder={t("selectParent")}
+          searchable={true}
+          searchPlaceholder={t("searchParentPlaceholder")}
           listMode="SCROLLVIEW"
+          onOpen={() => setDeptOpen(false)}
+          style={[
+            styles.input,
+            {
+              backgroundColor: theme.inputBackground,
+              borderColor: theme.border,
+            },
+          ]}
+          textStyle={{ color: theme.text }}
+          dropDownContainerStyle={{
+            backgroundColor: theme.inputBackground,
+            borderColor: theme.border,
+          }}
+          containerStyle={{ marginBottom: parentOpen ? 150 : 15 }}
         />
       </View>
 
@@ -189,7 +203,10 @@ export function CreateChildModal() {
         disabled={loading}
         style={[
           styles.createButton,
-          { backgroundColor: loading ? theme.primary + "50" : theme.primary },
+          {
+            backgroundColor: loading ? theme.primary + "50" : theme.primary,
+            marginTop: 10,
+          },
         ]}
       >
         <Text style={styles.createButtonText}>

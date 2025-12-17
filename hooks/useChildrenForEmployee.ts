@@ -1,5 +1,4 @@
-import { getChildrenForDepartment } from "@/api/children";
-import { getEmployee } from "@/api/employees";
+import { getAllChildren } from "@/api/children";
 import { auth } from "@/firebaseConfig";
 import { ChildProps } from "@/types/child";
 import { useEffect, useRef, useState } from "react";
@@ -17,12 +16,11 @@ export const useChildrenForEmployee = () => {
   const [children, setChildren] = useState<UIChild[]>([]);
   const [loading, setLoading] = useState(true);
 
-  // Ref for å unngå dobbeltfetch hvis hook kjører flere ganger
   const fetchedRef = useRef(false);
 
   useEffect(() => {
     if (fetchedRef.current) {
-      setLoading(false); // data er allerede hentet
+      setLoading(false);
       return;
     }
 
@@ -36,25 +34,22 @@ export const useChildrenForEmployee = () => {
           return;
         }
 
-        const employee = await getEmployee(user.uid);
-        if (!employee) {
-          if (isMounted) setChildren([]);
-          return;
-        }
+        const childrenData = await getAllChildren();
 
-        const childrenData = await getChildrenForDepartment(employee.department);
         const uiChildren: UIChild[] = childrenData.map((c) => ({
           ...c,
           selected: false,
-          absenceType: null,
-          absenceFrom: null,
-          absenceTo: null,
+          absenceType: (c as any).absenceType || null,
+          absenceFrom: (c as any).absenceFrom || null,
+          absenceTo: (c as any).absenceTo || null,
         }));
 
-        if (isMounted) setChildren(uiChildren);
-        fetchedRef.current = true; // mark as fetched
+        if (isMounted) {
+          setChildren(uiChildren);
+          fetchedRef.current = true;
+        }
       } catch (err) {
-        console.error("Failed to load children for employee:", err);
+        console.error("Failed to load all children:", err);
         if (isMounted) setChildren([]);
       } finally {
         if (isMounted) setLoading(false);

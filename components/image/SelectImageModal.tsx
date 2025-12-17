@@ -3,7 +3,8 @@ import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { CameraView, useCameraPermissions } from "expo-camera";
 import * as ImagePicker from "expo-image-picker";
 import { useRef } from "react";
-import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { Image, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import * as ImageManipulator from "expo-image-manipulator";
 /* Basert på kode fra kyrssplattform https://github.com/studBrage/Kryssplattform-HK-H25/blob/main/components/SelectImageModal.tsx */
 
 type SelectImageModalProps = {
@@ -45,6 +46,47 @@ export default function SelectImageModal({
     );
   }
 
+    async function compressImage(uri: string): Promise<string> {
+    try {
+      const { width, height } = await new Promise<{ width: number; height: number }>((resolve, reject) => {
+        Image.getSize(
+          uri,
+          (w, h) => resolve({ width: w, height: h }),
+          (error) => reject(error)
+        );
+      });
+
+      const maxDimension = 512;
+      let resizeAction;
+     
+      if (width > height) {
+        if (width > maxDimension) {
+          resizeAction = { resize: { width: maxDimension } };
+        }
+      } else {
+        if (height > maxDimension) {
+          resizeAction = { resize: { height: maxDimension } };
+        }
+      }
+
+      const actions = resizeAction ? [resizeAction] : [];
+
+      const manipResult = await ImageManipulator.manipulateAsync(
+        uri,
+        actions,
+        {
+          compress: 0.7, 
+          format: ImageManipulator.SaveFormat.JPEG,
+        }
+      );
+
+      return manipResult.uri;
+    } catch (error) {
+      console.error("Error compressing image:", error);
+      return uri;
+    }
+  }
+
   async function pickImage() {
     let result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ["images"],
@@ -54,16 +96,19 @@ export default function SelectImageModal({
     });
 
     if (!result.canceled) {
-      setImage(result.assets[0].uri);
+      const originalUri = result.assets[0].uri;
+      const compressedUri = await compressImage(originalUri);
+      setImage(compressedUri);
       closeModal();
     }
   }
 
   async function captureImage() {
     if (cameraRef.current) {
-      const image = await cameraRef.current.takePictureAsync();
-      if (image) {
-        setImage(image.uri);
+      const photo = await cameraRef.current.takePictureAsync();
+      if (photo) {
+        const compressedUri = await compressImage(photo.uri);
+        setImage(compressedUri);
         closeModal();
       }
     }
