@@ -42,3 +42,15 @@ app-example
 /ios
 /android
 firebaseEnv.js
+
+# Firebase & Cloud Functions
+.firebase/
+firebase-debug.log*
+functions/node_modules/
+functions/lib/
+functions/npm-debug.log*
+
+# If you use the Firebase Emulator locally
+firestore-debug.log*
+ui-debug.log*
+hub-debug.log*
