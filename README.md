@@ -27,13 +27,17 @@ Install dependencies for both the frontend and the backend:
 
 # From the root directory:
 
+```bash
 npm install
+```
 
 # Navigate to functions and install:
 
+```bash
 cd functions
 npm install
 cd ..
+```
 
 ### 3. Firebase Configuration
 
@@ -58,21 +62,37 @@ The "Create User" features will not work until the Cloud Functions are deployed 
 
 # Navigate to functions folder
 
+```bash
 cd functions
+```
 
 # Deploy to Google Cloud
 
+```bash
 npx firebase deploy --only functions
+```
 
 # Return to root
 
+```bash
 cd ..
+```
 
 ### 5. Running the App
 
 Start the Expo development server:
 
+Prefered:
+
+```bash
+npm run ios
+```
+
+Alternativly:
+
+```bash
 npx expo start
+```
 
 - Press **i** for iOS Simulator.
 - Press **a** for Android Emulator.
