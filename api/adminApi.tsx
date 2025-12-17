@@ -1,7 +1,6 @@
 import { getFunctions, httpsCallable } from "firebase/functions";
 
 const functions = getFunctions();
-// "adminCreateUser" must match the name in your index.ts
 const adminCreateUser = httpsCallable(functions, "adminCreateUser");
 
 export const createAccountViaAdmin = async (

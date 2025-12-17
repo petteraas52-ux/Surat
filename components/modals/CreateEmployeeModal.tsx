@@ -1,5 +1,5 @@
+import { createAccountViaAdmin } from "@/api/adminApi";
 import { getAllDepartments } from "@/api/departmentApi";
-import { createEmployee } from "@/api/employeApi";
 import { useAppTheme } from "@/hooks/useAppTheme";
 import { useI18n } from "@/hooks/useI18n";
 import { DepartmentProps } from "@/types/departmentData";
@@ -68,14 +68,20 @@ export function CreateEmployeeModal() {
     try {
       setLoading(true);
 
-      await createEmployee(email, password, {
-        firstName,
-        lastName,
-        eMail: email,
-        phone,
-        department: selectedDepartment,
-        imageUri: "",
-      });
+      await createAccountViaAdmin(
+        email,
+        password,
+        `${firstName} ${lastName}`,
+        "employee",
+        {
+          firstName,
+          lastName,
+          eMail: email,
+          phone,
+          department: selectedDepartment,
+          imageUri: "",
+        }
+      );
 
       Alert.alert(t("successTitle"), t("employeeCreatedMessage"));
 
@@ -187,7 +193,6 @@ export function CreateEmployeeModal() {
           styles.createButton,
           {
             backgroundColor: loading ? theme.primary + "50" : theme.primary,
-
             marginTop: 25,
           },
         ]}

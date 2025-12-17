@@ -1,4 +1,4 @@
-import { createParent } from "@/api/parentApi";
+import { createAccountViaAdmin } from "@/api/adminApi";
 import { useAppTheme } from "@/hooks/useAppTheme";
 import { useI18n } from "@/hooks/useI18n";
 import { useState } from "react";
@@ -24,14 +24,20 @@ export function CreateParentModal() {
     try {
       setLoading(true);
 
-      await createParent(email, password, {
-        firstName,
-        lastName,
-        eMail: email,
-        phone,
-        imageUri: "",
-        children: [],
-      });
+      await createAccountViaAdmin(
+        email,
+        password,
+        `${firstName} ${lastName}`,
+        "parent",
+        {
+          firstName,
+          lastName,
+          eMail: email,
+          phone,
+          imageUri: "",
+          children: [],
+        }
+      );
 
       Alert.alert(t("successTitle"), t("parentCreatedMessage"));
 
