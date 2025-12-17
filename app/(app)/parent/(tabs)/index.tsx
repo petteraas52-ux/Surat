@@ -1,21 +1,24 @@
-import React, { useState } from "react";
+import { useNavigation } from "expo-router";
+import React, { useCallback, useEffect, useState } from "react";
 import {
   ActivityIndicator,
   Pressable,
+  RefreshControl,
   ScrollView,
   StyleSheet,
   Text,
   View,
 } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 
-// --- Custom Hooks (Handling all logic and state) ---
 import { useAbsenceManagement } from "@/hooks/useAbsenceManagement";
+import { useAppTheme } from "@/hooks/useAppTheme";
 import { useCalendarEvents } from "@/hooks/useCalendarEvents";
 import { useCheckInOut } from "@/hooks/useCheckInOut";
 import { useChildData } from "@/hooks/useChildData";
 import { useGuestLink } from "@/hooks/useGuestLink";
+import { useI18n } from "@/hooks/useI18n";
 
-// --- Components & Utilities ---
 import { ChildCard } from "@/components/ChildCard";
 import { AbsenceModal } from "@/components/modals/AbsenceModal";
 import { CalendarModal } from "@/components/modals/CalendarModal";
@@ -23,17 +26,23 @@ import { ChildDetailModal } from "@/components/modals/ChildDetailModal";
 import { GuestLinkModal } from "@/components/modals/GuestLinkModal";
 import { formatDateShort, parseTimestampToDateString } from "@/utils/date";
 
-import { SafeAreaView } from "react-native-safe-area-context";
-import { useI18n } from "@/hooks/useI18n";
-import { useAppTheme } from "@/hooks/useAppTheme";
-
 export default function Index() {
   const { t } = useI18n();
   const theme = useAppTheme();
-  const { children, setChildren, events, loading, toggleSelect, errorMessage: childDataError,
-    clearError: clearChildDataError, } =
-    useChildData();
-  
+  const navigation = useNavigation();
+
+  const {
+    children,
+    setChildren,
+    events,
+    loading,
+    toggleSelect,
+    errorMessage: childDataError,
+    clearError: clearChildDataError,
+    refreshData,
+    lastUpdated,
+  } = useChildData();
+
   const {
     anySelected,
     getButtonText,
@@ -86,12 +95,26 @@ export default function Index() {
   const [overlayVisible, setOverlayVisible] = useState(false);
   const [overlayChildId, setOverlayChildId] = useState<string | null>(null);
   const [isSelectingVacationDate, setIsSelectingVacationDate] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
+
+  const onRefresh = useCallback(async () => {
+    console.log("[Index] Manual pull-to-refresh triggered");
+    setRefreshing(true);
+    await refreshData();
+    setRefreshing(false);
+  }, [refreshData]);
+
+  useEffect(() => {
+    const unsubscribe = navigation.addListener("focus", () => {
+      console.log("[Index] Tab focused: Refreshing data via listener");
+      refreshData();
+    });
+    return unsubscribe;
+  }, [navigation, refreshData]);
 
   const activeChild = overlayChildId
     ? children.find((c) => c.id === overlayChildId)
     : undefined;
-
-  const closeOverlay = () => setOverlayVisible(false);
 
   const handleOpenDetailModal = (childId: string) => {
     setOverlayChildId(childId);
@@ -109,19 +132,35 @@ export default function Index() {
     openCalendarModalForDate(vacationStartDate);
   };
 
-  if (loading) {
+  if (loading && !refreshing) {
     return (
-      <View style={[styles.loadingContainer, { backgroundColor: theme.background }]}>
+      <View
+        style={[styles.loadingContainer, { backgroundColor: theme.background }]}
+      >
         <ActivityIndicator size="large" color={theme.primary} />
-        <Text style={[styles.loadingText, { color: theme.text }]}>{t("loadingChildren")}</Text>
+        <Text style={[styles.loadingText, { color: theme.text }]}>
+          {t("loadingChildren")}
+        </Text>
       </View>
     );
   }
 
   return (
     <SafeAreaView style={[styles.safe, { backgroundColor: theme.background }]}>
-      <ScrollView contentContainerStyle={styles.container}>
-        <Text style={[styles.headerTitle, { color: theme.text }]}>{t("childrenHeader")}</Text>
+      <ScrollView
+        contentContainerStyle={styles.container}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+            tintColor={theme.primary}
+            colors={[theme.primary]}
+          />
+        }
+      >
+        <Text style={[styles.headerTitle, { color: theme.text }]}>
+          {t("childrenHeader")}
+        </Text>
 
         {childDataError && (
           <Text style={styles.errorText} onPress={clearChildDataError}>
@@ -152,18 +191,30 @@ export default function Index() {
         </View>
 
         <View style={{ marginTop: 12, marginBottom: 12 }}>
-          <Text style={[styles.sectionHeader, { color: theme.text }]}>{t("upcommingEvent")}</Text>
-          <Pressable style={[styles.upcomingCard, { 
-            backgroundColor: theme.cardBackground,
-            shadowColor: theme.shadow 
-          }]} onPress={openCalendarModal}>
+          <Text style={[styles.sectionHeader, { color: theme.text }]}>
+            {t("upcommingEvent")}
+          </Text>
+          <Pressable
+            style={[
+              styles.upcomingCard,
+              {
+                backgroundColor: theme.cardBackground,
+                shadowColor: theme.shadow,
+              },
+            ]}
+            onPress={openCalendarModal}
+          >
             {nextEvent ? (
               <View>
                 <Text style={[styles.eventDate, { color: theme.primary }]}>
                   {formatDateShort(parseTimestampToDateString(nextEvent.date))}
                 </Text>
-                <Text style={[styles.eventTitle, { color: theme.text }]}>{nextEvent.title}</Text>
-                <Text style={[styles.eventSubtitle, { color: theme.textSecondary }]}>
+                <Text style={[styles.eventTitle, { color: theme.text }]}>
+                  {nextEvent.title}
+                </Text>
+                <Text
+                  style={[styles.eventSubtitle, { color: theme.textSecondary }]}
+                >
                   {t("department")}: {nextEvent.department}
                 </Text>
               </View>
@@ -178,25 +229,44 @@ export default function Index() {
         <View style={styles.footerButtonsRow}>
           <Pressable
             style={[
-            styles.absenceMainButtonWrapper,
-            { backgroundColor: anySelected ? theme.primary : theme.inputBackground },
-          ]}
+              styles.absenceMainButtonWrapper,
+              {
+                backgroundColor: anySelected
+                  ? theme.primary
+                  : theme.inputBackground,
+              },
+            ]}
             onPress={openAbsenceModal}
             disabled={!anySelected}
           >
             <Text style={styles.footerButtonText}>{t("registerLeave")}</Text>
           </Pressable>
 
-          <Pressable style={[styles.checkoutWrapper, { backgroundColor: theme.primary }]} onPress={applyCheckInOut}>
+          <Pressable
+            style={[styles.checkoutWrapper, { backgroundColor: theme.primary }]}
+            onPress={applyCheckInOut}
+          >
             <Text style={styles.footerButtonText}>{getButtonText()}</Text>
           </Pressable>
+        </View>
+
+        <View style={styles.footerInfo}>
+          <Text
+            style={[styles.lastUpdatedText, { color: theme.textSecondary }]}
+          >
+            {t("lastUpdated")}:{" "}
+            {lastUpdated.toLocaleTimeString([], {
+              hour: "2-digit",
+              minute: "2-digit",
+            })}
+          </Text>
         </View>
       </ScrollView>
 
       <ChildDetailModal
         isVisible={overlayVisible}
         activeChild={activeChild}
-        onClose={closeOverlay}
+        onClose={() => setOverlayVisible(false)}
         getAbsenceLabel={getAbsenceLabel}
         onOpenGuestLinkModal={handleOpenGuestLink}
         onToggleCheckIn={toggleOverlayChildCheckIn}
@@ -222,7 +292,7 @@ export default function Index() {
         setGuestName={setGuestName}
         guestPhone={guestPhone}
         setGuestPhone={setGuestPhone}
-        onSendGuestLink={(id) => sendGuestLink(id)}
+        onSendGuestLink={sendGuestLink}
         guestSending={guestSending}
         guestError={guestError}
       />
@@ -230,13 +300,8 @@ export default function Index() {
       <CalendarModal
         isVisible={calendarModalVisible}
         onClose={() => {
-          if (isSelectingVacationDate) {
-            setIsSelectingVacationDate(false);
-            closeCalendarModal();
-            openAbsenceModal();
-          } else {
-            closeCalendarModal();
-          }
+          setIsSelectingVacationDate(false);
+          closeCalendarModal();
         }}
         markedDates={markedDates}
         selectedDate={selectedDateInCalendar}
@@ -257,7 +322,7 @@ export default function Index() {
 }
 
 const styles = StyleSheet.create({
-  safe: { 
+  safe: {
     flex: 1,
   },
   container: {
@@ -293,7 +358,10 @@ const styles = StyleSheet.create({
     padding: 16,
     borderRadius: 12,
     elevation: 2,
-    shadowOffset: { width: 0, height: 1 },
+    shadowOffset: {
+      width: 0,
+      height: 1,
+    },
     shadowOpacity: 0.2,
     shadowRadius: 1.41,
   },
@@ -336,5 +404,14 @@ const styles = StyleSheet.create({
     color: "#fff",
     fontWeight: "700",
     fontSize: 16,
+  },
+  footerInfo: {
+    marginTop: 30,
+    alignItems: "center",
+    paddingBottom: 10,
+  },
+  lastUpdatedText: {
+    fontSize: 12,
+    opacity: 0.6,
   },
 });
