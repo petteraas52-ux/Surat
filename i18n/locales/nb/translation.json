@@ -85,6 +85,12 @@
   "createChild": "Opprett barn",
   "tabTitleDepartment": "Min Avdeling",
   "searchParentPlaceholder": "Søk etter foresatt",
+  "departmentNamePlaceholder": "Skriv inn avdelings navn",
+  "departmentName": "Avdelings navn",
+  "manageDepartments": "Opprett avdeling",
+  "addDepartment": "Opprett avdeling",
+  "searchDepartmentPlaceholer": "Søk etter avdeling",
+  "selectDepartment": "Velg avdeling",
 
   "close": "Lukk",
   "calendarHeader": "Kalender og Arrangementer",

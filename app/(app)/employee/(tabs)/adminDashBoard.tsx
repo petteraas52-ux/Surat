@@ -6,6 +6,7 @@ import React, { useState } from "react";
 import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { CreateChildModal } from "../../../../components/modals/CreateChildModal";
+import { ManageDepartmentsModal } from "../../../../components/modals/CreateDepartmentModal";
 import { CreateEmployeeModal } from "../../../../components/modals/CreateEmployeeModal";
 import { CreateEventModal } from "../../../../components/modals/CreateEventModal";
 import { CreateParentModal } from "../../../../components/modals/CreateParentModal";
@@ -15,6 +16,7 @@ const TABS = {
   EMPLOYEE: "Employee",
   CHILD: "Child",
   EVENT: "Event",
+  DEPARTMENT: "Department",
 };
 
 type TabKey = keyof typeof TABS;
@@ -25,7 +27,6 @@ export default function AdminDashboardScreen() {
   const { t } = useI18n();
 
   const renderContent = () => {
-    // Reverting to clean conditional rendering
     switch (activeTab) {
       case "PARENT":
         return <CreateParentModal />;
@@ -35,6 +36,8 @@ export default function AdminDashboardScreen() {
         return <CreateChildModal />;
       case "EVENT":
         return <CreateEventModal />;
+      case "DEPARTMENT":
+        return <ManageDepartmentsModal />;
       default:
         return null;
     }
@@ -43,6 +46,7 @@ export default function AdminDashboardScreen() {
   return (
     <SafeAreaView
       style={[styles.safeArea, { backgroundColor: theme.background }]}
+      edges={["top", "left", "right"]}
     >
       <View style={styles.header}>
         <Text style={[styles.headerTitle, { color: theme.text }]}>
@@ -51,31 +55,39 @@ export default function AdminDashboardScreen() {
       </View>
 
       <View style={[styles.tabBar, { borderBottomColor: theme.border }]}>
-        {(Object.keys(TABS) as TabKey[]).map((key) => (
-          <Pressable
-            key={key}
-            style={[
-              styles.tabItem,
-              activeTab === key && { borderBottomColor: theme.primary },
-            ]}
-            onPress={() => setActiveTab(key)}
-          >
-            <Text
+        <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+          {(Object.keys(TABS) as TabKey[]).map((key) => (
+            <Pressable
+              key={key}
               style={[
-                styles.tabText,
-                {
-                  color:
-                    activeTab === key ? theme.primary : theme.textSecondary,
-                },
+                styles.tabItem,
+                activeTab === key && { borderBottomColor: theme.primary },
               ]}
+              onPress={() => setActiveTab(key)}
             >
-              {t(`${key.toLowerCase()}`)}
-            </Text>
-          </Pressable>
-        ))}
+              <Text
+                style={[
+                  styles.tabText,
+                  {
+                    color:
+                      activeTab === key ? theme.primary : theme.textSecondary,
+                  },
+                ]}
+              >
+                {t(`${key.toLowerCase()}`)}
+              </Text>
+            </Pressable>
+          ))}
+        </ScrollView>
       </View>
 
-      <ScrollView style={styles.contentContainer}>{renderContent()}</ScrollView>
+      <ScrollView
+        style={styles.contentContainer}
+        contentContainerStyle={styles.scrollContent}
+        showsVerticalScrollIndicator={false}
+      >
+        {renderContent()}
+      </ScrollView>
     </SafeAreaView>
   );
 }
@@ -101,7 +113,7 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   tabItem: {
-    flex: 1,
+    paddingHorizontal: 20,
     paddingVertical: 12,
     alignItems: "center",
     borderBottomWidth: 3,
@@ -112,5 +124,9 @@ const styles = StyleSheet.create({
   },
   contentContainer: {
     flex: 1,
+  },
+  scrollContent: {
+    flexGrow: 1,
+    paddingBottom: 100,
   },
 });

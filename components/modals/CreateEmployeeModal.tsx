@@ -1,8 +1,20 @@
+// modules/CreateEmployeeModal.tsx
+
+import { getAllDepartments } from "@/api/department";
 import { createEmployee } from "@/api/employees";
 import { useAppTheme } from "@/hooks/useAppTheme";
 import { useI18n } from "@/hooks/useI18n";
-import { useState } from "react";
-import { Alert, Pressable, Text, TextInput, View } from "react-native";
+import { DepartmentProps } from "@/types/department";
+import { useEffect, useState } from "react";
+import {
+  ActivityIndicator,
+  Alert,
+  Pressable,
+  Text,
+  TextInput,
+  View,
+} from "react-native";
+import DropDownPicker from "react-native-dropdown-picker";
 import { styles } from "./commonStyles";
 
 export function CreateEmployeeModal() {
@@ -10,11 +22,37 @@ export function CreateEmployeeModal() {
   const [lastName, setLastName] = useState("");
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
-  const [department, setDepartment] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
+
+  const [departments, setDepartments] = useState<DepartmentProps[]>([]);
+  const [loadingDepts, setLoadingDepts] = useState(true);
+  const [open, setOpen] = useState(false);
+  const [selectedDepartment, setSelectedDepartment] = useState<string | null>(
+    null
+  );
+
   const theme = useAppTheme();
   const { t } = useI18n();
+
+  useEffect(() => {
+    const fetchDepartments = async () => {
+      try {
+        const data = await getAllDepartments();
+        setDepartments(data);
+      } catch (err) {
+        console.error("Error loading departments:", err);
+      } finally {
+        setLoadingDepts(false);
+      }
+    };
+    fetchDepartments();
+  }, []);
+
+  const deptItems = departments.map((dept) => ({
+    label: dept.name,
+    value: dept.name,
+  }));
 
   const handleCreateEmployee = async () => {
     if (
@@ -22,7 +60,7 @@ export function CreateEmployeeModal() {
       !lastName ||
       !email ||
       !phone ||
-      !department ||
+      !selectedDepartment ||
       !password
     ) {
       Alert.alert(t("missingFieldsTitle"), t("missingFieldsMessage"));
@@ -37,7 +75,7 @@ export function CreateEmployeeModal() {
         lastName,
         eMail: email,
         phone,
-        department,
+        department: selectedDepartment,
         imageUri: "",
       });
 
@@ -47,7 +85,7 @@ export function CreateEmployeeModal() {
       setLastName("");
       setEmail("");
       setPhone("");
-      setDepartment("");
+      setSelectedDepartment(null);
       setPassword("");
     } catch (error: any) {
       console.error(error);
@@ -59,6 +97,14 @@ export function CreateEmployeeModal() {
       setLoading(false);
     }
   };
+
+  if (loadingDepts) {
+    return (
+      <View style={styles.center}>
+        <ActivityIndicator size="small" color={theme.primary} />
+      </View>
+    );
+  }
 
   return (
     <View style={styles.container}>
@@ -100,12 +146,32 @@ export function CreateEmployeeModal() {
       />
 
       <Text style={styles.label}>{t("department")}:</Text>
-      <TextInput
-        placeholder={t("department")}
-        value={department}
-        onChangeText={setDepartment}
-        style={styles.input}
-      />
+      <View style={{ zIndex: 1000 }}>
+        <DropDownPicker
+          open={open}
+          value={selectedDepartment}
+          items={deptItems}
+          setOpen={setOpen}
+          setValue={setSelectedDepartment}
+          placeholder={t("department")}
+          searchable={true}
+          searchPlaceholder={t("searchParentPlaceholder")}
+          listMode="SCROLLVIEW"
+          style={[
+            styles.input,
+            {
+              backgroundColor: theme.inputBackground,
+              borderColor: theme.border,
+            },
+          ]}
+          textStyle={{ color: theme.text }}
+          dropDownContainerStyle={{
+            backgroundColor: theme.inputBackground,
+            borderColor: theme.border,
+          }}
+          containerStyle={{ marginBottom: open ? 160 : 15 }}
+        />
+      </View>
 
       <Text style={styles.label}>{t("tempPassword")}:</Text>
       <TextInput
@@ -121,7 +187,11 @@ export function CreateEmployeeModal() {
         disabled={loading}
         style={[
           styles.createButton,
-          { backgroundColor: loading ? theme.primary + "50" : theme.primary },
+          {
+            backgroundColor: loading ? theme.primary + "50" : theme.primary,
+
+            marginTop: 25,
+          },
         ]}
       >
         <Text style={styles.createButtonText}>
