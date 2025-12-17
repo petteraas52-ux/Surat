@@ -1,117 +1,229 @@
 import { getUserPin, setUserPin } from "@/api/pinApi";
+import { styles as commonStyles } from "@/components/modals/commonStyles"; // Import the global styles
+import { useAppTheme } from "@/hooks/useAppTheme";
+import { useI18n } from "@/hooks/useI18n";
+import { Ionicons } from "@expo/vector-icons";
 import { useEffect, useState } from "react";
-import { ActivityIndicator, Pressable, Text, TextInput, View } from "react-native";
+import {
+  ActivityIndicator,
+  KeyboardAvoidingView,
+  Platform,
+  Pressable,
+  StyleSheet,
+  Text,
+  TextInput,
+  View,
+} from "react-native";
 
 export default function PinCheck({
-    uid,
-    onUnlocked,
+  uid,
+  onUnlocked,
 }: {
-    uid: string,
-    onUnlocked: () => void;
+  uid: string;
+  onUnlocked: () => void;
 }) {
-    const [savedPin, setSavedPin] = useState<string | null>(null);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState<string | null>(null);
+  const theme = useAppTheme();
+  const { t } = useI18n();
 
-    const [pin, setPin] = useState("");
-    const [confirm, setConfirm] = useState("")
+  const [savedPin, setSavedPin] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-    useEffect(() => {
-        (async () => {
-            const p = await getUserPin(uid);
-            setSavedPin(p);
-            setLoading(false);
-        })();
-    }, [uid]);
+  const [pin, setPin] = useState("");
+  const [confirm, setConfirm] = useState("");
 
-    const isValidPin = (p: string) => /^\d{4}$/.test(p); // gjør at man bare kan skrive tall fra 0-9
+  useEffect(() => {
+    (async () => {
+      const p = await getUserPin(uid);
+      setSavedPin(p);
+      setLoading(false);
+    })();
+  }, [uid]);
 
-    async function submit() {
-        setError(null);
+  const isValidPin = (p: string) => /^\d{4}$/.test(p);
 
-        // case 1, har ikke pin, må opprettete
-        if(!savedPin) {
-            if(!isValidPin(pin)) return setError("PIN må være 4 siffer.");
-            if(pin !== confirm) return setError("PIN-kodene må være like!");
-
-            await setUserPin(uid, pin);
-            setSavedPin(pin);
-            setPin("");
-            setConfirm("");
-            onUnlocked();
-            return;
-        }
-
-        // case 2, har pin, gå videre til appen
-        if(pin === savedPin){
-            setPin("");
-            onUnlocked();
-        } else {
-            setError("Ugyldig PIN!");
-        }
+  async function submit() {
+    setError(null);
+    if (!savedPin) {
+      if (!isValidPin(pin)) return setError("PIN må være 4 siffer.");
+      if (pin !== confirm) return setError("PIN-kodene må være like!");
+      await setUserPin(uid, pin);
+      setSavedPin(pin);
+      setPin("");
+      setConfirm("");
+      onUnlocked();
+      return;
     }
-
-    if (loading) {
-        return (
-            <View style={{flex: 1, justifyContent: "center", padding: 24}}>
-                <ActivityIndicator size="large"/>
-            </View>
-        );
+    if (pin === savedPin) {
+      setPin("");
+      onUnlocked();
+    } else {
+      setError("Ugyldig PIN!");
     }
+  }
 
-    const title = savedPin ? "Skriv inn PIN" : "Opprett PIN";
-
-    const canSubmit = savedPin ? pin.trim().length > 0 
-    : pin.trim().length > 0 && confirm.trim().length > 0;
-
+  if (loading) {
     return (
-        <View style={{flex: 1, justifyContent: "center", padding: 24}}>
-            <Text style={{fontSize: 22, fontWeight: "600", marginBottom: 12}}>{title}</Text>
+      <View
+        style={[commonStyles.center, { backgroundColor: theme.background }]}
+      >
+        <ActivityIndicator size="large" color={theme.primary} />
+      </View>
+    );
+  }
 
-            <TextInput
+  const title = savedPin ? "Skriv inn PIN" : "Opprett PIN";
+  const canSubmit = savedPin
+    ? pin.trim().length === 4
+    : pin.trim().length === 4 && confirm.trim().length === 4;
+
+  return (
+    <KeyboardAvoidingView
+      behavior={Platform.OS === "ios" ? "padding" : "height"}
+      style={{ flex: 1 }}
+    >
+      <View
+        style={[localStyles.container, { backgroundColor: theme.background }]}
+      >
+        <View
+          style={[
+            localStyles.iconCircle,
+            { backgroundColor: theme.primary + "15" },
+          ]}
+        >
+          <Ionicons
+            name={savedPin ? "lock-closed" : "lock-open"}
+            size={40}
+            color={theme.primary}
+          />
+        </View>
+
+        <Text
+          style={[
+            commonStyles.title,
+            { color: theme.text, textAlign: "center" },
+          ]}
+        >
+          {title}
+        </Text>
+
+        <Text style={[localStyles.subtitle, { color: theme.textSecondary }]}>
+          {savedPin
+            ? "Tast inn din femsifrede kode for å fortsette"
+            : "Velg en sikker 4-sifret kode for din profil"}
+        </Text>
+
+        <View style={localStyles.inputWrapper}>
+          <TextInput
             value={pin}
             onChangeText={setPin}
             keyboardType="number-pad"
             secureTextEntry
+            maxLength={4}
             placeholder={savedPin ? "PIN" : "Ny PIN"}
-            style={inputStyle}
+            placeholderTextColor={theme.textSecondary}
+            style={[
+              commonStyles.input, // 1. Use global style base
+              {
+                backgroundColor: theme.inputBackground,
+                borderColor: theme.border,
+                color: theme.text,
+                textAlign: "center",
+                fontSize: 22,
+                height: 60,
+                // 2. Local override ONLY
+                letterSpacing: pin.length > 0 ? 15 : 0,
+              },
+            ]}
+          />
+
+          {!savedPin && (
+            <TextInput
+              value={confirm}
+              onChangeText={setConfirm}
+              keyboardType="number-pad"
+              secureTextEntry
+              maxLength={4}
+              placeholder="Bekreft PIN"
+              placeholderTextColor={theme.textSecondary}
+              style={[
+                commonStyles.input,
+                {
+                  backgroundColor: theme.inputBackground,
+                  borderColor: theme.border,
+                  color: theme.text,
+                  marginTop: 12,
+                  textAlign: "center",
+                  fontSize: 22,
+                  height: 60,
+                  letterSpacing: confirm.length > 0 ? 15 : 0,
+                },
+              ]}
             />
-
-            {!savedPin && (
-                <TextInput
-                value={confirm}
-                onChangeText={setConfirm}
-                keyboardType="number-pad"
-                secureTextEntry
-                placeholder="Bekreft PIN"
-                style={inputStyle}
-            />
-            )}
-
-            {error && <Text style={{color: "red", marginBottom: 8 }}>{error}</Text>}
-
-            <Pressable onPress={submit} style={buttonStyle} disabled={!canSubmit}>
-                <Text style={{color: "white", fontWeight: "600"}}>
-                    {savedPin ? "Lås opp" : "Lagre PIN"}
-                </Text>
-            </Pressable>
+          )}
         </View>
-    );
+
+        {error && (
+          <View style={localStyles.errorContainer}>
+            <Ionicons name="alert-circle" size={16} color="red" />
+            <Text style={localStyles.errorText}>{error}</Text>
+          </View>
+        )}
+
+        <Pressable
+          onPress={submit}
+          style={[
+            commonStyles.createButton,
+            {
+              width: "100%",
+              backgroundColor: canSubmit ? theme.primary : theme.primary + "50",
+            },
+          ]}
+          disabled={!canSubmit}
+        >
+          <Text style={commonStyles.createButtonText}>
+            {savedPin ? "Lås opp" : "Lagre PIN"}
+          </Text>
+        </Pressable>
+      </View>
+    </KeyboardAvoidingView>
+  );
 }
 
-const inputStyle = {
-  borderWidth: 1,
-  borderColor: "#ddd",
-  borderRadius: 8,
-  padding: 12,
-  fontSize: 18,
-  marginBottom: 12,
-  backgroundColor: "#fafafa",
-} as const;
-
-const buttonStyle = {
-  backgroundColor: "#57507F",
-  padding: 14,
-  borderRadius: 10,
-  alignItems: "center",
-} as const;
+const localStyles = StyleSheet.create({
+  container: {
+    flex: 1,
+    justifyContent: "center",
+    padding: 30,
+    alignItems: "center",
+  },
+  iconCircle: {
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+    justifyContent: "center",
+    alignItems: "center",
+    marginBottom: 20,
+  },
+  subtitle: {
+    fontSize: 14,
+    textAlign: "center",
+    marginBottom: 30,
+    paddingHorizontal: 20,
+  },
+  inputWrapper: {
+    width: "100%",
+    marginBottom: 20,
+  },
+  errorContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 15,
+  },
+  errorText: {
+    color: "red",
+    marginLeft: 6,
+    fontSize: 14,
+    fontWeight: "500",
+  },
+});

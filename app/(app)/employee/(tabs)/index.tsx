@@ -1,8 +1,10 @@
 import { Ionicons } from "@expo/vector-icons";
-import React, { useEffect, useMemo, useState } from "react";
+import { useFocusEffect } from "@react-navigation/native";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import {
   ActivityIndicator,
   FlatList,
+  RefreshControl,
   ScrollView,
   StyleSheet,
   Text,
@@ -30,6 +32,7 @@ export default function EmployeeOverview() {
     loading: dataLoading,
     toggleSelect,
     setChildren,
+    refreshData,
   } = useChildrenForEmployee();
 
   const { toggleOverlayChildCheckIn } = useCheckInOut({
@@ -43,8 +46,9 @@ export default function EmployeeOverview() {
   const [displayQuery, setDisplayQuery] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
   const [isDebouncing, setIsDebouncing] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
+  const [lastUpdated, setLastUpdated] = useState<Date>(new Date());
 
-  // States for department management
   const [selectedDept, setSelectedDept] = useState<string>("");
   const [userDefaultDept, setUserDefaultDept] = useState<string>("");
   const [availableDepartments, setAvailableDepartments] = useState<string[]>(
@@ -53,6 +57,45 @@ export default function EmployeeOverview() {
 
   const [isModalVisible, setModalVisible] = useState(false);
   const [activeChildId, setActiveChildId] = useState<string | null>(null);
+
+  const loadMetaData = useCallback(async () => {
+    const user = auth.currentUser;
+    try {
+      const deptSnap = await getDocs(collection(db, "departments"));
+      const depts = deptSnap.docs.map((doc) => doc.data().name);
+      setAvailableDepartments(["All", ...depts]);
+
+      if (user) {
+        const userDoc = await getDoc(doc(db, "employees", user.uid));
+        if (userDoc.exists()) {
+          const userData = userDoc.data();
+          const dept = userData.department || "All";
+          setUserDefaultDept(dept);
+          if (!selectedDept) setSelectedDept(dept);
+        }
+      }
+      setLastUpdated(new Date());
+    } catch (e) {
+      console.error(e);
+    }
+  }, [selectedDept]);
+
+  useEffect(() => {
+    loadMetaData();
+  }, []);
+
+  useFocusEffect(
+    useCallback(() => {
+      loadMetaData();
+      refreshData();
+    }, [loadMetaData, refreshData])
+  );
+
+  const onRefresh = useCallback(async () => {
+    setRefreshing(true);
+    await Promise.all([loadMetaData(), refreshData()]);
+    setRefreshing(false);
+  }, [loadMetaData, refreshData]);
 
   useEffect(() => {
     if (displayQuery !== searchQuery) {
@@ -65,44 +108,13 @@ export default function EmployeeOverview() {
     return () => clearTimeout(handler);
   }, [displayQuery]);
 
-  useEffect(() => {
-    const initData = async () => {
-      const user = auth.currentUser;
-
-      try {
-        const deptSnap = await getDocs(collection(db, "departments"));
-        const depts = deptSnap.docs.map((doc) => doc.data().name);
-        setAvailableDepartments(["All", ...depts]);
-      } catch (e) {
-        console.error("Error fetching departments", e);
-      }
-
-      if (user) {
-        const userDoc = await getDoc(doc(db, "employees", user.uid));
-        if (userDoc.exists()) {
-          const userData = userDoc.data();
-          if (userData.department) {
-            setSelectedDept(userData.department);
-            setUserDefaultDept(userData.department);
-          } else {
-            setSelectedDept("All");
-            setUserDefaultDept("All");
-          }
-        }
-      }
-    };
-    initData();
-  }, []);
-
   const filteredChildren = useMemo(() => {
     return children.filter((child) => {
       const matchesSearch = `${child.firstName} ${child.lastName}`
         .toLowerCase()
         .includes(searchQuery.toLowerCase());
-
       const matchesDept =
         selectedDept === "All" || child.department === selectedDept;
-
       return matchesSearch && matchesDept;
     });
   }, [searchQuery, selectedDept, children]);
@@ -126,7 +138,7 @@ export default function EmployeeOverview() {
     return child.absenceType === "sykdom" ? t("sick") : t("vacation");
   };
 
-  if (dataLoading) {
+  if (dataLoading && !refreshing) {
     return (
       <View style={[styles.center, { backgroundColor: theme.background }]}>
         <ActivityIndicator size="large" color={theme.primary} />
@@ -143,7 +155,7 @@ export default function EmployeeOverview() {
         <View style={styles.headerContainer}>
           <View style={styles.titleRow}>
             <Text style={[styles.headerTitle, { color: theme.text }]}>
-              {t("childOverview") || "Barn oversikt"}
+              {t("childOverview")}
             </Text>
             {hasActiveFilters && (
               <TouchableOpacity
@@ -157,7 +169,7 @@ export default function EmployeeOverview() {
                     fontSize: 14,
                   }}
                 >
-                  {t("clearAll") || "Nullstill"}
+                  {t("clearAll")}
                 </Text>
               </TouchableOpacity>
             )}
@@ -176,11 +188,20 @@ export default function EmployeeOverview() {
               style={styles.searchIcon}
             />
             <TextInput
-              placeholder={t("searchChildPlaceholder") || "Søk etter barn..."}
+              placeholder={t("searchChildPlaceholder")}
               placeholderTextColor={theme.textSecondary}
               value={displayQuery}
               onChangeText={setDisplayQuery}
-              style={[styles.searchInput, { color: theme.text }]}
+              autoCapitalize="none"
+              autoCorrect={false}
+              style={[
+                styles.searchInput,
+                {
+                  color: theme.text,
+                  letterSpacing: 0,
+                  textAlign: "left",
+                },
+              ]}
             />
             {isDebouncing ? (
               <ActivityIndicator
@@ -241,11 +262,34 @@ export default function EmployeeOverview() {
           numColumns={1}
           contentContainerStyle={styles.listContent}
           showsVerticalScrollIndicator={false}
+          refreshControl={
+            <RefreshControl
+              refreshing={refreshing}
+              onRefresh={onRefresh}
+              tintColor={theme.primary}
+              colors={[theme.primary]}
+            />
+          }
+          ListFooterComponent={
+            filteredChildren.length > 0 ? (
+              <View style={styles.footer}>
+                <Text
+                  style={[styles.footerText, { color: theme.textSecondary }]}
+                >
+                  {t("lastUpdated") || "Sist oppdatert"}:{" "}
+                  {lastUpdated.toLocaleTimeString([], {
+                    hour: "2-digit",
+                    minute: "2-digit",
+                  })}
+                </Text>
+              </View>
+            ) : null
+          }
           ListEmptyComponent={
             <View style={styles.emptyContainer}>
               <Ionicons name="filter-outline" size={48} color={theme.border} />
               <Text style={{ color: theme.textSecondary, marginTop: 10 }}>
-                {t("noResultsFound") || "Ingen barn funnet"}
+                {t("noResultsFound")}
               </Text>
             </View>
           }
@@ -298,7 +342,13 @@ const styles = StyleSheet.create({
     marginBottom: 15,
   },
   searchIcon: { marginRight: 8 },
-  searchInput: { flex: 1, fontSize: 16, height: "100%" },
+  searchInput: {
+    flex: 1,
+    fontSize: 16,
+    height: "100%",
+    letterSpacing: 0,
+    textAlign: "left",
+  },
   chipScroll: { marginBottom: 10 },
   chipContent: { paddingRight: 40 },
   chip: {
@@ -308,10 +358,8 @@ const styles = StyleSheet.create({
     marginRight: 8,
   },
   chipText: { fontSize: 13, fontWeight: "600" },
-  listContent: {
-    paddingHorizontal: 16,
-    paddingBottom: 40,
-    paddingTop: 10,
-  },
+  listContent: { paddingHorizontal: 16, paddingBottom: 40, paddingTop: 10 },
   emptyContainer: { alignItems: "center", marginTop: 80 },
+  footer: { paddingVertical: 20, alignItems: "center" },
+  footerText: { fontSize: 12, opacity: 0.7 },
 });

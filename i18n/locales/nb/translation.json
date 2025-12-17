@@ -98,7 +98,7 @@
   "searchEventPlaceholder": "Søk etter hendelse",
   "searchDepartmentPlaceholder": "Søk etter avdeling",
   "saveChanges": "Lagre endringer",
-  "cancel": "Kanseller",
+  "cancel": "Avbryt",
   "deleteWarning": "Du vil nå utføre et permanent slett!",
   "confirmDelete": "Bekreft sletting",
   "delete": "Slett",
@@ -115,6 +115,7 @@
   "selectDate": "Velg dato",
   "done": "Ferdig",
   "departmentCreated": "Avdelig opprettet!",
+  "lastUpdated": "Sist oppdatert",
 
   "close": "Lukk",
   "calendarHeader": "Kalender og Arrangementer",

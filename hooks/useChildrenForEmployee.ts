@@ -1,7 +1,7 @@
 import { getAllChildren } from "@/api/children";
 import { auth } from "@/firebaseConfig";
 import { ChildProps } from "@/types/child";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 type AbsenceType = "sykdom" | "ferie" | null;
 
@@ -15,53 +15,40 @@ export type UIChild = ChildProps & {
 export const useChildrenForEmployee = () => {
   const [children, setChildren] = useState<UIChild[]>([]);
   const [loading, setLoading] = useState(true);
-
   const fetchedRef = useRef(false);
 
-  useEffect(() => {
-    if (fetchedRef.current) {
-      setLoading(false);
-      return;
-    }
+  const fetchChildren = useCallback(async (isManualRefresh = false) => {
+    if (!isManualRefresh && fetchedRef.current) return;
 
-    let isMounted = true;
-
-    const fetchChildren = async () => {
-      try {
-        const user = auth.currentUser;
-        if (!user) {
-          if (isMounted) setChildren([]);
-          return;
-        }
-
-        const childrenData = await getAllChildren();
-
-        const uiChildren: UIChild[] = childrenData.map((c) => ({
-          ...c,
-          selected: false,
-          absenceType: (c as any).absenceType || null,
-          absenceFrom: (c as any).absenceFrom || null,
-          absenceTo: (c as any).absenceTo || null,
-        }));
-
-        if (isMounted) {
-          setChildren(uiChildren);
-          fetchedRef.current = true;
-        }
-      } catch (err) {
-        console.error("Failed to load all children:", err);
-        if (isMounted) setChildren([]);
-      } finally {
-        if (isMounted) setLoading(false);
+    try {
+      const user = auth.currentUser;
+      if (!user) {
+        setChildren([]);
+        return;
       }
-    };
 
-    fetchChildren();
+      const childrenData = await getAllChildren();
 
-    return () => {
-      isMounted = false;
-    };
+      const uiChildren: UIChild[] = childrenData.map((c) => ({
+        ...c,
+        selected: false,
+        absenceType: (c as any).absenceType || null,
+        absenceFrom: (c as any).absenceFrom || null,
+        absenceTo: (c as any).absenceTo || null,
+      }));
+
+      setChildren(uiChildren);
+      fetchedRef.current = true;
+    } catch (err) {
+      console.error("Failed to load children:", err);
+    } finally {
+      setLoading(false);
+    }
   }, []);
+
+  useEffect(() => {
+    fetchChildren();
+  }, [fetchChildren]);
 
   const toggleSelect = (id: string) => {
     setChildren((prev) =>
@@ -71,5 +58,11 @@ export const useChildrenForEmployee = () => {
     );
   };
 
-  return { children, loading, toggleSelect, setChildren };
+  return {
+    children,
+    loading,
+    toggleSelect,
+    setChildren,
+    refreshData: () => fetchChildren(true),
+  };
 };
