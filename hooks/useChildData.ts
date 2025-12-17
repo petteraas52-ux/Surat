@@ -4,7 +4,14 @@ import { ChildProps } from "@/types/childData";
 import { EventProps } from "@/types/eventData";
 import { getErrorMessage } from "@/utils/error";
 import { getAuth } from "firebase/auth";
-import { collection, getDocs, query, where } from "firebase/firestore";
+import {
+  collection,
+  doc,
+  getDoc,
+  getDocs,
+  query,
+  where,
+} from "firebase/firestore";
 import { useCallback, useEffect, useState } from "react";
 
 type AbsenceType = "sykdom" | "ferie" | null;
@@ -26,16 +33,30 @@ export const useChildData = () => {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [lastUpdated, setLastUpdated] = useState<Date>(new Date());
 
+  const clearError = useCallback(() => {
+    setErrorMessage(null);
+  }, []);
+
+  const toggleSelect = useCallback((childId: string) => {
+    setChildren((prev) =>
+      prev.map((c) => (c.id === childId ? { ...c, selected: !c.selected } : c))
+    );
+  }, []);
+
   const refreshData = useCallback(
     async (isManual = false) => {
       if (!uid) return;
 
-      console.log(`[useChildData] Fetching data... (Manual: ${isManual})`);
-      if (!isManual) setLoading(true);
+      if (!isManual && children.length === 0) setLoading(true);
 
       try {
+        const employeeDoc = await getDoc(doc(db, "employees", uid));
+        const isStaff = employeeDoc.exists();
+
         const childrenCol = collection(db, "children");
-        const q = query(childrenCol, where("parents", "array-contains", uid));
+        const q = isStaff
+          ? query(childrenCol)
+          : query(childrenCol, where("parents", "array-contains", uid));
 
         const [childSnap, eventsData] = await Promise.all([
           getDocs(q),
@@ -55,9 +76,6 @@ export const useChildData = () => {
         setEvents(eventsData);
         setLastUpdated(new Date());
         setErrorMessage(null);
-        console.log(
-          `[useChildData] Fetch complete at ${new Date().toLocaleTimeString()}`
-        );
       } catch (err) {
         console.error("[useChildData] Fetch error:", err);
         setErrorMessage(getErrorMessage("children", "LOAD_FAILED"));
@@ -65,20 +83,12 @@ export const useChildData = () => {
         setLoading(false);
       }
     },
-    [uid]
+    [uid, children.length]
   );
 
   useEffect(() => {
     refreshData();
   }, [refreshData]);
-
-  const toggleSelect = (id: string) => {
-    setChildren((prev) =>
-      prev.map((child) =>
-        child.id === id ? { ...child, selected: !child.selected } : child
-      )
-    );
-  };
 
   return {
     children,
@@ -86,10 +96,12 @@ export const useChildData = () => {
     events,
     loading,
     toggleSelect,
-    uid,
     errorMessage,
+    clearError,
     lastUpdated,
-    refreshData: () => refreshData(true),
-    clearError: () => setErrorMessage(null),
+    refreshData: () => {
+      setErrorMessage(null);
+      refreshData(true);
+    },
   };
 };

@@ -7,7 +7,7 @@ export const createAccountViaAdmin = async (
   email: string,
   password: string,
   displayName: string,
-  role: "parent" | "employee",
+  role: "parent" | "employee" | "admin",
   additionalData: any
 ) => {
   try {

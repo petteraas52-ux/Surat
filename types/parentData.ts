@@ -6,4 +6,5 @@ export interface ParentProps {
   phone: string;
   imageUri: string;
   children: string[];
+  role: "parent";
 }

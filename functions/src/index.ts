@@ -4,23 +4,26 @@ import { HttpsError, onCall } from "firebase-functions/v2/https";
 admin.initializeApp();
 
 export const adminCreateUser = onCall(async (request) => {
+  // 1. Security: Only authenticated users can call this
   if (!request.auth) {
-    throw new HttpsError(
-      "unauthenticated",
-      "The function must be called while authenticated."
-    );
+    throw new HttpsError("unauthenticated", "Must be logged in.");
   }
 
   const { email, password, displayName, role, additionalData } = request.data;
-  const collectionName = role === "employee" ? "employees" : "parents";
+
+  // 2. Routing: Admin/Employee -> employees table, Parent -> parents table
+  const isStaff = role === "admin" || role === "employee";
+  const collectionName = isStaff ? "employees" : "parents";
 
   try {
+    // 3. Create Auth User
     const userRecord = await admin.auth().createUser({
       email,
       password,
       displayName,
     });
 
+    // 4. Save to Firestore with the role included
     await admin
       .firestore()
       .collection(collectionName)
@@ -28,12 +31,13 @@ export const adminCreateUser = onCall(async (request) => {
       .set({
         ...additionalData,
         uid: userRecord.uid,
+        role: role, // Essential for your TabBar logic
         createdAt: admin.firestore.FieldValue.serverTimestamp(),
       });
 
     return { success: true, uid: userRecord.uid };
   } catch (error: any) {
-    console.error("Creation Error:", error);
+    console.error("User Creation Error:", error);
     throw new HttpsError("internal", error.message);
   }
 });

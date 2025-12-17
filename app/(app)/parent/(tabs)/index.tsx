@@ -1,5 +1,5 @@
-import { useNavigation } from "expo-router";
-import React, { useCallback, useEffect, useState } from "react";
+import { useNavigation } from "@react-navigation/native";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import {
   ActivityIndicator,
   Pressable,
@@ -98,7 +98,6 @@ export default function Index() {
   const [refreshing, setRefreshing] = useState(false);
 
   const onRefresh = useCallback(async () => {
-    console.log("[Index] Manual pull-to-refresh triggered");
     setRefreshing(true);
     await refreshData();
     setRefreshing(false);
@@ -106,33 +105,34 @@ export default function Index() {
 
   useEffect(() => {
     const unsubscribe = navigation.addListener("focus", () => {
-      console.log("[Index] Tab focused: Refreshing data via listener");
       refreshData();
     });
     return unsubscribe;
   }, [navigation, refreshData]);
 
-  const activeChild = overlayChildId
-    ? children.find((c) => c.id === overlayChildId)
-    : undefined;
+  const activeChild = useMemo(
+    () => children.find((c) => c.id === overlayChildId),
+    [children, overlayChildId]
+  );
 
-  const handleOpenDetailModal = (childId: string) => {
+  const handleOpenDetailModal = useCallback((childId: string) => {
     setOverlayChildId(childId);
     setOverlayVisible(true);
-  };
+  }, []);
 
-  const handleOpenGuestLink = () => {
+  const handleOpenGuestLink = useCallback(() => {
     setOverlayVisible(false);
     openGuestLinkModal();
-  };
+  }, [openGuestLinkModal]);
 
-  const handleOpenVacationDatePicker = () => {
+  const handleOpenVacationDatePicker = useCallback(() => {
     closeAbsenceModal();
     setIsSelectingVacationDate(true);
     openCalendarModalForDate(vacationStartDate);
-  };
+  }, [closeAbsenceModal, openCalendarModalForDate, vacationStartDate]);
 
-  if (loading && !refreshing) {
+  // STABLE LOADING: No flicker if data already exists
+  if (loading && children.length === 0 && !refreshing) {
     return (
       <View
         style={[styles.loadingContainer, { backgroundColor: theme.background }]}
@@ -154,7 +154,6 @@ export default function Index() {
             refreshing={refreshing}
             onRefresh={onRefresh}
             tintColor={theme.primary}
-            colors={[theme.primary]}
           />
         }
       >
@@ -190,7 +189,7 @@ export default function Index() {
           ))}
         </View>
 
-        <View style={{ marginTop: 12, marginBottom: 12 }}>
+        <View style={{ marginTop: 24, marginBottom: 12 }}>
           <Text style={[styles.sectionHeader, { color: theme.text }]}>
             {t("upcommingEvent")}
           </Text>
@@ -358,12 +357,9 @@ const styles = StyleSheet.create({
     padding: 16,
     borderRadius: 12,
     elevation: 2,
-    shadowOffset: {
-      width: 0,
-      height: 1,
-    },
-    shadowOpacity: 0.2,
-    shadowRadius: 1.41,
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.1,
+    shadowRadius: 2,
   },
   eventDate: {
     fontSize: 14,

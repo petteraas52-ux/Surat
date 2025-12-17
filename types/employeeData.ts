@@ -6,4 +6,5 @@ export interface EmployeeProps {
   phone: string;
   imageUri: string;
   department: string;
+  role: "admin" | "employee";
 }

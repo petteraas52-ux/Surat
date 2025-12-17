@@ -23,12 +23,24 @@ export function CreateEmployeeModal() {
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
 
+  // Department Dropdown State
   const [departments, setDepartments] = useState<DepartmentProps[]>([]);
   const [loadingDepts, setLoadingDepts] = useState(true);
   const [open, setOpen] = useState(false);
   const [selectedDepartment, setSelectedDepartment] = useState<string | null>(
     null
   );
+
+  // --- NEW: Role Dropdown State ---
+  const [roleOpen, setRoleOpen] = useState(false);
+  const [selectedRole, setSelectedRole] = useState<"admin" | "employee">(
+    "employee"
+  );
+  const roleItems = [
+    { label: "Employee", value: "employee" },
+    { label: "Admin", value: "admin" },
+  ];
+  // --------------------------------
 
   const theme = useAppTheme();
   const { t } = useI18n();
@@ -59,7 +71,8 @@ export function CreateEmployeeModal() {
       !email ||
       !phone ||
       !selectedDepartment ||
-      !password
+      !password ||
+      !selectedRole
     ) {
       Alert.alert(t("missingFieldsTitle"), t("missingFieldsMessage"));
       return;
@@ -67,12 +80,11 @@ export function CreateEmployeeModal() {
 
     try {
       setLoading(true);
-
       await createAccountViaAdmin(
         email,
         password,
         `${firstName} ${lastName}`,
-        "employee",
+        selectedRole,
         {
           firstName,
           lastName,
@@ -80,6 +92,7 @@ export function CreateEmployeeModal() {
           phone,
           department: selectedDepartment,
           imageUri: "",
+          role: selectedRole,
         }
       );
 
@@ -91,6 +104,7 @@ export function CreateEmployeeModal() {
       setPhone("");
       setSelectedDepartment(null);
       setPassword("");
+      setSelectedRole("employee");
     } catch (error: any) {
       console.error(error);
       Alert.alert(
@@ -113,6 +127,31 @@ export function CreateEmployeeModal() {
   return (
     <View style={styles.container}>
       <Text style={styles.title}>{t("createEmployeeTitle")}</Text>
+
+      <Text style={styles.label}>{t("Role")}:</Text>
+      <View style={{ zIndex: 2000 }}>
+        <DropDownPicker
+          open={roleOpen}
+          value={selectedRole}
+          items={roleItems}
+          setOpen={setRoleOpen}
+          setValue={setSelectedRole}
+          onOpen={() => setOpen(false)}
+          style={[
+            styles.input,
+            {
+              backgroundColor: theme.inputBackground,
+              borderColor: theme.border,
+            },
+          ]}
+          textStyle={{ color: theme.text }}
+          dropDownContainerStyle={{
+            backgroundColor: theme.inputBackground,
+            borderColor: theme.border,
+          }}
+          containerStyle={{ marginBottom: 15 }}
+        />
+      </View>
 
       <Text style={styles.label}>{t("firstName")}:</Text>
       <TextInput
@@ -157,6 +196,7 @@ export function CreateEmployeeModal() {
           items={deptItems}
           setOpen={setOpen}
           setValue={setSelectedDepartment}
+          onOpen={() => setRoleOpen(false)}
           placeholder={t("department")}
           searchable={true}
           searchPlaceholder={t("searchParentPlaceholder")}

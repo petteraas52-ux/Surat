@@ -1,6 +1,12 @@
 import { Ionicons } from "@expo/vector-icons";
 import { useFocusEffect } from "@react-navigation/native";
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import React, {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import {
   ActivityIndicator,
   FlatList,
@@ -27,9 +33,13 @@ import { useI18n } from "@/hooks/useI18n";
 import { collection, doc, getDoc, getDocs } from "firebase/firestore";
 
 export default function EmployeeOverview() {
+  const theme = useAppTheme();
+  const { t } = useI18n();
+
   const {
     children,
-    loading: dataLoading,
+    loading: childrenLoading,
+    error: dataError,
     toggleSelect,
     setChildren,
     refreshData,
@@ -40,9 +50,6 @@ export default function EmployeeOverview() {
     setChildren,
   });
 
-  const theme = useAppTheme();
-  const { t } = useI18n();
-
   const [displayQuery, setDisplayQuery] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
   const [isDebouncing, setIsDebouncing] = useState(false);
@@ -50,63 +57,76 @@ export default function EmployeeOverview() {
   const [lastUpdated, setLastUpdated] = useState<Date>(new Date());
 
   const [selectedDept, setSelectedDept] = useState<string>("");
-  const [userDefaultDept, setUserDefaultDept] = useState<string>("");
   const [availableDepartments, setAvailableDepartments] = useState<string[]>(
     []
   );
 
+  const [metaLoading, setMetaLoading] = useState(true);
+  const [metaError, setMetaError] = useState(false);
   const [isModalVisible, setModalVisible] = useState(false);
   const [activeChildId, setActiveChildId] = useState<string | null>(null);
 
+  const isFetchingMeta = useRef(false);
+
   const loadMetaData = useCallback(async () => {
+    if (isFetchingMeta.current) return;
     const user = auth.currentUser;
+    if (!user) return;
+
     try {
+      isFetchingMeta.current = true;
+      setMetaLoading(true);
+
       const deptSnap = await getDocs(collection(db, "departments"));
       const depts = deptSnap.docs.map((doc) => doc.data().name);
       setAvailableDepartments(["All", ...depts]);
 
-      if (user) {
-        const userDoc = await getDoc(doc(db, "employees", user.uid));
-        if (userDoc.exists()) {
-          const userData = userDoc.data();
-          const dept = userData.department || "All";
-          setUserDefaultDept(dept);
-          if (!selectedDept) setSelectedDept(dept);
-        }
+      const userDoc = await getDoc(doc(db, "employees", user.uid));
+      if (userDoc.exists()) {
+        const userData = userDoc.data();
+        const dept = userData.department || "All";
+        setSelectedDept((prev) => (prev === "" ? dept : prev));
       }
+
       setLastUpdated(new Date());
-    } catch (e) {
-      console.error(e);
+      setMetaError(false);
+    } catch (e: any) {
+      if (e.code === "permission-denied") setMetaError(true);
+    } finally {
+      setMetaLoading(false);
+      isFetchingMeta.current = false;
     }
-  }, [selectedDept]);
+  }, []);
 
   useEffect(() => {
     loadMetaData();
-  }, []);
+  }, [loadMetaData]);
 
   useFocusEffect(
     useCallback(() => {
-      loadMetaData();
-      refreshData();
-    }, [loadMetaData, refreshData])
+      if (!metaError && !dataError) {
+        refreshData();
+        setLastUpdated(new Date());
+      }
+    }, [refreshData, dataError, metaError])
   );
 
   const onRefresh = useCallback(async () => {
     setRefreshing(true);
+    setMetaError(false);
     await Promise.all([loadMetaData(), refreshData()]);
+    setLastUpdated(new Date());
     setRefreshing(false);
   }, [loadMetaData, refreshData]);
 
   useEffect(() => {
-    if (displayQuery !== searchQuery) {
-      setIsDebouncing(true);
-    }
+    if (displayQuery !== searchQuery) setIsDebouncing(true);
     const handler = setTimeout(() => {
       setSearchQuery(displayQuery);
       setIsDebouncing(false);
     }, 500);
     return () => clearTimeout(handler);
-  }, [displayQuery]);
+  }, [displayQuery, searchQuery]);
 
   const filteredChildren = useMemo(() => {
     return children.filter((child) => {
@@ -119,26 +139,77 @@ export default function EmployeeOverview() {
     });
   }, [searchQuery, selectedDept, children]);
 
-  const hasActiveFilters =
-    displayQuery.length > 0 || selectedDept !== userDefaultDept;
-
-  const resetFilters = () => {
-    setDisplayQuery("");
-    setSearchQuery("");
-    setSelectedDept(userDefaultDept);
-  };
-
   const activeChild = useMemo(
     () => children.find((c) => c.id === activeChildId),
     [activeChildId, children]
   );
 
-  const getAbsenceLabel = (child: UIChild): string | null => {
-    if (!child.absenceType) return null;
-    return child.absenceType === "sykdom" ? t("sick") : t("vacation");
-  };
+  const getAbsenceLabel = useCallback(
+    (child: UIChild): string | null => {
+      if (!child.absenceType) return null;
+      return child.absenceType === "sykdom" ? t("sick") : t("vacation");
+    },
+    [t]
+  );
 
-  if (dataLoading && !refreshing) {
+  const renderItem = useCallback(
+    ({ item }: { item: UIChild }) => (
+      <ChildCard
+        child={item}
+        absenceLabel={getAbsenceLabel(item)}
+        onSelect={() => toggleSelect(item.id)}
+        onPress={() => {
+          setActiveChildId(item.id);
+          setModalVisible(true);
+        }}
+        hideSelectButton={true}
+      />
+    ),
+    [getAbsenceLabel, toggleSelect]
+  );
+
+  const renderFooter = () => (
+    <View style={styles.footerInfo}>
+      <Text style={[styles.lastUpdatedText, { color: theme.textSecondary }]}>
+        {t("lastUpdated")}:{" "}
+        {lastUpdated.toLocaleTimeString([], {
+          hour: "2-digit",
+          minute: "2-digit",
+        })}
+      </Text>
+    </View>
+  );
+
+  if (dataError === "ACCESS_DENIED" || metaError) {
+    return (
+      <View
+        style={[
+          styles.center,
+          { backgroundColor: theme.background, padding: 30 },
+        ]}
+      >
+        <Ionicons name="lock-closed" size={80} color={theme.primary} />
+        <Text
+          style={[styles.headerTitle, { color: theme.text, marginTop: 20 }]}
+        >
+          {t("accessDenied")}
+        </Text>
+        <TouchableOpacity
+          onPress={onRefresh}
+          style={[
+            styles.primaryButton,
+            { backgroundColor: theme.primary, marginTop: 30 },
+          ]}
+        >
+          <Text style={styles.primaryButtonText}>{t("retry")}</Text>
+        </TouchableOpacity>
+      </View>
+    );
+  }
+
+  const isInitialLoading =
+    (metaLoading || childrenLoading) && children.length === 0;
+  if (isInitialLoading && !refreshing) {
     return (
       <View style={[styles.center, { backgroundColor: theme.background }]}>
         <ActivityIndicator size="large" color={theme.primary} />
@@ -153,27 +224,14 @@ export default function EmployeeOverview() {
         edges={["top", "left", "right"]}
       >
         <View style={styles.headerContainer}>
-          <View style={styles.titleRow}>
-            <Text style={[styles.headerTitle, { color: theme.text }]}>
-              {t("childOverview")}
-            </Text>
-            {hasActiveFilters && (
-              <TouchableOpacity
-                onPress={resetFilters}
-                style={styles.clearButton}
-              >
-                <Text
-                  style={{
-                    color: theme.primary,
-                    fontWeight: "600",
-                    fontSize: 14,
-                  }}
-                >
-                  {t("clearAll")}
-                </Text>
-              </TouchableOpacity>
-            )}
-          </View>
+          <Text
+            style={[
+              styles.headerTitle,
+              { color: theme.text, marginBottom: 15 },
+            ]}
+          >
+            {t("childOverview")}
+          </Text>
 
           <View
             style={[
@@ -181,50 +239,28 @@ export default function EmployeeOverview() {
               { backgroundColor: theme.inputBackground },
             ]}
           >
-            <Ionicons
-              name="search"
-              size={20}
-              color={theme.textSecondary}
-              style={styles.searchIcon}
-            />
+            <Ionicons name="search" size={20} color={theme.textSecondary} />
             <TextInput
               placeholder={t("searchChildPlaceholder")}
               placeholderTextColor={theme.textSecondary}
               value={displayQuery}
               onChangeText={setDisplayQuery}
               autoCapitalize="none"
-              autoCorrect={false}
-              style={[
-                styles.searchInput,
-                {
-                  color: theme.text,
-                  letterSpacing: 0,
-                  textAlign: "left",
-                },
-              ]}
+              style={[styles.searchInput, { color: theme.text }]}
             />
-            {isDebouncing ? (
+            {isDebouncing && (
               <ActivityIndicator
                 size="small"
                 color={theme.primary}
-                style={{ marginRight: 5 }}
+                style={{ marginLeft: 5 }}
               />
-            ) : displayQuery.length > 0 ? (
-              <TouchableOpacity onPress={() => setDisplayQuery("")}>
-                <Ionicons
-                  name="close-circle"
-                  size={18}
-                  color={theme.textSecondary}
-                />
-              </TouchableOpacity>
-            ) : null}
+            )}
           </View>
 
           <ScrollView
             horizontal
             showsHorizontalScrollIndicator={false}
             style={styles.chipScroll}
-            contentContainerStyle={styles.chipContent}
           >
             {availableDepartments.map((dept) => (
               <TouchableOpacity
@@ -249,7 +285,7 @@ export default function EmployeeOverview() {
                     },
                   ]}
                 >
-                  {dept === "All" ? t("all") : dept}
+                  {dept}
                 </Text>
               </TouchableOpacity>
             ))}
@@ -259,80 +295,55 @@ export default function EmployeeOverview() {
         <FlatList
           data={filteredChildren}
           keyExtractor={(item) => item.id}
-          numColumns={1}
+          renderItem={renderItem}
           contentContainerStyle={styles.listContent}
-          showsVerticalScrollIndicator={false}
+          ListFooterComponent={renderFooter}
+          initialNumToRender={10}
+          maxToRenderPerBatch={10}
+          windowSize={5}
+          removeClippedSubviews={true}
           refreshControl={
             <RefreshControl
               refreshing={refreshing}
               onRefresh={onRefresh}
               tintColor={theme.primary}
-              colors={[theme.primary]}
             />
           }
-          ListFooterComponent={
-            filteredChildren.length > 0 ? (
-              <View style={styles.footer}>
-                <Text
-                  style={[styles.footerText, { color: theme.textSecondary }]}
-                >
-                  {t("lastUpdated") || "Sist oppdatert"}:{" "}
-                  {lastUpdated.toLocaleTimeString([], {
-                    hour: "2-digit",
-                    minute: "2-digit",
-                  })}
-                </Text>
-              </View>
-            ) : null
-          }
-          ListEmptyComponent={
-            <View style={styles.emptyContainer}>
-              <Ionicons name="filter-outline" size={48} color={theme.border} />
-              <Text style={{ color: theme.textSecondary, marginTop: 10 }}>
-                {t("noResultsFound")}
-              </Text>
-            </View>
-          }
-          renderItem={({ item }) => (
-            <ChildCard
-              child={item}
-              absenceLabel={getAbsenceLabel(item)}
-              onSelect={() => toggleSelect(item.id)}
-              onPress={() => {
-                setActiveChildId(item.id);
-                setModalVisible(true);
-              }}
-              hideSelectButton={true}
-            />
-          )}
         />
       </SafeAreaView>
 
-      <ChildDetailModal
-        isVisible={isModalVisible}
-        activeChild={activeChild}
-        onClose={() => setModalVisible(false)}
-        getAbsenceLabel={getAbsenceLabel}
-        onOpenGuestLinkModal={() => {}}
-        onToggleCheckIn={toggleOverlayChildCheckIn}
-        hideGuestButton
-      />
+      {activeChild && (
+        <ChildDetailModal
+          isVisible={isModalVisible}
+          activeChild={activeChild}
+          onClose={() => setModalVisible(false)}
+          getAbsenceLabel={getAbsenceLabel}
+          onOpenGuestLinkModal={() => {}}
+          onToggleCheckIn={toggleOverlayChildCheckIn}
+          hideGuestButton
+        />
+      )}
     </>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1 },
-  center: { flex: 1, justifyContent: "center", alignItems: "center" },
-  headerContainer: { paddingHorizontal: 20, paddingTop: 15 },
-  titleRow: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    marginBottom: 15,
+  container: {
+    flex: 1,
   },
-  headerTitle: { fontSize: 24, fontWeight: "bold" },
-  clearButton: { padding: 4 },
+  center: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  headerContainer: {
+    paddingHorizontal: 20,
+    paddingTop: 15,
+  },
+  headerTitle: {
+    fontSize: 24,
+    fontWeight: "bold",
+  },
   searchContainer: {
     flexDirection: "row",
     alignItems: "center",
@@ -341,25 +352,46 @@ const styles = StyleSheet.create({
     height: 45,
     marginBottom: 15,
   },
-  searchIcon: { marginRight: 8 },
   searchInput: {
     flex: 1,
     fontSize: 16,
     height: "100%",
-    letterSpacing: 0,
-    textAlign: "left",
+    marginLeft: 8,
   },
-  chipScroll: { marginBottom: 10 },
-  chipContent: { paddingRight: 40 },
+  chipScroll: {
+    marginBottom: 10,
+  },
   chip: {
     paddingHorizontal: 16,
     paddingVertical: 8,
     borderRadius: 20,
     marginRight: 8,
   },
-  chipText: { fontSize: 13, fontWeight: "600" },
-  listContent: { paddingHorizontal: 16, paddingBottom: 40, paddingTop: 10 },
-  emptyContainer: { alignItems: "center", marginTop: 80 },
-  footer: { paddingVertical: 20, alignItems: "center" },
-  footerText: { fontSize: 12, opacity: 0.7 },
+  chipText: {
+    fontSize: 13,
+    fontWeight: "600",
+  },
+  listContent: {
+    paddingHorizontal: 16,
+    paddingBottom: 20,
+    paddingTop: 10,
+  },
+  primaryButton: {
+    paddingHorizontal: 30,
+    paddingVertical: 12,
+    borderRadius: 25,
+  },
+  primaryButtonText: {
+    color: "#FFF",
+    fontWeight: "bold",
+  },
+  footerInfo: {
+    marginTop: 20,
+    marginBottom: 40,
+    alignItems: "center",
+  },
+  lastUpdatedText: {
+    fontSize: 12,
+    opacity: 0.6,
+  },
 });

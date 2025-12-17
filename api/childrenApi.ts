@@ -31,11 +31,16 @@ export const getChild = async (id: string): Promise<ChildProps | null> => {
 };
 
 export const getAllChildren = async (): Promise<ChildProps[]> => {
-  const snap = await getDocs(childrenCol);
-  return snap.docs.map((d) => ({
-    id: d.id,
-    ...(d.data() as Omit<ChildProps, "id">),
-  }));
+  try {
+    const snap = await getDocs(childrenCol);
+    return snap.docs.map((d) => ({
+      id: d.id,
+      ...(d.data() as Omit<ChildProps, "id">),
+    }));
+  } catch (error) {
+    console.error("Error in getAllChildren API:", error);
+    throw error;
+  }
 };
 
 export const getChildrenForParent = async (
