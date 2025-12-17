@@ -1,4 +1,3 @@
-// employee_overview.tsx
 import { Ionicons } from "@expo/vector-icons";
 import React, { useEffect, useMemo, useState } from "react";
 import {
@@ -23,7 +22,7 @@ import {
   useChildrenForEmployee,
 } from "@/hooks/useChildrenForEmployee";
 import { useI18n } from "@/hooks/useI18n";
-import { doc, getDoc } from "firebase/firestore";
+import { collection, doc, getDoc, getDocs } from "firebase/firestore";
 
 export default function EmployeeOverview() {
   const {
@@ -44,8 +43,14 @@ export default function EmployeeOverview() {
   const [displayQuery, setDisplayQuery] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
   const [isDebouncing, setIsDebouncing] = useState(false);
-  const [selectedDept, setSelectedDept] = useState<string>("All");
-  const [userDefaultDept, setUserDefaultDept] = useState<string>("All");
+
+  // States for department management
+  const [selectedDept, setSelectedDept] = useState<string>("");
+  const [userDefaultDept, setUserDefaultDept] = useState<string>("");
+  const [availableDepartments, setAvailableDepartments] = useState<string[]>(
+    []
+  );
+
   const [isModalVisible, setModalVisible] = useState(false);
   const [activeChildId, setActiveChildId] = useState<string | null>(null);
 
@@ -61,8 +66,17 @@ export default function EmployeeOverview() {
   }, [displayQuery]);
 
   useEffect(() => {
-    const fetchUserDept = async () => {
+    const initData = async () => {
       const user = auth.currentUser;
+
+      try {
+        const deptSnap = await getDocs(collection(db, "departments"));
+        const depts = deptSnap.docs.map((doc) => doc.data().name);
+        setAvailableDepartments(["All", ...depts]);
+      } catch (e) {
+        console.error("Error fetching departments", e);
+      }
+
       if (user) {
         const userDoc = await getDoc(doc(db, "employees", user.uid));
         if (userDoc.exists()) {
@@ -70,25 +84,25 @@ export default function EmployeeOverview() {
           if (userData.department) {
             setSelectedDept(userData.department);
             setUserDefaultDept(userData.department);
+          } else {
+            setSelectedDept("All");
+            setUserDefaultDept("All");
           }
         }
       }
     };
-    fetchUserDept();
+    initData();
   }, []);
-
-  const departments = useMemo(() => {
-    const depts = children.map((c) => c.department).filter(Boolean);
-    return ["All", ...Array.from(new Set(depts))];
-  }, [children]);
 
   const filteredChildren = useMemo(() => {
     return children.filter((child) => {
       const matchesSearch = `${child.firstName} ${child.lastName}`
         .toLowerCase()
         .includes(searchQuery.toLowerCase());
+
       const matchesDept =
         selectedDept === "All" || child.department === selectedDept;
+
       return matchesSearch && matchesDept;
     });
   }, [searchQuery, selectedDept, children]);
@@ -191,7 +205,7 @@ export default function EmployeeOverview() {
             style={styles.chipScroll}
             contentContainerStyle={styles.chipContent}
           >
-            {departments.map((dept) => (
+            {availableDepartments.map((dept) => (
               <TouchableOpacity
                 key={dept}
                 onPress={() => setSelectedDept(dept)}
@@ -224,10 +238,8 @@ export default function EmployeeOverview() {
         <FlatList
           data={filteredChildren}
           keyExtractor={(item) => item.id}
-          // UPDATED: Set numColumns to 1 for row layout
           numColumns={1}
           contentContainerStyle={styles.listContent}
-          // REMOVED: columnWrapperStyle (not used for 1 column)
           showsVerticalScrollIndicator={false}
           ListEmptyComponent={
             <View style={styles.emptyContainer}>
@@ -238,7 +250,6 @@ export default function EmployeeOverview() {
             </View>
           }
           renderItem={({ item }) => (
-            // Card will now take full width automatically
             <ChildCard
               child={item}
               absenceLabel={getAbsenceLabel(item)}

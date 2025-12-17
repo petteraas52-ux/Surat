@@ -3,15 +3,19 @@ import { createEvent } from "@/api/event";
 import { useAppTheme } from "@/hooks/useAppTheme";
 import { useI18n } from "@/hooks/useI18n";
 import { DepartmentProps } from "@/types/department";
+import { Ionicons } from "@expo/vector-icons";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import { Timestamp } from "firebase/firestore";
 import React, { useEffect, useState } from "react";
 import {
-  ActivityIndicator,
   Alert,
+  Modal,
+  Platform,
   Pressable,
+  ScrollView,
   Text,
   TextInput,
+  TouchableOpacity,
   View,
 } from "react-native";
 import DropDownPicker from "react-native-dropdown-picker";
@@ -47,17 +51,11 @@ export function CreateEventModal() {
     fetchDepartments();
   }, []);
 
-  const deptItems = departments.map((dept) => ({
-    label: dept.name,
-    value: dept.name,
-  }));
-
   const handleCreateEvent = async () => {
     if (!title || !selectedDepartment || !description) {
       Alert.alert(t("errorTitle"), t("fillAllFields"));
       return;
     }
-
     setLoading(true);
     try {
       await createEvent({
@@ -67,58 +65,62 @@ export function CreateEventModal() {
         date: Timestamp.fromDate(date),
       });
       Alert.alert(t("successTitle"), t("eventCreated"));
-
       setTitle("");
       setSelectedDepartment(null);
       setDescription("");
       setDate(new Date());
     } catch (err) {
-      console.error(err);
       Alert.alert(t("errorTitle"), t("eventCreationFailed"));
     } finally {
       setLoading(false);
     }
   };
 
-  if (loadingDepts) {
-    return (
-      <View style={styles.center}>
-        <ActivityIndicator size="small" color={theme.primary} />
-      </View>
-    );
-  }
+  const onDateChange = (event: any, selectedDate?: Date) => {
+    if (Platform.OS === "android") {
+      setShowPicker(false);
+    }
+    if (selectedDate) {
+      setDate(selectedDate);
+    }
+  };
 
   return (
-    <View style={styles.container}>
+    <ScrollView
+      style={styles.container}
+      contentContainerStyle={{ paddingBottom: 60 }}
+      nestedScrollEnabled={true}
+    >
       <Text style={styles.title}>{t("createEventTitle")}</Text>
 
-      <Text style={styles.label}>{t("title")}:</Text>
+      <Text style={styles.label}>{t("title")}</Text>
       <TextInput
-        style={styles.input}
+        style={[
+          styles.input,
+          { color: theme.text, backgroundColor: theme.inputBackground },
+        ]}
         value={title}
         onChangeText={setTitle}
         placeholder={t("writeTitle")}
+        placeholderTextColor={theme.textSecondary}
       />
 
-      <Text style={styles.label}>{t("department")}:</Text>
-      <View style={{ zIndex: 2000 }}>
+      <Text style={styles.label}>{t("department")}</Text>
+      <View style={{ zIndex: 3000 }}>
         <DropDownPicker
           open={open}
           value={selectedDepartment}
-          items={deptItems}
+          items={departments.map((d) => ({ label: d.name, value: d.name }))}
           setOpen={setOpen}
           setValue={setSelectedDepartment}
-          placeholder={t("selectDepartment") || t("writeDepartment")}
+          placeholder={t("selectDepartment")}
           searchable={true}
-          searchPlaceholder={t("searchDepartmentPlaceholer")}
           listMode="SCROLLVIEW"
           style={[
             styles.input,
             {
               backgroundColor: theme.inputBackground,
               borderColor: theme.border,
-              height: 50,
-              paddingHorizontal: 10,
             },
           ]}
           textStyle={{ color: theme.text }}
@@ -130,44 +132,109 @@ export function CreateEventModal() {
         />
       </View>
 
-      <Text style={styles.label}>{t("description")}:</Text>
-      <TextInput
-        style={[styles.input, styles.descriptionInput, { height: 100 }]}
-        value={description}
-        onChangeText={setDescription}
-        placeholder={t("writeDescription")}
-        multiline
-      />
-
-      <Text style={styles.label}>{t("date")}:</Text>
+      <Text style={styles.label}>{t("date")}</Text>
       <Pressable
         style={[
-          styles.datePickerButton,
-          { backgroundColor: theme.inputBackground },
+          styles.input,
+          {
+            backgroundColor: theme.inputBackground,
+            flexDirection: "row",
+            alignItems: "center",
+            justifyContent: "space-between",
+            paddingHorizontal: 15,
+          },
         ]}
         onPress={() => setShowPicker(true)}
       >
-        <Text style={{ color: theme.text }}>{date.toDateString()}</Text>
+        <Text style={{ color: theme.text, fontSize: 16 }}>
+          {date.toLocaleDateString(undefined, {
+            day: "2-digit",
+            month: "long",
+            year: "numeric",
+          })}
+        </Text>
+        <Ionicons name="calendar-outline" size={20} color={theme.primary} />
       </Pressable>
 
-      {showPicker && (
-        <DateTimePicker
-          value={date}
-          mode="date"
-          display="default"
-          onChange={(_, selectedDate) => {
-            setShowPicker(false);
-            if (selectedDate) setDate(selectedDate);
-          }}
-        />
-      )}
+      <Text style={styles.label}>{t("description")}</Text>
+      <TextInput
+        style={[
+          styles.input,
+          {
+            height: 100,
+            color: theme.text,
+            backgroundColor: theme.inputBackground,
+            textAlignVertical: "top",
+            paddingTop: 10,
+          },
+        ]}
+        value={description}
+        onChangeText={setDescription}
+        placeholder={t("writeDescription")}
+        placeholderTextColor={theme.textSecondary}
+        multiline
+      />
+
+      {/* CLEAN DATE PICKER MODAL */}
+      {showPicker &&
+        (Platform.OS === "ios" ? (
+          <Modal transparent animationType="fade" visible={showPicker}>
+            <View
+              style={{
+                flex: 1,
+                backgroundColor: "rgba(0,0,0,0.5)",
+                justifyContent: "flex-end",
+              }}
+            >
+              <View
+                style={{
+                  backgroundColor: theme.background,
+                  padding: 20,
+                  borderTopLeftRadius: 20,
+                  borderTopRightRadius: 20,
+                }}
+              >
+                <View
+                  style={{
+                    flexDirection: "row",
+                    justifyContent: "space-between",
+                    marginBottom: 10,
+                  }}
+                >
+                  <Text style={{ color: theme.text, fontWeight: "bold" }}>
+                    {t("selectDate")}
+                  </Text>
+                  <TouchableOpacity onPress={() => setShowPicker(false)}>
+                    <Text style={{ color: theme.primary, fontWeight: "bold" }}>
+                      {t("done")}
+                    </Text>
+                  </TouchableOpacity>
+                </View>
+                <DateTimePicker
+                  value={date}
+                  mode="date"
+                  display="spinner"
+                  onChange={onDateChange}
+                  textColor={theme.text}
+                />
+              </View>
+            </View>
+          </Modal>
+        ) : (
+          <DateTimePicker
+            value={date}
+            mode="date"
+            display="default"
+            onChange={onDateChange}
+          />
+        ))}
 
       <Pressable
         style={[
           styles.createButton,
           {
             backgroundColor: loading ? theme.primary + "50" : theme.primary,
-            marginTop: 20,
+            marginTop: 30,
           },
         ]}
         onPress={handleCreateEvent}
@@ -177,6 +244,6 @@ export function CreateEventModal() {
           {loading ? t("saving") : t("createEvent")}
         </Text>
       </Pressable>
-    </View>
+    </ScrollView>
   );
 }

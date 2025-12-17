@@ -1,12 +1,13 @@
 import { updateChild } from "@/api/children";
-import { updateDepartment } from "@/api/department";
+import { getAllDepartments, updateDepartment } from "@/api/department";
 import { updateEmployee } from "@/api/employees";
 import { updateEvent } from "@/api/event";
 import { updateParent } from "@/api/parents";
 import { styles } from "@/components/modals/commonStyles";
 import { useAppTheme } from "@/hooks/useAppTheme";
 import { useI18n } from "@/hooks/useI18n";
-import React, { useState } from "react";
+import { DepartmentProps } from "@/types/department";
+import React, { useEffect, useState } from "react";
 import {
   ActivityIndicator,
   Alert,
@@ -19,6 +20,7 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import DropDownPicker from "react-native-dropdown-picker";
 
 interface EditModalProps {
   visible: boolean;
@@ -38,6 +40,33 @@ export function AdminEditModal({
 
   const [formData, setFormData] = useState({ ...item });
   const [loading, setLoading] = useState(false);
+
+  const [departments, setDepartments] = useState<DepartmentProps[]>([]);
+  const [loadingDepts, setLoadingDepts] = useState(true);
+  const [open, setOpen] = useState(false);
+
+  useEffect(() => {
+    setFormData({ ...item });
+  }, [item]);
+
+  useEffect(() => {
+    const fetchDepartments = async () => {
+      try {
+        const data = await getAllDepartments();
+        setDepartments(data);
+      } catch (err) {
+        console.error("Error loading departments:", err);
+      } finally {
+        setLoadingDepts(false);
+      }
+    };
+    fetchDepartments();
+  }, []);
+
+  const deptItems = departments.map((dept) => ({
+    label: dept.name,
+    value: dept.name,
+  }));
 
   const handleUpdate = async () => {
     setLoading(true);
@@ -100,6 +129,7 @@ export function AdminEditModal({
           <ScrollView
             style={{ paddingHorizontal: 20 }}
             contentContainerStyle={{ paddingBottom: 40 }}
+            nestedScrollEnabled={true}
           >
             {type === "DEPARTMENT" && (
               <>
@@ -205,20 +235,37 @@ export function AdminEditModal({
 
             {(type === "CHILD" || type === "EMPLOYEE" || type === "EVENT") && (
               <>
-                <Text style={styles.label}>{t("department")}</Text>
-                <TextInput
-                  style={[
-                    styles.input,
-                    {
+                <Text style={styles.label}>{t("department")}:</Text>
+                <View style={{ zIndex: 1000 }}>
+                  <DropDownPicker
+                    open={open}
+                    value={formData.department}
+                    items={deptItems}
+                    setOpen={setOpen}
+                    setValue={(callback) => {
+                      const value = callback(formData.department);
+                      setFormData({ ...formData, department: value });
+                    }}
+                    placeholder={t("department")}
+                    searchable={true}
+                    searchPlaceholder={t("searchDepartmentPlaceholder")}
+                    listMode="SCROLLVIEW"
+                    loading={loadingDepts}
+                    style={[
+                      styles.input,
+                      {
+                        backgroundColor: theme.inputBackground,
+                        borderColor: theme.border,
+                      },
+                    ]}
+                    textStyle={{ color: theme.text }}
+                    dropDownContainerStyle={{
                       backgroundColor: theme.inputBackground,
-                      color: theme.text,
-                    },
-                  ]}
-                  value={formData.department}
-                  onChangeText={(v) =>
-                    setFormData({ ...formData, department: v })
-                  }
-                />
+                      borderColor: theme.border,
+                    }}
+                    containerStyle={{ marginBottom: open ? 160 : 15 }}
+                  />
+                </View>
               </>
             )}
 

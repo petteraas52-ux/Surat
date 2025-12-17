@@ -112,6 +112,9 @@
   "childOverview": "Avdelings oversikt",
   "all": "Alle",
   "clearAll": "Fjern alle filter",
+  "selectDate": "Velg dato",
+  "done": "Ferdig",
+  "departmentCreated": "Avdelig opprettet!",
 
   "close": "Lukk",
   "calendarHeader": "Kalender og Arrangementer",
