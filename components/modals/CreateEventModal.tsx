@@ -1,5 +1,3 @@
-// modules/CreateEventModal.tsx
-
 import { getAllDepartments } from "@/api/department";
 import { createEvent } from "@/api/event";
 import { useAppTheme } from "@/hooks/useAppTheme";
