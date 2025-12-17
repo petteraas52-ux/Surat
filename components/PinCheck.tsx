@@ -1,5 +1,5 @@
 import { getUserPin, setUserPin } from "@/api/pinApi";
-import { styles as commonStyles } from "@/components/modals/commonStyles"; // Import the global styles
+import { styles as commonStyles } from "@/components/modals/commonStyles";
 import { useAppTheme } from "@/hooks/useAppTheme";
 import { useI18n } from "@/hooks/useI18n";
 import { Ionicons } from "@expo/vector-icons";
@@ -45,8 +45,10 @@ export default function PinCheck({
   async function submit() {
     setError(null);
     if (!savedPin) {
-      if (!isValidPin(pin)) return setError("PIN må være 4 siffer.");
-      if (pin !== confirm) return setError("PIN-kodene må være like!");
+      if (!isValidPin(pin))
+        return setError(t("pinLengthError"));
+      if (pin !== confirm)
+        return setError(t("pinMatchError"));
       await setUserPin(uid, pin);
       setSavedPin(pin);
       setPin("");
@@ -58,7 +60,7 @@ export default function PinCheck({
       setPin("");
       onUnlocked();
     } else {
-      setError("Ugyldig PIN!");
+      setError(t("invalidPin"));
     }
   }
 
@@ -72,7 +74,7 @@ export default function PinCheck({
     );
   }
 
-  const title = savedPin ? "Skriv inn PIN" : "Opprett PIN";
+  const title = savedPin ? t("enterPin") : t("createPin");
   const canSubmit = savedPin
     ? pin.trim().length === 4
     : pin.trim().length === 4 && confirm.trim().length === 4;
@@ -108,9 +110,7 @@ export default function PinCheck({
         </Text>
 
         <Text style={[localStyles.subtitle, { color: theme.textSecondary }]}>
-          {savedPin
-            ? "Tast inn din femsifrede kode for å fortsette"
-            : "Velg en sikker 4-sifret kode for din profil"}
+          {savedPin ? t("enterPinSubtitle") : t("createPinSubtitle")}
         </Text>
 
         <View style={localStyles.inputWrapper}>
@@ -120,10 +120,10 @@ export default function PinCheck({
             keyboardType="number-pad"
             secureTextEntry
             maxLength={4}
-            placeholder={savedPin ? "PIN" : "Ny PIN"}
+            placeholder={savedPin ? t("pin") : t("newPin")}
             placeholderTextColor={theme.textSecondary}
             style={[
-              commonStyles.input, // 1. Use global style base
+              commonStyles.input,
               {
                 backgroundColor: theme.inputBackground,
                 borderColor: theme.border,
@@ -131,7 +131,6 @@ export default function PinCheck({
                 textAlign: "center",
                 fontSize: 22,
                 height: 60,
-                // 2. Local override ONLY
                 letterSpacing: pin.length > 0 ? 15 : 0,
               },
             ]}
@@ -144,7 +143,7 @@ export default function PinCheck({
               keyboardType="number-pad"
               secureTextEntry
               maxLength={4}
-              placeholder="Bekreft PIN"
+              placeholder={t("confirmPin")}
               placeholderTextColor={theme.textSecondary}
               style={[
                 commonStyles.input,
@@ -182,7 +181,7 @@ export default function PinCheck({
           disabled={!canSubmit}
         >
           <Text style={commonStyles.createButtonText}>
-            {savedPin ? "Lås opp" : "Lagre PIN"}
+            {savedPin ? t("unlock") : t("savePin")}
           </Text>
         </Pressable>
       </View>
