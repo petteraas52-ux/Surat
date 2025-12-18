@@ -1,3 +1,14 @@
+/**
+ * PARENT DASHBOARD (INDEX)
+ * * ROLE:
+ * The main control center for parents. It aggregates data from multiple hooks
+ * to handle check-ins, absence reporting, and event viewing.
+ * * ARCHITECTURE:
+ * This screen follows a "Controller" pattern. It orchestrates several custom hooks
+ * that contain the heavy business logic, keeping this UI file focused on
+ * layout and user interactions.
+ */
+
 import { useNavigation } from "@react-navigation/native";
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import {
@@ -11,6 +22,7 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
+// Custom Hooks - Separation of Concerns
 import { useAbsenceManagement } from "@/hooks/useAbsenceManagement";
 import { useAppTheme } from "@/hooks/useAppTheme";
 import { useCalendarEvents } from "@/hooks/useCalendarEvents";
@@ -19,6 +31,7 @@ import { useChildData } from "@/hooks/useChildData";
 import { useGuestLink } from "@/hooks/useGuestLink";
 import { useI18n } from "@/hooks/useI18n";
 
+// Components
 import { ChildCard } from "@/components/ChildCard";
 import { AbsenceModal } from "@/components/modals/AbsenceModal";
 import { CalendarModal } from "@/components/modals/CalendarModal";
@@ -31,6 +44,7 @@ export default function Index() {
   const theme = useAppTheme();
   const navigation = useNavigation();
 
+  // --- DATA FETCHING & SYNC ---
   const {
     children,
     setChildren,
@@ -43,6 +57,7 @@ export default function Index() {
     lastUpdated,
   } = useChildData();
 
+  // --- ATTENDANCE LOGIC ---
   const {
     anySelected,
     getButtonText,
@@ -52,6 +67,7 @@ export default function Index() {
     clearError: clearCheckInError,
   } = useCheckInOut({ children, setChildren });
 
+  // --- ABSENCE MANAGEMENT ---
   const {
     absenceModalVisible,
     vacationDays,
@@ -67,6 +83,7 @@ export default function Index() {
     clearError: clearAbsenceError,
   } = useAbsenceManagement({ children, setChildren });
 
+  // --- GUEST PERMISSIONS ---
   const {
     guestLinkVisible,
     closeGuestLinkModal,
@@ -80,6 +97,7 @@ export default function Index() {
     sendGuestLink,
   } = useGuestLink();
 
+  // --- CALENDAR & EVENTS ---
   const {
     calendarModalVisible,
     selectedDateInCalendar,
@@ -92,10 +110,13 @@ export default function Index() {
     openCalendarModalForDate,
   } = useCalendarEvents({ events });
 
+  // --- LOCAL UI STATE ---
   const [overlayVisible, setOverlayVisible] = useState(false);
   const [overlayChildId, setOverlayChildId] = useState<string | null>(null);
   const [isSelectingVacationDate, setIsSelectingVacationDate] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
+
+  // --- HANDLERS ---
 
   const onRefresh = useCallback(async () => {
     setRefreshing(true);
@@ -103,6 +124,11 @@ export default function Index() {
     setRefreshing(false);
   }, [refreshData]);
 
+  /**
+   * REFRESH ON FOCUS:
+   * Ensures data is fresh whenever the parent returns to the app
+   * or switches back from the Profile tab.
+   */
   useEffect(() => {
     const unsubscribe = navigation.addListener("focus", () => {
       refreshData();
@@ -125,13 +151,17 @@ export default function Index() {
     openGuestLinkModal();
   }, [openGuestLinkModal]);
 
+  /**
+   * VACATION DATE PICKER:
+   * Temporarily closes the absence form to show the calendar for date selection.
+   */
   const handleOpenVacationDatePicker = useCallback(() => {
     closeAbsenceModal();
     setIsSelectingVacationDate(true);
     openCalendarModalForDate(vacationStartDate);
   }, [closeAbsenceModal, openCalendarModalForDate, vacationStartDate]);
 
-  // STABLE LOADING: No flicker if data already exists
+  // STABLE LOADING STATE
   if (loading && children.length === 0 && !refreshing) {
     return (
       <View
@@ -161,6 +191,7 @@ export default function Index() {
           {t("childrenHeader")}
         </Text>
 
+        {/* ERROR MESSAGES */}
         {childDataError && (
           <Text style={styles.errorText} onPress={clearChildDataError}>
             {childDataError}
@@ -177,6 +208,7 @@ export default function Index() {
           </Text>
         )}
 
+        {/* CHILD CARDS SECTION */}
         <View style={styles.childrenList}>
           {children.map((child) => (
             <ChildCard
@@ -189,6 +221,7 @@ export default function Index() {
           ))}
         </View>
 
+        {/* UPCOMING EVENTS CARD */}
         <View style={{ marginTop: 24, marginBottom: 12 }}>
           <Text style={[styles.sectionHeader, { color: theme.text }]}>
             {t("upcommingEvent")}
@@ -225,6 +258,7 @@ export default function Index() {
           </Pressable>
         </View>
 
+        {/* FOOTER ACTION BUTTONS */}
         <View style={styles.footerButtonsRow}>
           <Pressable
             style={[
@@ -249,6 +283,7 @@ export default function Index() {
           </Pressable>
         </View>
 
+        {/* METADATA INFO */}
         <View style={styles.footerInfo}>
           <Text
             style={[styles.lastUpdatedText, { color: theme.textSecondary }]}
@@ -262,6 +297,7 @@ export default function Index() {
         </View>
       </ScrollView>
 
+      {/* OVERLAY MODALS */}
       <ChildDetailModal
         isVisible={overlayVisible}
         activeChild={activeChild}

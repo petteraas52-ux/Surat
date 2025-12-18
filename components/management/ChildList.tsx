@@ -1,3 +1,17 @@
+/**
+ * CHILD LIST COMPONENT
+ * * ROLE:
+ * A management interface for staff to view, filter, edit, and delete
+ * child records from the system.
+ * * KEY LOGIC:
+ * 1. Search Debouncing: Implements a 500ms delay between typing and
+ * filtering to prevent UI stutter during heavy list processing.
+ * 2. CRUD Operations: Interfaces directly with 'childrenApi' for
+ * real-time database deletion and re-fetching.
+ * 3. Responsive Filtering: Filters by both name and department
+ * simultaneously for better usability in large schools.
+ */
+
 import { deleteChild, getAllChildren } from "@/api/childrenApi";
 import { styles } from "@/components/modals/commonStyles";
 import { useAppTheme } from "@/hooks/useAppTheme";
@@ -19,18 +33,26 @@ interface ChildListProps {
 }
 
 export function ChildList({ onEdit }: ChildListProps) {
+  // --- STATE ---
   const [children, setChildren] = useState<ChildProps[]>([]);
-  const [displayQuery, setDisplayQuery] = useState("");
-  const [searchQuery, setSearchQuery] = useState("");
+  const [displayQuery, setDisplayQuery] = useState(""); // Immediate UI state
+  const [searchQuery, setSearchQuery] = useState(""); // Debounced search value
   const [isDebouncing, setIsDebouncing] = useState(false);
   const [loading, setLoading] = useState(true);
+
   const { t } = useI18n();
   const theme = useAppTheme();
 
+  // --- INITIAL FETCH ---
   useEffect(() => {
     fetchChildren();
   }, []);
 
+  /**
+   * DEBOUNCE EFFECT
+   * Updates 'searchQuery' only after the user has stopped typing for 500ms.
+   * This optimizes performance by reducing the frequency of list re-renders.
+   */
   useEffect(() => {
     if (displayQuery !== searchQuery) {
       setIsDebouncing(true);
@@ -53,6 +75,10 @@ export function ChildList({ onEdit }: ChildListProps) {
     }
   };
 
+  /**
+   * DELETE HANDLER
+   * Triggers a native alert confirmation before invoking the API.
+   */
   const handleDelete = (id: string) => {
     Alert.alert(t("confirmDelete"), t("deleteWarning"), [
       { text: t("cancel"), style: "cancel" },
@@ -62,7 +88,7 @@ export function ChildList({ onEdit }: ChildListProps) {
         onPress: async () => {
           try {
             await deleteChild(id);
-            fetchChildren();
+            fetchChildren(); // Refresh the list after deletion
           } catch (err) {
             Alert.alert(t("errorTitle"), t("deleteFailed"));
           }
@@ -71,6 +97,7 @@ export function ChildList({ onEdit }: ChildListProps) {
     ]);
   };
 
+  // --- FILTER LOGIC ---
   const filtered = children.filter(
     (c) =>
       `${c.firstName} ${c.lastName}`
@@ -79,7 +106,7 @@ export function ChildList({ onEdit }: ChildListProps) {
       c.department.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  if (loading)
+  if (loading) {
     return (
       <ActivityIndicator
         size="large"
@@ -87,9 +114,11 @@ export function ChildList({ onEdit }: ChildListProps) {
         style={{ marginTop: 20 }}
       />
     );
+  }
 
   return (
     <View style={{ paddingHorizontal: 20 }}>
+      {/* SEARCH BAR */}
       <View
         style={[
           styles.input,
@@ -106,6 +135,7 @@ export function ChildList({ onEdit }: ChildListProps) {
           placeholder={t("searchChildPlaceholder") || "Search child..."}
           value={displayQuery}
           onChangeText={setDisplayQuery}
+          placeholderTextColor={theme.placeholder}
           style={{
             flex: 1,
             color: theme.text,
@@ -125,6 +155,7 @@ export function ChildList({ onEdit }: ChildListProps) {
         ) : null}
       </View>
 
+      {/* LIST OF CHILDREN */}
       {filtered.map((child) => (
         <View
           key={child.id}
@@ -137,6 +168,7 @@ export function ChildList({ onEdit }: ChildListProps) {
             borderBottomColor: theme.border,
           }}
         >
+          {/* CHILD INFO */}
           <View style={{ flex: 1, paddingRight: 10 }}>
             <Text
               style={{ color: theme.text, fontSize: 16, fontWeight: "600" }}
@@ -150,6 +182,7 @@ export function ChildList({ onEdit }: ChildListProps) {
             </Text>
           </View>
 
+          {/* ACTIONS */}
           <View style={{ flexDirection: "row", alignItems: "center" }}>
             <TouchableOpacity
               onPress={() => onEdit(child)}

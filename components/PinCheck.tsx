@@ -1,3 +1,17 @@
+/**
+ * PIN CHECK COMPONENT
+ * * ROLE:
+ * Prevents unauthorized access to sensitive actions (e.g., admin panels,
+ * child pickup, or editing profile data).
+ * * KEY FEATURES:
+ * 1. Intelligent UI: Swaps icons (lock-closed vs lock-open) and labels
+ * based on whether the user is creating or entering a PIN.
+ * 2. Letter Spacing Logic: Adds 15px spacing when a user types to mimic
+ * separate digit boxes without the complexity of 4 separate inputs.
+ * 3. Error Feedback: Provides localized alerts for non-matching PINs
+ * or incorrect entries.
+ */
+
 import { getUserPin, setUserPin } from "@/api/pinApi";
 import { styles as commonStyles } from "@/components/modals/commonStyles";
 import { useAppTheme } from "@/hooks/useAppTheme";
@@ -45,10 +59,10 @@ export default function PinCheck({
   async function submit() {
     setError(null);
     if (!savedPin) {
-      if (!isValidPin(pin))
-        return setError(t("pinLengthError"));
-      if (pin !== confirm)
-        return setError(t("pinMatchError"));
+      // SETUP FLOW
+      if (!isValidPin(pin)) return setError(t("pinLengthError"));
+      if (pin !== confirm) return setError(t("pinMatchError"));
+
       await setUserPin(uid, pin);
       setSavedPin(pin);
       setPin("");
@@ -56,6 +70,8 @@ export default function PinCheck({
       onUnlocked();
       return;
     }
+
+    // UNLOCK FLOW
     if (pin === savedPin) {
       setPin("");
       onUnlocked();
@@ -87,6 +103,7 @@ export default function PinCheck({
       <View
         style={[localStyles.container, { backgroundColor: theme.background }]}
       >
+        {/* LOCK ICON */}
         <View
           style={[
             localStyles.iconCircle,
@@ -120,8 +137,8 @@ export default function PinCheck({
             keyboardType="number-pad"
             secureTextEntry
             maxLength={4}
-            placeholder={savedPin ? t("pin") : t("newPin")}
-            placeholderTextColor={theme.textSecondary}
+            placeholder={savedPin ? "••••" : t("newPin")}
+            placeholderTextColor={theme.textMuted}
             style={[
               commonStyles.input,
               {
@@ -129,13 +146,14 @@ export default function PinCheck({
                 borderColor: theme.border,
                 color: theme.text,
                 textAlign: "center",
-                fontSize: 22,
-                height: 60,
+                fontSize: 28, // Large digits for visibility
+                height: 70,
                 letterSpacing: pin.length > 0 ? 15 : 0,
               },
             ]}
           />
 
+          {/* SECONDARY INPUT FOR SETUP ONLY */}
           {!savedPin && (
             <TextInput
               value={confirm}
@@ -144,7 +162,7 @@ export default function PinCheck({
               secureTextEntry
               maxLength={4}
               placeholder={t("confirmPin")}
-              placeholderTextColor={theme.textSecondary}
+              placeholderTextColor={theme.textMuted}
               style={[
                 commonStyles.input,
                 {
@@ -153,8 +171,8 @@ export default function PinCheck({
                   color: theme.text,
                   marginTop: 12,
                   textAlign: "center",
-                  fontSize: 22,
-                  height: 60,
+                  fontSize: 28,
+                  height: 70,
                   letterSpacing: confirm.length > 0 ? 15 : 0,
                 },
               ]}
@@ -164,8 +182,10 @@ export default function PinCheck({
 
         {error && (
           <View style={localStyles.errorContainer}>
-            <Ionicons name="alert-circle" size={16} color="red" />
-            <Text style={localStyles.errorText}>{error}</Text>
+            <Ionicons name="alert-circle" size={16} color={theme.error} />
+            <Text style={[localStyles.errorText, { color: theme.error }]}>
+              {error}
+            </Text>
           </View>
         )}
 
@@ -205,10 +225,11 @@ const localStyles = StyleSheet.create({
     marginBottom: 20,
   },
   subtitle: {
-    fontSize: 14,
+    fontSize: 15,
     textAlign: "center",
     marginBottom: 30,
     paddingHorizontal: 20,
+    lineHeight: 20,
   },
   inputWrapper: {
     width: "100%",
@@ -220,9 +241,8 @@ const localStyles = StyleSheet.create({
     marginBottom: 15,
   },
   errorText: {
-    color: "red",
     marginLeft: 6,
     fontSize: 14,
-    fontWeight: "500",
+    fontWeight: "600",
   },
 });

@@ -1,3 +1,17 @@
+/**
+ * PARENT LIST COMPONENT
+ * * ROLE:
+ * Provides an administrative view for managing parent accounts within the system.
+ * Supports real-time search, editing, and deletion of parent records.
+ * * KEY LOGIC:
+ * 1. Debounced Search: Synchronizes 'displayQuery' with 'searchQuery' after 500ms
+ * to ensure that filtering a potentially large list of users doesn't block the UI.
+ * 2. Multi-Field Filter: Allows staff to find parents by either their full name
+ * or their email address.
+ * 3. State Synchronization: Automatically re-fetches the list from 'parentApi'
+ * after a successful deletion to ensure data consistency.
+ */
+
 import { deleteParent, getAllParents } from "@/api/parentApi";
 import { styles } from "@/components/modals/commonStyles";
 import { useAppTheme } from "@/hooks/useAppTheme";
@@ -19,18 +33,25 @@ interface ParentListProps {
 }
 
 export function ParentList({ onEdit }: ParentListProps) {
+  // --- STATE ---
   const [parents, setParents] = useState<ParentProps[]>([]);
   const [displayQuery, setDisplayQuery] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
   const [isDebouncing, setIsDebouncing] = useState(false);
   const [loading, setLoading] = useState(true);
+
   const { t } = useI18n();
   const theme = useAppTheme();
 
+  // --- INITIAL DATA FETCH ---
   useEffect(() => {
     fetchParents();
   }, []);
 
+  /**
+   * DEBOUNCE EFFECT
+   * Prevents excessive re-filtering while the user is actively typing.
+   */
   useEffect(() => {
     if (displayQuery !== searchQuery) {
       setIsDebouncing(true);
@@ -53,6 +74,10 @@ export function ParentList({ onEdit }: ParentListProps) {
     }
   };
 
+  /**
+   * DELETE HANDLER
+   * Confirms deletion via native Alert and executes API call.
+   */
   const handleDelete = (id: string) => {
     Alert.alert(t("confirmDelete"), t("deleteWarning"), [
       { text: t("cancel"), style: "cancel" },
@@ -62,7 +87,7 @@ export function ParentList({ onEdit }: ParentListProps) {
         onPress: async () => {
           try {
             await deleteParent(id);
-            fetchParents();
+            fetchParents(); // Refresh list on success
           } catch (err) {
             Alert.alert(t("errorTitle"), t("deleteFailed"));
           }
@@ -71,6 +96,7 @@ export function ParentList({ onEdit }: ParentListProps) {
     ]);
   };
 
+  // --- SEARCH FILTERING ---
   const filtered = parents.filter(
     (p) =>
       `${p.firstName} ${p.lastName}`
@@ -79,7 +105,7 @@ export function ParentList({ onEdit }: ParentListProps) {
       p.eMail.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  if (loading)
+  if (loading) {
     return (
       <ActivityIndicator
         size="large"
@@ -87,9 +113,11 @@ export function ParentList({ onEdit }: ParentListProps) {
         style={{ marginTop: 20 }}
       />
     );
+  }
 
   return (
     <View style={{ paddingHorizontal: 20 }}>
+      {/* SEARCH BAR SECTION */}
       <View
         style={[
           styles.input,
@@ -104,6 +132,7 @@ export function ParentList({ onEdit }: ParentListProps) {
       >
         <TextInput
           placeholder={t("searchParentPlaceholder") || "Search parent..."}
+          placeholderTextColor={theme.placeholder}
           value={displayQuery}
           onChangeText={setDisplayQuery}
           style={{
@@ -112,6 +141,7 @@ export function ParentList({ onEdit }: ParentListProps) {
             height: "100%",
           }}
         />
+        {/* FEEDBACK ICON (SPINNER OR CLEAR) */}
         {isDebouncing ? (
           <ActivityIndicator size="small" color={theme.primary} />
         ) : displayQuery.length > 0 ? (
@@ -125,6 +155,7 @@ export function ParentList({ onEdit }: ParentListProps) {
         ) : null}
       </View>
 
+      {/* PARENT LIST ITEMS */}
       {filtered.map((parent) => (
         <View
           key={parent.id}
@@ -137,6 +168,7 @@ export function ParentList({ onEdit }: ParentListProps) {
             borderBottomColor: theme.border,
           }}
         >
+          {/* USER INFORMATION */}
           <View style={{ flex: 1, paddingRight: 10 }}>
             <Text
               style={{ color: theme.text, fontSize: 16, fontWeight: "600" }}
@@ -154,6 +186,7 @@ export function ParentList({ onEdit }: ParentListProps) {
             </Text>
           </View>
 
+          {/* ACTION BUTTONS */}
           <View style={{ flexDirection: "row", alignItems: "center" }}>
             <TouchableOpacity
               onPress={() => onEdit(parent)}

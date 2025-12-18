@@ -1,3 +1,12 @@
+/**
+ * ADMIN DASHBOARD SCREEN
+ * * ROLE:
+ * Central hub for "admin" users to perform CRUD operations.
+ * * ARCHITECTURE:
+ * Uses a "Switcher" pattern. It toggles local state (mode and activeTab)
+ * to render the correct management list or creation form.
+ */
+
 import React, { useState } from "react";
 import {
   Pressable,
@@ -13,21 +22,21 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { useAppTheme } from "@/hooks/useAppTheme";
 import { useI18n } from "@/hooks/useI18n";
 
-// Modals
+// Specialized Modals for creating new data
 import { CreateChildModal } from "../../../../components/modals/CreateChildModal";
 import { ManageDepartmentsModal } from "../../../../components/modals/CreateDepartmentModal";
 import { CreateEmployeeModal } from "../../../../components/modals/CreateEmployeeModal";
 import { CreateEventModal } from "../../../../components/modals/CreateEventModal";
 import { CreateParentModal } from "../../../../components/modals/CreateParentModal";
 
-// Management Lists
+// Lists for managing/viewing existing data
 import { ChildList } from "../../../../components/management/ChildList";
 import { DepartmentList } from "../../../../components/management/DepartmentList";
 import { EmployeeList } from "../../../../components/management/EmployeeList";
 import { EventList } from "../../../../components/management/EventList";
 import { ParentList } from "../../../../components/management/ParentList";
 
-// Shared Edit Modal
+// Generic Modal for editing existing items across all categories
 import { AdminEditModal } from "../../../../components/modals/AdminEditModal";
 
 const TABS = {
@@ -42,15 +51,25 @@ type TabKey = keyof typeof TABS;
 type DashboardMode = "CREATE" | "MANAGE";
 
 export default function AdminDashboardScreen() {
+  // --- STATE ---
   const [activeTab, setActiveTab] = useState<TabKey>("PARENT");
   const [mode, setMode] = useState<DashboardMode>("CREATE");
 
+  // Track the item being edited in the Shared Modal
   const [editingItem, setEditingItem] = useState<any>(null);
   const [editType, setEditType] = useState<TabKey | null>(null);
+
+  /**
+   * REFRESH TRIGGER LOGIC:
+   * Incremented whenever an edit is completed. By passing this into the 'key'
+   * prop of the lists, we force a re-mount to fetch fresh data from Firestore.
+   */
   const [refreshTrigger, setRefreshTrigger] = useState(0);
 
   const theme = useAppTheme();
   const { t } = useI18n();
+
+  // --- ACTIONS ---
 
   const handleOpenEdit = (item: any, type: TabKey) => {
     setEditingItem(item);
@@ -63,6 +82,10 @@ export default function AdminDashboardScreen() {
     setRefreshTrigger((prev) => prev + 1);
   };
 
+  /**
+   * DYNAMIC COMPONENT RESOLVER:
+   * Maps current state to the specific component that needs to be displayed.
+   */
   const renderContent = () => {
     if (mode === "CREATE") {
       switch (activeTab) {
@@ -127,12 +150,14 @@ export default function AdminDashboardScreen() {
       style={[styles.safeArea, { backgroundColor: theme.background }]}
       edges={["top", "left", "right"]}
     >
+      {/* SCREEN TITLE */}
       <View style={styles.header}>
         <Text style={[styles.headerTitle, { color: theme.text }]}>
           {t("adminDashBoardTitle")}
         </Text>
       </View>
 
+      {/* MODE SELECTOR (CREATE NEW VS MANAGE EXISTING) */}
       <View
         style={[
           styles.modeToggleContainer,
@@ -173,6 +198,7 @@ export default function AdminDashboardScreen() {
         </TouchableOpacity>
       </View>
 
+      {/* CATEGORY SELECTOR (TAB BAR) */}
       <View style={[styles.tabBar, { borderBottomColor: theme.border }]}>
         <ScrollView horizontal showsHorizontalScrollIndicator={false}>
           {(Object.keys(TABS) as TabKey[]).map((key) => (
@@ -200,6 +226,7 @@ export default function AdminDashboardScreen() {
         </ScrollView>
       </View>
 
+      {/* MAIN VIEWPORT */}
       <ScrollView
         style={styles.contentContainer}
         contentContainerStyle={styles.scrollContent}
@@ -208,6 +235,7 @@ export default function AdminDashboardScreen() {
         {renderContent()}
       </ScrollView>
 
+      {/* GLOBAL EDIT MODAL OVERLAY */}
       {editingItem && (
         <AdminEditModal
           visible={!!editingItem}
@@ -221,9 +249,17 @@ export default function AdminDashboardScreen() {
 }
 
 const styles = StyleSheet.create({
-  safeArea: { flex: 1 },
-  header: { paddingHorizontal: 20, paddingVertical: 10 },
-  headerTitle: { fontSize: 24, fontWeight: "bold" },
+  safeArea: {
+    flex: 1,
+  },
+  header: {
+    paddingHorizontal: 20,
+    paddingVertical: 10,
+  },
+  headerTitle: {
+    fontSize: 24,
+    fontWeight: "bold",
+  },
   modeToggleContainer: {
     flexDirection: "row",
     marginHorizontal: 20,
@@ -237,8 +273,15 @@ const styles = StyleSheet.create({
     alignItems: "center",
     borderRadius: 6,
   },
-  modeButtonText: { fontWeight: "bold", fontSize: 14 },
-  tabBar: { flexDirection: "row", borderBottomWidth: 1, marginBottom: 10 },
+  modeButtonText: {
+    fontWeight: "bold",
+    fontSize: 14,
+  },
+  tabBar: {
+    flexDirection: "row",
+    borderBottomWidth: 1,
+    marginBottom: 10,
+  },
   tabItem: {
     paddingHorizontal: 20,
     paddingVertical: 12,
@@ -246,7 +289,14 @@ const styles = StyleSheet.create({
     borderBottomWidth: 3,
     borderBottomColor: "transparent",
   },
-  tabText: { fontWeight: "600" },
-  contentContainer: { flex: 1 },
-  scrollContent: { flexGrow: 1, paddingBottom: 100 },
+  tabText: {
+    fontWeight: "600",
+  },
+  contentContainer: {
+    flex: 1,
+  },
+  scrollContent: {
+    flexGrow: 1,
+    paddingBottom: 100,
+  },
 });

@@ -1,3 +1,17 @@
+/**
+ * ADMIN EDIT MODAL
+ * * ROLE:
+ * A universal editing interface for Parents, Children, Employees, Events,
+ * and Departments. It dynamically renders form fields based on the 'type' prop.
+ * * KEY LOGIC:
+ * 1. Polymorphic Form: Manages a generic 'formData' object that resets
+ * whenever the input 'item' changes.
+ * 2. Dynamic Input Mapping: Renders specific fields (multiline, phone-pad, etc.)
+ * based on the entity type.
+ * 3. Keyboard Awareness: Uses KeyboardAvoidingView and ScrollView to ensure
+ * inputs remain accessible even when the virtual keyboard is open.
+ */
+
 import { updateChild } from "@/api/childrenApi";
 import { getAllDepartments, updateDepartment } from "@/api/departmentApi";
 import { updateEmployee } from "@/api/employeApi";
@@ -38,17 +52,27 @@ export function AdminEditModal({
   const { t } = useI18n();
   const theme = useAppTheme();
 
+  // --- FORM STATE ---
   const [formData, setFormData] = useState({ ...item });
   const [loading, setLoading] = useState(false);
 
+  // --- DROPDOWN STATE ---
   const [departments, setDepartments] = useState<DepartmentProps[]>([]);
   const [loadingDepts, setLoadingDepts] = useState(true);
   const [open, setOpen] = useState(false);
 
+  /**
+   * ITEM SYNC
+   * Resets form data when the modal opens with a new selected item.
+   */
   useEffect(() => {
-    setFormData({ ...item });
+    if (item) setFormData({ ...item });
   }, [item]);
 
+  /**
+   * DEPARTMENT FETCH
+   * Populates the selection list for Children, Employees, and Events.
+   */
   useEffect(() => {
     const fetchDepartments = async () => {
       try {
@@ -68,14 +92,22 @@ export function AdminEditModal({
     value: dept.name,
   }));
 
+  /**
+   * SAVE HANDLER
+   * Routes the update to the correct API based on the polymorphic type.
+   */
   const handleUpdate = async () => {
     setLoading(true);
     try {
-      if (type === "PARENT") await updateParent(item.id, formData);
-      else if (type === "CHILD") await updateChild(item.id, formData);
-      else if (type === "EMPLOYEE") await updateEmployee(item.id, formData);
-      else if (type === "EVENT") await updateEvent(item.id, formData);
-      else if (type === "DEPARTMENT") await updateDepartment(item.id, formData);
+      const updateActions: Record<string, () => Promise<void>> = {
+        PARENT: () => updateParent(item.id, formData),
+        CHILD: () => updateChild(item.id, formData),
+        EMPLOYEE: () => updateEmployee(item.id, formData),
+        EVENT: () => updateEvent(item.id, formData),
+        DEPARTMENT: () => updateDepartment(item.id, formData),
+      };
+
+      await updateActions[type]();
 
       Alert.alert(t("successTitle"), t("updateSuccessful"));
       onClose();
@@ -91,7 +123,8 @@ export function AdminEditModal({
     <Modal
       visible={visible}
       animationType="slide"
-      presentationStyle="pageSheet"
+      presentationStyle="pageSheet" // Modern iOS card style
+      onRequestClose={onClose}
     >
       <KeyboardAvoidingView
         behavior={Platform.OS === "ios" ? "padding" : "height"}
@@ -103,6 +136,7 @@ export function AdminEditModal({
             { backgroundColor: theme.background, flex: 1, paddingTop: 30 },
           ]}
         >
+          {/* MODAL HEADER */}
           <View
             style={{
               flexDirection: "row",
@@ -132,7 +166,9 @@ export function AdminEditModal({
             style={{ paddingHorizontal: 20 }}
             contentContainerStyle={{ paddingBottom: 40 }}
             nestedScrollEnabled={true}
+            keyboardShouldPersistTaps="handled"
           >
+            {/* 1. DEPARTMENT SPECIFIC */}
             {type === "DEPARTMENT" && (
               <>
                 <Text style={[styles.label, { color: theme.text }]}>
@@ -152,6 +188,7 @@ export function AdminEditModal({
               </>
             )}
 
+            {/* 2. NAME FIELDS (CHILD/PARENT/EMPLOYEE) */}
             {type !== "EVENT" && type !== "DEPARTMENT" && (
               <>
                 <Text style={[styles.label, { color: theme.text }]}>
@@ -190,6 +227,7 @@ export function AdminEditModal({
               </>
             )}
 
+            {/* 3. EVENT SPECIFIC */}
             {type === "EVENT" && (
               <>
                 <Text style={[styles.label, { color: theme.text }]}>
@@ -217,6 +255,7 @@ export function AdminEditModal({
                       backgroundColor: theme.inputBackground,
                       color: theme.text,
                       height: 80,
+                      paddingTop: 10,
                     },
                   ]}
                   value={formData.description}
@@ -227,6 +266,7 @@ export function AdminEditModal({
               </>
             )}
 
+            {/* 4. CONTACT FIELDS */}
             {(type === "PARENT" || type === "EMPLOYEE") && (
               <>
                 <Text style={[styles.label, { color: theme.text }]}>
@@ -247,6 +287,7 @@ export function AdminEditModal({
               </>
             )}
 
+            {/* 5. DEPARTMENT DROPDOWN */}
             {(type === "CHILD" || type === "EMPLOYEE" || type === "EVENT") && (
               <>
                 <Text style={[styles.label, { color: theme.text }]}>
@@ -285,6 +326,7 @@ export function AdminEditModal({
               </>
             )}
 
+            {/* SAVE BUTTON */}
             <TouchableOpacity
               style={[
                 styles.createButton,

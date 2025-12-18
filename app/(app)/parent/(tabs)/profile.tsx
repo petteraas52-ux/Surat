@@ -1,3 +1,13 @@
+/**
+ * PARENT PROFILE SCREEN
+ * * ROLE:
+ * Allows parents to manage their personal contact information, update their
+ * profile picture, change their security PIN, and adjust app language.
+ * * ARCHITECTURE:
+ * Uses a "Stateful Form" pattern with a toggleable 'isEditing' mode.
+ * Data is fetched from the 'parents' collection in Firestore via the 'getParent' API.
+ */
+
 import { getParent, updateParent } from "@/api/parentApi";
 import ProfilePicture from "@/components/image/ProfilePicture";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
@@ -26,6 +36,7 @@ export default function ProfileScreen() {
   const theme = useAppTheme();
   const uid = auth.currentUser?.uid;
 
+  // --- FORM STATE ---
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
   const [email, setEmail] = useState("");
@@ -34,6 +45,11 @@ export default function ProfileScreen() {
   const [parentData, setParentData] = useState<ParentProps | null>(null);
   const [showChangePin, setShowChangePin] = useState(false);
 
+  /**
+   * LOGOUT HANDLER
+   * Ends the Firebase session. The root auth listener will
+   * automatically redirect to the login flow.
+   */
   const handleLogout = async () => {
     try {
       await signOut(auth);
@@ -43,6 +59,10 @@ export default function ProfileScreen() {
     }
   };
 
+  /**
+   * INITIAL DATA FETCH
+   * Retrieves the parent document using the authenticated UID.
+   */
   useEffect(() => {
     if (!uid) return;
 
@@ -51,6 +71,7 @@ export default function ProfileScreen() {
         const parent = await getParent(uid);
 
         if (parent) {
+          // Combine names for the single UI input field
           setName(`${parent.firstName} ${parent.lastName}`);
           setPhone(parent.phone);
           setEmail(parent.eMail);
@@ -66,6 +87,10 @@ export default function ProfileScreen() {
     loadProfile();
   }, [uid]);
 
+  /**
+   * SAVE PROFILE CHANGES
+   * Parses the UI 'name' back into firstName and lastName for the database schema.
+   */
   const handleSave = async () => {
     if (!uid) return;
 
@@ -86,6 +111,8 @@ export default function ProfileScreen() {
       console.error("Failed to save profile:", err);
     }
   };
+
+  // --- RENDERING STATES ---
 
   if (loading) {
     return (
@@ -117,6 +144,8 @@ export default function ProfileScreen() {
         <Text style={[styles.title, { color: theme.text }]}>
           {t("myProfileHeader")}
         </Text>
+
+        {/* PROFILE PICTURE SECTION */}
         <View
           style={[
             styles.profilePictureWrapper,
@@ -131,6 +160,7 @@ export default function ProfileScreen() {
           />
         </View>
 
+        {/* NAME INPUT / LABEL */}
         <View style={styles.row}>
           <Text style={[styles.label, { color: theme.text }]}>{t("name")}</Text>
           {isEditing && (
@@ -141,10 +171,7 @@ export default function ProfileScreen() {
           <TextInput
             style={[
               styles.input,
-              {
-                backgroundColor: theme.inputBackground,
-                color: theme.text,
-              },
+              { backgroundColor: theme.inputBackground, color: theme.text },
             ]}
             value={name}
             onChangeText={setName}
@@ -154,16 +181,14 @@ export default function ProfileScreen() {
           <Text
             style={[
               styles.value,
-              {
-                backgroundColor: theme.inputBackground,
-                color: theme.text,
-              },
+              { backgroundColor: theme.inputBackground, color: theme.text },
             ]}
           >
             {name}
           </Text>
         )}
 
+        {/* PHONE INPUT / LABEL */}
         <View style={styles.row}>
           <Text style={[styles.label, { color: theme.text }]}>
             {t("phone")}
@@ -176,10 +201,7 @@ export default function ProfileScreen() {
           <TextInput
             style={[
               styles.input,
-              {
-                backgroundColor: theme.inputBackground,
-                color: theme.text,
-              },
+              { backgroundColor: theme.inputBackground, color: theme.text },
             ]}
             value={phone}
             onChangeText={setPhone}
@@ -190,16 +212,14 @@ export default function ProfileScreen() {
           <Text
             style={[
               styles.value,
-              {
-                backgroundColor: theme.inputBackground,
-                color: theme.text,
-              },
+              { backgroundColor: theme.inputBackground, color: theme.text },
             ]}
           >
             {phone}
           </Text>
         )}
 
+        {/* EMAIL INPUT / LABEL */}
         <View style={styles.row}>
           <Text style={[styles.label, { color: theme.text }]}>
             {t("email")}
@@ -212,10 +232,7 @@ export default function ProfileScreen() {
           <TextInput
             style={[
               styles.input,
-              {
-                backgroundColor: theme.inputBackground,
-                color: theme.text,
-              },
+              { backgroundColor: theme.inputBackground, color: theme.text },
             ]}
             value={email}
             onChangeText={setEmail}
@@ -226,16 +243,14 @@ export default function ProfileScreen() {
           <Text
             style={[
               styles.value,
-              {
-                backgroundColor: theme.inputBackground,
-                color: theme.text,
-              },
+              { backgroundColor: theme.inputBackground, color: theme.text },
             ]}
           >
             {email}
           </Text>
         )}
 
+        {/* ACTION BUTTONS */}
         <TouchableOpacity
           style={[styles.button, { backgroundColor: theme.primary }]}
           onPress={() => (isEditing ? handleSave() : setIsEditing(true))}

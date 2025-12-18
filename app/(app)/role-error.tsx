@@ -1,3 +1,16 @@
+/**
+ * ROLE ERROR SCREEN
+ * * ROLE:
+ * Acts as a "dead-end" safety screen when a user is authenticated in Firebase
+ * but does not have a valid role (Parent/Employee) assigned in Firestore.
+ * * LOGIC:
+ * 1. Prevents unauthorized navigation: This screen blocks access to the dashboard.
+ * 2. Resolution Path: Provides a clear "Sign Out" action so the user can try
+ * a different account or refresh their session.
+ * 3. Dynamic Fallbacks: Uses logical OR (||) to provide English fallbacks if
+ * translation keys are missing.
+ */
+
 import { useAppTheme } from "@/hooks/useAppTheme";
 import { useI18n } from "@/hooks/useI18n";
 import { useAuthSession } from "@/providers/authctx";
@@ -11,6 +24,7 @@ export default function RoleErrorScreen() {
   const { t } = useI18n();
   const router = useRouter();
 
+  // Localized strings with hardcoded fallbacks
   const errorMessage = t("roleErrorTitle");
   const helpText = t("roleErrorDescription");
   const contactText = t("roleErrorContact");
@@ -18,10 +32,15 @@ export default function RoleErrorScreen() {
   return (
     <View style={[styles.container, { backgroundColor: theme.background }]}>
       <View style={styles.content}>
+        {/* VISUAL INDICATOR */}
         <Text style={[styles.icon, { color: theme.primary }]}>⚠️</Text>
+
+        {/* TITLE */}
         <Text style={[styles.title, { color: theme.text }]}>
           {errorMessage || "Account Access Issue"}
         </Text>
+
+        {/* EXPLANATORY TEXT */}
         <Text style={[styles.description, { color: theme.textSecondary }]}>
           {helpText ||
             "We couldn't determine your account type (Parent or Employee)."}
@@ -30,6 +49,7 @@ export default function RoleErrorScreen() {
             "Please contact support for assistance or try logging in again."}
         </Text>
 
+        {/* PRIMARY ACTION: LOGOUT */}
         <Pressable
           style={[styles.button, { backgroundColor: theme.primary }]}
           onPress={signOut}
@@ -39,6 +59,7 @@ export default function RoleErrorScreen() {
           </Text>
         </Pressable>
 
+        {/* SECONDARY ACTION: SUPPORT */}
         <Pressable
           style={[styles.link, { borderColor: theme.border }]}
           onPress={() => {

@@ -1,3 +1,16 @@
+/**
+ * COMMENT BOX COMPONENT
+ * * ROLE:
+ * A read-only feed of professional observations and logs for a specific child.
+ * * LOGIC:
+ * 1. Reactive Fetching: Re-fetches data whenever 'childId' changes or
+ * 'refreshTrigger' is incremented.
+ * 2. Visual Hierarchy: Distinguishes between the author's name (bold)
+ * and the content (regular) within a specialized message bubble.
+ * 3. Empty States: Provides immediate feedback via 'noComments' if the
+ * child's log is currently empty.
+ */
+
 import { getComments } from "@/api/commentApi";
 import { useAppTheme } from "@/hooks/useAppTheme";
 import { useI18n } from "@/hooks/useI18n";
@@ -56,6 +69,7 @@ export default function CommentBox({
         )}
 
         {comments.map((c) => {
+          // Extracts first letter for the avatar fallback
           const initial = c.createdByName?.charAt(0).toUpperCase() || "?";
 
           return (
@@ -64,7 +78,7 @@ export default function CommentBox({
               <View
                 style={[
                   styles.avatar,
-                  { backgroundColor: theme.primary + "20" },
+                  { backgroundColor: theme.primary + "20" }, // 20% opacity of primary color
                 ]}
               >
                 <Text style={[styles.avatarText, { color: theme.primary }]}>
@@ -89,6 +103,7 @@ export default function CommentBox({
                   </Text>
                 </View>
 
+                {/* Timestamp Formatted for Norwegian Locale */}
                 <Text style={[styles.meta, { color: theme.commentMeta }]}>
                   {c.createdAt?.toDate
                     ? c.createdAt.toDate().toLocaleString("nb-NO", {
@@ -147,7 +162,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 14,
     paddingVertical: 10,
     borderRadius: 16,
-    borderTopLeftRadius: 2,
+    borderTopLeftRadius: 2, // Creates the distinct "chat bubble" tail
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.05,

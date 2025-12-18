@@ -1,3 +1,14 @@
+/**
+ * AUTHENTICATION SCREEN
+ * * ROLE:
+ * The entry point for unauthenticated users to access the application.
+ * * KEY FEATURES:
+ * 1. Keyboard Management: Uses 'KeyboardAvoidingView' and 'TouchableWithoutFeedback'
+ * to ensure inputs remain visible and the keyboard dismisses on tap.
+ * 2. Theme Integration: Dynamically colors cards, inputs, and text for light/dark modes.
+ * 3. Cross-Platform: Handles Web vs. Native event propagation differences.
+ */
+
 import { useAppTheme } from "@/hooks/useAppTheme";
 import { useI18n } from "@/hooks/useI18n";
 import "@/i18n";
@@ -16,13 +27,20 @@ import {
 } from "react-native";
 
 const Authentication = () => {
+  // --- LOCAL STATE ---
   const [userEmail, setUserEmail] = useState("");
   const [password, setPassword] = useState("");
 
+  // --- HOOKS ---
   const { signIn, authError } = useAuthSession();
   const { t } = useI18n();
   const theme = useAppTheme();
 
+  /**
+   * REUSABLE CONTENT BLOCK
+   * Defined outside the return to easily wrap with platform-specific
+   * touch handlers (TouchableWithoutFeedback for native, raw View for web).
+   */
   const content = (
     <View style={styles.inner}>
       <View
@@ -41,12 +59,14 @@ const Authentication = () => {
           {t("loginHelpText")}
         </Text>
 
+        {/* ERROR MESSAGE DISPLAY */}
         {authError && (
           <Text style={[styles.errorText, { color: theme.error ?? "#dc2626" }]}>
             {authError}
           </Text>
         )}
 
+        {/* EMAIL INPUT */}
         <View style={styles.inputGroup}>
           <Text style={[styles.label, { color: theme.text }]}>
             {t("email")}
@@ -69,6 +89,7 @@ const Authentication = () => {
           />
         </View>
 
+        {/* PASSWORD INPUT */}
         <View style={styles.inputGroup}>
           <Text style={[styles.label, { color: theme.text }]}>
             {t("password")}
@@ -90,6 +111,7 @@ const Authentication = () => {
           />
         </View>
 
+        {/* SUBMIT BUTTON */}
         <Pressable
           style={[styles.button, { backgroundColor: theme.primary }]}
           onPress={() => {
@@ -108,6 +130,9 @@ const Authentication = () => {
       behavior={Platform.OS === "ios" ? "padding" : "height"}
       keyboardVerticalOffset={Platform.OS === "ios" ? 80 : 0}
     >
+      {/* On Mobile: Tap outside the input to dismiss the keyboard.
+          On Web: This is unnecessary and can cause focus issues.
+      */}
       {Platform.OS === "web" ? (
         content
       ) : (
@@ -131,53 +156,51 @@ const styles = StyleSheet.create({
     padding: 20,
   },
   card: {
-    padding: 20,
-    borderRadius: 12,
+    padding: 24,
+    borderRadius: 16,
     elevation: 4,
-    shadowColor: "#000",
     shadowOpacity: 0.1,
     shadowRadius: 10,
     shadowOffset: { width: 0, height: 4 },
   },
   title: {
-    fontSize: 24,
-    fontWeight: "600",
+    fontSize: 26,
+    fontWeight: "700",
     marginBottom: 8,
   },
   subtitle: {
-    fontSize: 14,
-    marginBottom: 20,
+    fontSize: 15,
+    marginBottom: 24,
+    lineHeight: 20,
   },
   errorText: {
-    marginBottom: 12,
+    marginBottom: 16,
+    fontWeight: "500",
   },
   inputGroup: {
-    marginBottom: 16,
+    marginBottom: 18,
   },
   label: {
     fontSize: 14,
-    marginBottom: 6,
-    color: "#333",
+    fontWeight: "600",
+    marginBottom: 8,
   },
   input: {
     borderWidth: 1,
-
-    borderRadius: 8,
-    paddingHorizontal: 12,
-    paddingVertical: 10,
+    borderRadius: 10,
+    paddingHorizontal: 14,
+    paddingVertical: 12,
     fontSize: 16,
-    letterSpacing: 0,
   },
   button: {
-    marginTop: 12,
-
-    paddingVertical: 14,
-    borderRadius: 8,
+    marginTop: 10,
+    paddingVertical: 16,
+    borderRadius: 12,
     alignItems: "center",
   },
   buttonText: {
     color: "#fff",
     fontSize: 16,
-    fontWeight: "600",
+    fontWeight: "700",
   },
 });

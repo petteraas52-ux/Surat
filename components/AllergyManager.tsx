@@ -9,6 +9,11 @@ interface AllergyManagerProps {
   onUpdate: (newAllergies: string[]) => void;
 }
 
+/**
+ * ALLERGY MANAGER COMPONENT
+ * Handles the logic for adding and removing dietary restrictions or allergies.
+ * Items are managed as a 'tokenized' list for better mobile UX.
+ */
 export const AllergyManager: React.FC<AllergyManagerProps> = ({
   allergies,
   onUpdate,
@@ -19,6 +24,7 @@ export const AllergyManager: React.FC<AllergyManagerProps> = ({
 
   const addAllergy = () => {
     const trimmed = inputValue.trim();
+    // Prevent empty entries and duplicates
     if (trimmed && !allergies.includes(trimmed)) {
       onUpdate([...allergies, trimmed]);
       setInputValue("");
@@ -37,14 +43,18 @@ export const AllergyManager: React.FC<AllergyManagerProps> = ({
         {t("allergies")}
       </Text>
 
+      {/* RENDER ACTIVE TOKENS */}
       <View style={styles.tokenContainer}>
         {allergies.map((allergy, index) => (
           <View
-            key={index}
+            key={`${allergy}-${index}`}
             style={[styles.token, { backgroundColor: theme.primary }]}
           >
             <Text style={styles.tokenText}>{allergy}</Text>
-            <Pressable onPress={() => removeAllergy(index)}>
+            <Pressable
+              onPress={() => removeAllergy(index)}
+              hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }} // Easier to tap on mobile
+            >
               <Ionicons
                 name="close-circle"
                 size={18}
@@ -56,6 +66,7 @@ export const AllergyManager: React.FC<AllergyManagerProps> = ({
         ))}
       </View>
 
+      {/* ADD NEW ALLERGY INPUT */}
       <View
         style={[
           styles.inputRow,
@@ -69,9 +80,18 @@ export const AllergyManager: React.FC<AllergyManagerProps> = ({
           placeholderTextColor={theme.textMuted}
           style={[styles.input, { color: theme.text }]}
           onSubmitEditing={addAllergy}
+          returnKeyType="done"
         />
-        <Pressable onPress={addAllergy} style={styles.addButton}>
-          <Ionicons name="add-circle" size={28} color={theme.primary} />
+        <Pressable
+          onPress={addAllergy}
+          style={styles.addButton}
+          disabled={!inputValue.trim()}
+        >
+          <Ionicons
+            name="add-circle"
+            size={28}
+            color={inputValue.trim() ? theme.primary : theme.textMuted}
+          />
         </Pressable>
       </View>
     </View>
@@ -93,8 +113,18 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     paddingVertical: 6,
     borderRadius: 20,
+    elevation: 2, // Slight shadow for Android
+    shadowColor: "#000", // Shadow for iOS
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.1,
+    shadowRadius: 1,
   },
-  tokenText: { color: "#fff", fontSize: 14, fontWeight: "500" },
+  tokenText: {
+    color: "#fff",
+    fontSize: 14,
+    fontWeight: "500",
+    letterSpacing: 0,
+  },
   inputRow: {
     flexDirection: "row",
     alignItems: "center",
@@ -102,6 +132,8 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     paddingRight: 8,
   },
-  input: { flex: 1, padding: 10, fontSize: 15 },
-  addButton: { padding: 4 },
+  input: { flex: 1, padding: 12, fontSize: 15, letterSpacing: 0 },
+  addButton: {
+    padding: 4,
+  },
 });

@@ -8,6 +8,11 @@ import { doc, getDoc, getFirestore } from "firebase/firestore";
 import { useEffect, useState } from "react";
 import { ActivityIndicator, View } from "react-native";
 
+/**
+ * TAB NAVIGATION (EMPLOYEE/ADMIN)
+ * This component manages the bottom tab bar for staff members.
+ * It includes conditional logic to show/hide the Admin Dashboard.
+ */
 export default function TabBar() {
   const { t } = useI18n();
   const theme = useAppTheme();
@@ -15,6 +20,12 @@ export default function TabBar() {
   const [isAdmin, setIsAdmin] = useState(false);
   const [loading, setLoading] = useState(true);
 
+  /**
+   * PERMISSION CHECK EFFECT
+   * On mount, we listen to the Auth state. If a user is logged in,
+   * we fetch their document from the 'employees' collection to check their 'role'.
+   * This determines if the "Admin" tab should be visible.
+   */
   useEffect(() => {
     const auth = getAuth();
     const db = getFirestore();
@@ -24,6 +35,7 @@ export default function TabBar() {
         try {
           const empDoc = await getDoc(doc(db, "employees", user.uid));
           if (empDoc.exists()) {
+            // Check if the staff member has the 'admin' string in their role field
             setIsAdmin(empDoc.data().role === "admin");
           } else {
             setIsAdmin(false);
@@ -38,9 +50,10 @@ export default function TabBar() {
       setLoading(false);
     });
 
-    return () => unsubscribe();
+    return () => unsubscribe(); // Cleanup listener on unmount
   }, []);
 
+  // Prevent UI flicker: show a loader while checking permissions
   if (loading) {
     return (
       <View
@@ -70,6 +83,7 @@ export default function TabBar() {
         headerTintColor: theme.text,
       }}
     >
+      {/* 1. Main Dashboard: Accessible to all employees */}
       <Tabs.Screen
         name="index"
         options={{
@@ -85,6 +99,7 @@ export default function TabBar() {
         }}
       />
 
+      {/* 2. Personal Profile: Settings and personal info */}
       <Tabs.Screen
         name="profile"
         options={{
@@ -100,6 +115,11 @@ export default function TabBar() {
         }}
       />
 
+      {/* 3. ADMIN DASHBOARD (CONDITIONAL)
+          CRUCIAL LOGIC: The 'href' property. 
+          If isAdmin is false, we set href to null. This removes the tab 
+          from the bottom bar entirely, preventing non-admins from even seeing it.
+      */}
       <Tabs.Screen
         name="adminDashBoard"
         options={{

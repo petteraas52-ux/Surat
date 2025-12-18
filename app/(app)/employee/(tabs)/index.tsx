@@ -1,3 +1,13 @@
+/**
+ * EMPLOYEE OVERVIEW SCREEN
+ * * ROLE:
+ * The primary dashboard for staff members to see the children under their care.
+ * * KEY FEATURES:
+ * 1. Debounced Search: Reduces UI stuttering by waiting 500ms after typing before filtering.
+ * 2. Role-Based Filtering: Automatically defaults to the employee's assigned department.
+ * 3. Lifecycle Sync: Uses 'useFocusEffect' to refresh data every time the screen becomes active.
+ */
+
 import { Ionicons } from "@expo/vector-icons";
 import { useFocusEffect } from "@react-navigation/native";
 import React, {
@@ -36,6 +46,7 @@ export default function EmployeeOverview() {
   const theme = useAppTheme();
   const { t } = useI18n();
 
+  // --- CUSTOM HOOKS ---
   const {
     children,
     loading: childrenLoading,
@@ -50,8 +61,9 @@ export default function EmployeeOverview() {
     setChildren,
   });
 
-  const [displayQuery, setDisplayQuery] = useState("");
-  const [searchQuery, setSearchQuery] = useState("");
+  // --- STATE ---
+  const [displayQuery, setDisplayQuery] = useState(""); // Immediate UI state
+  const [searchQuery, setSearchQuery] = useState(""); // Debounced search state
   const [isDebouncing, setIsDebouncing] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const [lastUpdated, setLastUpdated] = useState<Date>(new Date());
@@ -68,6 +80,11 @@ export default function EmployeeOverview() {
 
   const isFetchingMeta = useRef(false);
 
+  /**
+   * LOAD METADATA
+   * Fetches the global list of departments and the current employee's
+   * specific department assignment to set the initial filter view.
+   */
   const loadMetaData = useCallback(async () => {
     if (isFetchingMeta.current) return;
     const user = auth.currentUser;
@@ -77,10 +94,12 @@ export default function EmployeeOverview() {
       isFetchingMeta.current = true;
       setMetaLoading(true);
 
+      // Fetch global departments for the filter chips
       const deptSnap = await getDocs(collection(db, "departments"));
       const depts = deptSnap.docs.map((doc) => doc.data().name);
       setAvailableDepartments(["All", ...depts]);
 
+      // Fetch specific employee assignment
       const userDoc = await getDoc(doc(db, "employees", user.uid));
       if (userDoc.exists()) {
         const userData = userDoc.data();
@@ -102,6 +121,11 @@ export default function EmployeeOverview() {
     loadMetaData();
   }, [loadMetaData]);
 
+  /**
+   * SCREEN FOCUS SYNC
+   * Ensures that if a child's status changed while the teacher was on
+   * a different screen, the data refreshes as soon as they return.
+   */
   useFocusEffect(
     useCallback(() => {
       if (!metaError && !dataError) {
@@ -119,6 +143,11 @@ export default function EmployeeOverview() {
     setRefreshing(false);
   }, [loadMetaData, refreshData]);
 
+  /**
+   * SEARCH DEBOUNCE LOGIC
+   * Prevents the list from re-filtering on every single keystroke.
+   * Only updates the 'searchQuery' after the user stops typing for 500ms.
+   */
   useEffect(() => {
     if (displayQuery !== searchQuery) setIsDebouncing(true);
     const handler = setTimeout(() => {
@@ -128,6 +157,11 @@ export default function EmployeeOverview() {
     return () => clearTimeout(handler);
   }, [displayQuery, searchQuery]);
 
+  /**
+   * FILTERED LIST LOGIC
+   * useMemo recalculates the list only when the raw data, department, or
+   * search query changes, preventing unnecessary renders.
+   */
   const filteredChildren = useMemo(() => {
     return children.filter((child) => {
       const matchesSearch = `${child.firstName} ${child.lastName}`
@@ -180,6 +214,7 @@ export default function EmployeeOverview() {
     </View>
   );
 
+  // --- ERROR STATE ---
   if (dataError === "ACCESS_DENIED" || metaError) {
     return (
       <View
@@ -233,6 +268,7 @@ export default function EmployeeOverview() {
             {t("childOverview")}
           </Text>
 
+          {/* SEARCH INPUT BAR */}
           <View
             style={[
               styles.searchContainer,
@@ -257,6 +293,7 @@ export default function EmployeeOverview() {
             )}
           </View>
 
+          {/* DEPARTMENT FILTER CHIPS */}
           <ScrollView
             horizontal
             showsHorizontalScrollIndicator={false}
@@ -292,6 +329,9 @@ export default function EmployeeOverview() {
           </ScrollView>
         </View>
 
+        {/* PERFORMANCE OPTIMIZED LIST 
+            initialNumToRender & windowSize keep the memory usage low.
+        */}
         <FlatList
           data={filteredChildren}
           keyExtractor={(item) => item.id}
@@ -312,6 +352,7 @@ export default function EmployeeOverview() {
         />
       </SafeAreaView>
 
+      {/* DETAIL OVERLAY */}
       {activeChild && (
         <ChildDetailModal
           isVisible={isModalVisible}
@@ -351,7 +392,6 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     height: 45,
     marginBottom: 15,
-    letterSpacing: 0,
   },
   searchInput: {
     flex: 1,

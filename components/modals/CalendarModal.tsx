@@ -1,3 +1,18 @@
+/**
+ * CALENDAR MODAL COMPONENT
+ * * ROLE:
+ * A specialized UI overlay that provides a monthly calendar view and a
+ * corresponding list of events for the selected date.
+ * * CORE FUNCTIONALITY:
+ * 1. Interactive Calendar: Integrates 'react-native-calendars' to visualize
+ * dates with markers (dots) indicating scheduled activities.
+ * 2. Event List Synchronization: Dynamically displays a scrollable list of
+ * EventProps cards based on the 'selectedDate' passed via props.
+ * 3. Deep Theming: Maps global theme tokens to the internal styling of
+ * the third-party Calendar component for a seamless look.
+ * 4. Localization: Uses i18n for headers, button labels, and empty-state messaging.
+ */
+
 import { useAppTheme } from "@/hooks/useAppTheme";
 import { useI18n } from "@/hooks/useI18n";
 import { EventProps } from "@/types/eventData";
@@ -32,6 +47,12 @@ export const CalendarModal: React.FC<CalendarModalProps> = ({
 }) => {
   const { t } = useI18n();
   const theme = useAppTheme();
+
+  /**
+   * renderEvent
+   * A helper function that transforms an EventProps object into a styled card.
+   * Utilizes the 'borderLeftWidth' as a visual accent using the primary theme color.
+   */
   const renderEvent = (event: EventProps, index: number) => (
     <View
       key={index}
@@ -59,18 +80,21 @@ export const CalendarModal: React.FC<CalendarModalProps> = ({
 
   return (
     <Modal visible={isVisible} transparent animationType="slide">
+      {/* BACKGROUND OVERLAY */}
       <View
         style={[
           styles.overlayBackdrop,
           { backgroundColor: theme.modalOverlay },
         ]}
       >
+        {/* MODAL CONTAINER */}
         <View
           style={[
             styles.overlayCard,
             { backgroundColor: theme.modalBackground },
           ]}
         >
+          {/* HEADER SECTION: CLOSE BUTTON & TITLE */}
           <Pressable
             style={[styles.backButton, { backgroundColor: theme.primary }]}
             onPress={onClose}
@@ -82,10 +106,12 @@ export const CalendarModal: React.FC<CalendarModalProps> = ({
             {t("calendarHeader")}
           </Text>
 
+          {/* INTERACTIVE CALENDAR SECTION */}
           <Calendar
             onDayPress={onDayPress}
             markedDates={markedDates}
             markingType="dot"
+            // Integration of custom theme tokens into the Calendar library
             theme={{
               backgroundColor: theme.backgroundSecondary,
               calendarBackground: theme.backgroundSecondary,
@@ -116,6 +142,7 @@ export const CalendarModal: React.FC<CalendarModalProps> = ({
             ]}
           />
 
+          {/* DYNAMIC EVENT LIST SECTION */}
           <View
             style={[
               styles.eventsContainer,
@@ -126,7 +153,9 @@ export const CalendarModal: React.FC<CalendarModalProps> = ({
               {t("eventsPlural")}:{" "}
               {selectedDate ? formatDateShort(selectedDate) : t("choseDate")}
             </Text>
+
             <ScrollView style={styles.eventsList}>
+              {/* Conditional rendering: Show list of events or an empty state message */}
               {eventsForSelectedDate.length > 0 ? (
                 eventsForSelectedDate.map(renderEvent)
               ) : (
@@ -142,6 +171,7 @@ export const CalendarModal: React.FC<CalendarModalProps> = ({
   );
 };
 
+// STYLESHEET DEFINITIONS
 const styles = StyleSheet.create({
   overlayBackdrop: {
     flex: 1,

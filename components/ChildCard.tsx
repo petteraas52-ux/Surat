@@ -1,3 +1,16 @@
+/**
+ * CHILD CARD COMPONENT
+ * * ROLE:
+ * A high-visibility list item used in the main dashboard.
+ * * KEY FEATURES:
+ * 1. Selective Pressable: Separate 'onPress' for the card and 'onSelect'
+ * for the checkbox allows for individual child viewing vs bulk selection.
+ * 2. Status Color Coding: Uses success/error theme colors to show attendance
+ * status (Checked In vs Checked Out) at a glance.
+ * 3. Absence Priority: Displays custom labels (e.g., "Sick", "Vacation")
+ * directly under the name if an absence is registered in the database.
+ */
+
 import ProfilePicture from "@/components/image/ProfilePicture";
 import { StaticColors } from "@/constants/Colors";
 import { useAppTheme } from "@/hooks/useAppTheme";
@@ -25,6 +38,7 @@ export const ChildCard: React.FC<ChildCardProps> = ({
   const theme = useAppTheme();
   const isAbsent = !!absenceLabel;
 
+  // Dynamically compute card background based on state
   const dynamicCardStyle = [
     styles.card,
     {
@@ -45,6 +59,7 @@ export const ChildCard: React.FC<ChildCardProps> = ({
   return (
     <Pressable style={styles.cardWrapper} onPress={onPress}>
       <View style={dynamicCardStyle}>
+        {/* SELECTOR CHECKBOX */}
         {!hideSelectButton && (
           <Pressable
             style={[
@@ -67,6 +82,7 @@ export const ChildCard: React.FC<ChildCardProps> = ({
           </Pressable>
         )}
 
+        {/* AVATAR SECTION */}
         <View
           style={[
             styles.avatarContainer,
@@ -81,6 +97,7 @@ export const ChildCard: React.FC<ChildCardProps> = ({
           />
         </View>
 
+        {/* INFORMATION SECTION */}
         <View style={styles.textContainer}>
           <Text
             style={[styles.nameText, { color: StaticColors.cardText }]}
@@ -93,6 +110,7 @@ export const ChildCard: React.FC<ChildCardProps> = ({
             {child.checkedIn ? t("checkedIn") : t("checkedOut")}
           </Text>
 
+          {/* ABSENCE NOTIFICATION */}
           {isAbsent && (
             <Text
               style={[styles.absenceLabelText, { color: theme.primary }]}
@@ -115,8 +133,8 @@ const styles = StyleSheet.create({
   card: {
     padding: 16,
     borderRadius: 12,
-    elevation: 3,
-    shadowOffset: { width: 0, height: 2 },
+    elevation: 3, // Android shadow
+    shadowOffset: { width: 0, height: 2 }, // iOS shadow
     shadowOpacity: 0.1,
     shadowRadius: 3.84,
     minHeight: 80,

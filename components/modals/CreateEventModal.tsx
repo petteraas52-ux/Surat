@@ -1,3 +1,17 @@
+/**
+ * CREATE EVENT MODAL
+ * * ROLE:
+ * Allows staff to publish events to specific departments. These events
+ * automatically populate the 'CalendarModal' viewed by parents.
+ * * KEY LOGIC:
+ * 1. Timestamp Conversion: Converts JavaScript Date objects into Firebase
+ * 'Timestamp' objects before storage to maintain global consistency.
+ * 2. Cross-Platform Date Picking: Implements a Modal-wrapped spinner for iOS
+ * and a native system dialog for Android to provide the best native feel.
+ * 3. Z-Index Management: Carefully manages zIndex for the DropDownPicker to
+ * ensure the department list overlays the date picker button correctly.
+ */
+
 import { getAllDepartments } from "@/api/departmentApi";
 import { createEvent } from "@/api/eventApi";
 import { useAppTheme } from "@/hooks/useAppTheme";
@@ -22,20 +36,23 @@ import DropDownPicker from "react-native-dropdown-picker";
 import { styles } from "./commonStyles";
 
 export function CreateEventModal() {
+  const { t } = useI18n();
+  const theme = useAppTheme();
+
+  // --- FORM STATE ---
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [date, setDate] = useState(new Date());
   const [showPicker, setShowPicker] = useState(false);
   const [loading, setLoading] = useState(false);
+
+  // --- DROPDOWN STATE ---
   const [departments, setDepartments] = useState<DepartmentProps[]>([]);
   const [loadingDepts, setLoadingDepts] = useState(true);
   const [open, setOpen] = useState(false);
   const [selectedDepartment, setSelectedDepartment] = useState<string | null>(
     null
   );
-
-  const { t } = useI18n();
-  const theme = useAppTheme();
 
   useEffect(() => {
     const fetchDepartments = async () => {
@@ -51,20 +68,28 @@ export function CreateEventModal() {
     fetchDepartments();
   }, []);
 
+  /**
+   * SUBMIT HANDLER
+   * Validates input and transforms data for Firestore.
+   */
   const handleCreateEvent = async () => {
-    if (!title || !selectedDepartment || !description) {
+    if (!title.trim() || !selectedDepartment || !description.trim()) {
       Alert.alert(t("errorTitle"), t("fillAllFields"));
       return;
     }
+
     setLoading(true);
     try {
       await createEvent({
-        title,
+        title: title.trim(),
         department: selectedDepartment,
-        description,
-        date: Timestamp.fromDate(date),
+        description: description.trim(),
+        date: Timestamp.fromDate(date), // Critical for Firestore querying
       });
+
       Alert.alert(t("successTitle"), t("eventCreated"));
+
+      // Reset State
       setTitle("");
       setSelectedDepartment(null);
       setDescription("");
@@ -78,7 +103,7 @@ export function CreateEventModal() {
 
   const onDateChange = (event: any, selectedDate?: Date) => {
     if (Platform.OS === "android") {
-      setShowPicker(false);
+      setShowPicker(false); // Android picker closes on selection
     }
     if (selectedDate) {
       setDate(selectedDate);
@@ -90,21 +115,30 @@ export function CreateEventModal() {
       style={styles.container}
       contentContainerStyle={{ paddingBottom: 60 }}
       nestedScrollEnabled={true}
+      showsVerticalScrollIndicator={false}
     >
-      <Text style={[styles.title, {color: theme.text}]}>{t("createEventTitle")}</Text>
+      <Text style={[styles.title, { color: theme.text }]}>
+        {t("createEventTitle")}
+      </Text>
 
+      {/* TITLE INPUT */}
       <Text style={[styles.label, { color: theme.text }]}>{t("title")}</Text>
       <TextInput
         style={[
           styles.input,
-          { color: theme.text, backgroundColor: theme.inputBackground },
+          {
+            color: theme.text,
+            backgroundColor: theme.inputBackground,
+            borderColor: theme.border,
+          },
         ]}
         value={title}
         onChangeText={setTitle}
         placeholder={t("writeTitle")}
-        placeholderTextColor={theme.textSecondary}
+        placeholderTextColor={theme.textMuted}
       />
 
+      {/* DEPARTMENT DROPDOWN */}
       <Text style={[styles.label, { color: theme.text }]}>
         {t("department")}
       </Text>
@@ -134,16 +168,17 @@ export function CreateEventModal() {
         />
       </View>
 
+      {/* DATE PICKER BUTTON */}
       <Text style={[styles.label, { color: theme.text }]}>{t("date")}</Text>
       <Pressable
         style={[
           styles.input,
           {
             backgroundColor: theme.inputBackground,
+            borderColor: theme.border,
             flexDirection: "row",
             alignItems: "center",
             justifyContent: "space-between",
-            paddingHorizontal: 15,
           },
         ]}
         onPress={() => setShowPicker(true)}
@@ -158,6 +193,7 @@ export function CreateEventModal() {
         <Ionicons name="calendar-outline" size={20} color={theme.primary} />
       </Pressable>
 
+      {/* DESCRIPTION INPUT */}
       <Text style={[styles.label, { color: theme.text }]}>
         {t("description")}
       </Text>
@@ -165,24 +201,25 @@ export function CreateEventModal() {
         style={[
           styles.input,
           {
-            height: 100,
+            height: 120,
             color: theme.text,
             backgroundColor: theme.inputBackground,
+            borderColor: theme.border,
             textAlignVertical: "top",
-            paddingTop: 10,
+            paddingTop: 12,
           },
         ]}
         value={description}
         onChangeText={setDescription}
         placeholder={t("writeDescription")}
-        placeholderTextColor={theme.textSecondary}
+        placeholderTextColor={theme.textMuted}
         multiline
       />
 
-      {/* CLEAN DATE PICKER MODAL */}
+      {/* NATIVE DATE PICKER LOGIC */}
       {showPicker &&
         (Platform.OS === "ios" ? (
-          <Modal transparent animationType="fade" visible={showPicker}>
+          <Modal transparent animationType="slide" visible={showPicker}>
             <View
               style={{
                 flex: 1,
@@ -194,22 +231,34 @@ export function CreateEventModal() {
                 style={{
                   backgroundColor: theme.background,
                   padding: 20,
-                  borderTopLeftRadius: 20,
-                  borderTopRightRadius: 20,
+                  borderTopLeftRadius: 24,
+                  borderTopRightRadius: 24,
                 }}
               >
                 <View
                   style={{
                     flexDirection: "row",
                     justifyContent: "space-between",
-                    marginBottom: 10,
+                    marginBottom: 15,
                   }}
                 >
-                  <Text style={{ color: theme.text, fontWeight: "bold" }}>
+                  <Text
+                    style={{
+                      color: theme.text,
+                      fontWeight: "700",
+                      fontSize: 18,
+                    }}
+                  >
                     {t("selectDate")}
                   </Text>
                   <TouchableOpacity onPress={() => setShowPicker(false)}>
-                    <Text style={{ color: theme.primary, fontWeight: "bold" }}>
+                    <Text
+                      style={{
+                        color: theme.primary,
+                        fontWeight: "700",
+                        fontSize: 16,
+                      }}
+                    >
                       {t("done")}
                     </Text>
                   </TouchableOpacity>
@@ -233,12 +282,13 @@ export function CreateEventModal() {
           />
         ))}
 
+      {/* SUBMIT BUTTON */}
       <Pressable
         style={[
           styles.createButton,
           {
-            backgroundColor: loading ? theme.primary + "50" : theme.primary,
-            marginTop: 30,
+            backgroundColor: loading ? theme.primary + "80" : theme.primary,
+            marginTop: 40,
           },
         ]}
         onPress={handleCreateEvent}

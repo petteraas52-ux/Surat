@@ -1,11 +1,23 @@
+/**
+ * SELECT IMAGE MODAL
+ * * ROLE:
+ * Provides an interface for the user to either take a new photo with the
+ * front-facing camera or select an existing photo from the device library.
+ * * KEY LOGIC:
+ * 1. Permissions: Utilizes 'expo-camera' hooks to request and verify camera access.
+ * 2. Image Optimization: Implements an 'ImageManipulator' pipeline to resize and
+ * compress images. This saves bandwidth and storage costs in Firebase.
+ * 3. Platform Consistency: Combines 'expo-camera' and 'expo-image-picker' into
+ * a unified UI for the user.
+ */
+
 import { useAppTheme } from "@/hooks/useAppTheme";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { CameraView, useCameraPermissions } from "expo-camera";
+import * as ImageManipulator from "expo-image-manipulator";
 import * as ImagePicker from "expo-image-picker";
 import { useRef } from "react";
 import { Image, StyleSheet, Text, TouchableOpacity, View } from "react-native";
-import * as ImageManipulator from "expo-image-manipulator";
-/* Basert på kode fra kyrssplattform https://github.com/studBrage/Kryssplattform-HK-H25/blob/main/components/SelectImageModal.tsx */
 
 type SelectImageModalProps = {
   closeModal: VoidFunction;
@@ -19,11 +31,12 @@ export default function SelectImageModal({
   const [permission, requestPermission] = useCameraPermissions();
   const cameraRef = useRef<CameraView>(null);
   const theme = useAppTheme();
+
+  // 1. PERMISSION HANDLING
   if (!permission) {
-    return <View />;
+    return <View style={{ flex: 1, backgroundColor: theme.background }} />;
   }
 
-  // denne bør vel huskes, og endres andre steder?
   if (!permission.granted) {
     return (
       <View style={[styles.container, { backgroundColor: theme.background }]}>
@@ -46,9 +59,18 @@ export default function SelectImageModal({
     );
   }
 
-    async function compressImage(uri: string): Promise<string> {
+  /**
+   * COMPRESS IMAGE
+   * Resizes the image to a maximum dimension of 512px and applies 70% JPEG compression.
+   * This is essential for maintaining app performance and reducing load times
+   * when many profile pictures are displayed in a list.
+   */
+  async function compressImage(uri: string): Promise<string> {
     try {
-      const { width, height } = await new Promise<{ width: number; height: number }>((resolve, reject) => {
+      const { width, height } = await new Promise<{
+        width: number;
+        height: number;
+      }>((resolve, reject) => {
         Image.getSize(
           uri,
           (w, h) => resolve({ width: w, height: h }),
@@ -58,7 +80,7 @@ export default function SelectImageModal({
 
       const maxDimension = 512;
       let resizeAction;
-     
+
       if (width > height) {
         if (width > maxDimension) {
           resizeAction = { resize: { width: maxDimension } };
@@ -71,26 +93,23 @@ export default function SelectImageModal({
 
       const actions = resizeAction ? [resizeAction] : [];
 
-      const manipResult = await ImageManipulator.manipulateAsync(
-        uri,
-        actions,
-        {
-          compress: 0.7, 
-          format: ImageManipulator.SaveFormat.JPEG,
-        }
-      );
+      const manipResult = await ImageManipulator.manipulateAsync(uri, actions, {
+        compress: 0.7,
+        format: ImageManipulator.SaveFormat.JPEG,
+      });
 
       return manipResult.uri;
     } catch (error) {
       console.error("Error compressing image:", error);
-      return uri;
+      return uri; // Return original if compression fails
     }
   }
 
+  // 2. LIBRARY PICKER
   async function pickImage() {
     let result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ["images"],
-      aspect: [4, 3],
+      aspect: [1, 1], // Force square for profile pictures
       allowsEditing: true,
       quality: 1,
     });
@@ -103,6 +122,7 @@ export default function SelectImageModal({
     }
   }
 
+  // 3. CAMERA CAPTURE
   async function captureImage() {
     if (cameraRef.current) {
       const photo = await cameraRef.current.takePictureAsync();
@@ -114,36 +134,31 @@ export default function SelectImageModal({
     }
   }
 
-  /*   async function compressImage(){
-    const context = useImageManipulator(image.uri);
-    
-    context.crop({
-        width: 0,
-        originX: 0,
-        originY: 0,
-        height: 0
-    }).;
-    const image = await context.renderAsync();
-    const result = await image.saveAsync({
-      format: SaveFormat.PNG,
-    });
-
-    setImage(result);
-  
-  } */
-
   return (
     <View style={styles.container}>
       <CameraView style={styles.camera} facing="front" ref={cameraRef} />
+
+      {/* UI OVERLAY */}
       <View style={styles.buttonContainer}>
-        <TouchableOpacity style={[styles.button, { backgroundColor: theme.error }]} onPress={() => closeModal()}>
+        <TouchableOpacity
+          style={[styles.button, { backgroundColor: theme.error }]}
+          onPress={() => closeModal()}
+        >
           <Text style={styles.buttonText}>Avbryt</Text>
         </TouchableOpacity>
-        <TouchableOpacity style={[styles.button, { backgroundColor: theme.primary }]} onPress={() => captureImage()}>
+
+        <TouchableOpacity
+          style={[styles.button, { backgroundColor: theme.primary }]}
+          onPress={() => captureImage()}
+        >
           <MaterialIcons name="camera" size={24} color="white" />
         </TouchableOpacity>
-        <TouchableOpacity style={[styles.button, { backgroundColor: theme.primary }]} onPress={() => pickImage()}>
-          <Text style={styles.buttonText}>Bilder</Text>
+
+        <TouchableOpacity
+          style={[styles.button, { backgroundColor: theme.primary }]}
+          onPress={() => pickImage()}
+        >
+          <Text style={styles.buttonText}>Galleri</Text>
         </TouchableOpacity>
       </View>
     </View>
@@ -158,6 +173,8 @@ const styles = StyleSheet.create({
   message: {
     textAlign: "center",
     paddingBottom: 10,
+    fontSize: 16,
+    paddingHorizontal: 20,
   },
   camera: {
     flex: 1,
@@ -166,30 +183,26 @@ const styles = StyleSheet.create({
     position: "absolute",
     bottom: 64,
     flexDirection: "row",
-    backgroundColor: "transparent",
     width: "100%",
     justifyContent: "center",
     alignItems: "center",
+    gap: 10,
   },
   button: {
-    marginHorizontal: 12,
     paddingVertical: 12,
-    paddingHorizontal: 16,
-    borderRadius: 25,
+    paddingHorizontal: 20,
+    borderRadius: 30,
+    minWidth: 100,
+    alignItems: "center",
+    elevation: 5,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
   },
   buttonText: {
     color: "#fff",
     fontWeight: "600",
     fontSize: 16,
-  },
-  text: {
-    fontSize: 24,
-    fontWeight: "bold",
-  },
-  image: {
-    width: 160,
-    height: 160,
-    borderRadius: 100,
-    marginBottom: 20,
   },
 });

@@ -1,3 +1,16 @@
+/**
+ * DEPARTMENT LIST COMPONENT
+ * * ROLE:
+ * Provides a management interface for staff to view, filter, edit, and
+ * delete school departments (e.g., "Preschool", "Toddler Room").
+ * * KEY LOGIC:
+ * 1. Debounced Search: Separates the immediate input state from the
+ * expensive filter operation to ensure smooth typing.
+ * 2. CRUD Operations: Synchronizes with the 'departmentApi' to maintain
+ * an up-to-date list of available school areas.
+ * 3. Dynamic Styles: Maps theme colors to borders, inputs, and text.
+ */
+
 import { deleteDepartment, getAllDepartments } from "@/api/departmentApi";
 import { styles } from "@/components/modals/commonStyles";
 import { useAppTheme } from "@/hooks/useAppTheme";
@@ -19,18 +32,25 @@ export function DepartmentList({
 }: {
   onEdit: (d: DepartmentProps) => void;
 }) {
+  // --- STATE ---
   const [departments, setDepartments] = useState<DepartmentProps[]>([]);
-  const [displayQuery, setDisplayQuery] = useState("");
-  const [searchQuery, setSearchQuery] = useState("");
+  const [displayQuery, setDisplayQuery] = useState(""); // Immediate UI typing
+  const [searchQuery, setSearchQuery] = useState(""); // Delayed value for filtering
   const [isDebouncing, setIsDebouncing] = useState(false);
   const [loading, setLoading] = useState(true);
+
   const { t } = useI18n();
   const theme = useAppTheme();
 
+  // --- INITIALIZATION ---
   useEffect(() => {
     loadDepts();
   }, []);
 
+  /**
+   * SEARCH DEBOUNCE EFFECT
+   * Waits for the user to stop typing for 500ms before triggering the filter logic.
+   */
   useEffect(() => {
     if (displayQuery !== searchQuery) {
       setIsDebouncing(true);
@@ -42,6 +62,10 @@ export function DepartmentList({
     return () => clearTimeout(handler);
   }, [displayQuery]);
 
+  /**
+   * FETCH DATA
+   * Pulls department documents from Firestore.
+   */
   const loadDepts = async () => {
     try {
       const data = await getAllDepartments();
@@ -53,6 +77,10 @@ export function DepartmentList({
     }
   };
 
+  /**
+   * DELETE HANDLER
+   * Confirms intention before removing a department from the database.
+   */
   const handleDelete = (id: string) => {
     Alert.alert(t("confirmDelete"), t("deleteWarning"), [
       { text: t("cancel"), style: "cancel" },
@@ -60,18 +88,23 @@ export function DepartmentList({
         text: t("delete"),
         style: "destructive",
         onPress: async () => {
-          await deleteDepartment(id);
-          loadDepts();
+          try {
+            await deleteDepartment(id);
+            loadDepts(); // Refresh the list
+          } catch (error) {
+            Alert.alert(t("errorTitle"), t("deleteFailed"));
+          }
         },
       },
     ]);
   };
 
+  // --- FILTERING ---
   const filtered = departments.filter((d) =>
     d.name.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  if (loading)
+  if (loading) {
     return (
       <ActivityIndicator
         size="large"
@@ -79,9 +112,11 @@ export function DepartmentList({
         style={{ marginTop: 20 }}
       />
     );
+  }
 
   return (
     <View style={{ paddingHorizontal: 20 }}>
+      {/* SEARCH BAR SECTION */}
       <View
         style={[
           styles.input,
@@ -98,6 +133,7 @@ export function DepartmentList({
           placeholder={
             t("searchDepartmentPlaceholder") || "Search department..."
           }
+          placeholderTextColor={theme.placeholder}
           value={displayQuery}
           onChangeText={setDisplayQuery}
           style={{
@@ -106,6 +142,7 @@ export function DepartmentList({
             height: "100%",
           }}
         />
+        {/* INDICATOR LOGIC */}
         {isDebouncing ? (
           <ActivityIndicator size="small" color={theme.primary} />
         ) : displayQuery.length > 0 ? (
@@ -119,6 +156,7 @@ export function DepartmentList({
         ) : null}
       </View>
 
+      {/* RENDERED LIST */}
       {filtered.map((item) => (
         <View
           key={item.id}
@@ -130,6 +168,7 @@ export function DepartmentList({
             borderBottomColor: theme.border,
           }}
         >
+          {/* DEPARTMENT NAME */}
           <View style={{ flex: 1, paddingRight: 10 }}>
             <Text
               style={{ color: theme.text, fontSize: 16, fontWeight: "600" }}
@@ -139,6 +178,7 @@ export function DepartmentList({
             </Text>
           </View>
 
+          {/* ACTION BUTTONS */}
           <View style={{ flexDirection: "row", alignItems: "center" }}>
             <TouchableOpacity
               onPress={() => onEdit(item)}

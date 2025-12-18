@@ -1,3 +1,17 @@
+/**
+ * EVENT LIST COMPONENT
+ * * ROLE:
+ * Allows staff to manage the school calendar. This includes searching for
+ * specific events, filtering by department, and editing or removing entries.
+ * * KEY LOGIC:
+ * 1. Timestamp Sorting: Automatically sorts events by date (newest first) using
+ * Firebase's 'seconds' property to ensure the timeline remains logical.
+ * 2. Debounced Search: Optimizes the UI by delaying the filter operation
+ * until the user pauses typing.
+ * 3. Date Formatting: Converts Firestore Timestamps into human-readable strings
+ * using 'toLocaleDateString()'.
+ */
+
 import { deleteEvent, getAllEvents } from "@/api/eventApi";
 import { styles } from "@/components/modals/commonStyles";
 import { useAppTheme } from "@/hooks/useAppTheme";
@@ -19,18 +33,26 @@ interface EventListProps {
 }
 
 export function EventList({ onEdit }: EventListProps) {
+  // --- STATE ---
   const [events, setEvents] = useState<EventProps[]>([]);
   const [displayQuery, setDisplayQuery] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
   const [isDebouncing, setIsDebouncing] = useState(false);
   const [loading, setLoading] = useState(true);
+
   const { t } = useI18n();
   const theme = useAppTheme();
 
+  // --- INITIAL DATA LOAD ---
   useEffect(() => {
     fetchEvents();
   }, []);
 
+  /**
+   * SEARCH DEBOUNCE
+   * Triggers a UI spinner and delays filtering by 500ms to maintain
+   * 60fps performance during rapid text input.
+   */
   useEffect(() => {
     if (displayQuery !== searchQuery) {
       setIsDebouncing(true);
@@ -45,6 +67,12 @@ export function EventList({ onEdit }: EventListProps) {
   const fetchEvents = async () => {
     try {
       const data = await getAllEvents();
+
+      /**
+       * CHRONOLOGICAL SORTING
+       * Firebase Timestamps contain a 'seconds' field. We use this to sort
+       * the array so that the most recent or future events appear at the top.
+       */
       const sorted = data.sort(
         (a, b) => (b.date?.seconds || 0) - (a.date?.seconds || 0)
       );
@@ -56,13 +84,14 @@ export function EventList({ onEdit }: EventListProps) {
     }
   };
 
+  // --- FILTER LOGIC ---
   const filtered = events.filter(
     (e) =>
       e.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
       e.department.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  if (loading)
+  if (loading) {
     return (
       <ActivityIndicator
         size="large"
@@ -70,9 +99,11 @@ export function EventList({ onEdit }: EventListProps) {
         style={{ marginTop: 20 }}
       />
     );
+  }
 
   return (
     <View style={{ paddingHorizontal: 20 }}>
+      {/* SEARCH BAR */}
       <View
         style={[
           styles.input,
@@ -87,6 +118,7 @@ export function EventList({ onEdit }: EventListProps) {
       >
         <TextInput
           placeholder={t("searchEventPlaceholder") || "Search event..."}
+          placeholderTextColor={theme.placeholder}
           value={displayQuery}
           onChangeText={setDisplayQuery}
           style={{
@@ -108,6 +140,7 @@ export function EventList({ onEdit }: EventListProps) {
         ) : null}
       </View>
 
+      {/* EVENT ITEMS */}
       {filtered.map((event) => (
         <View
           key={event.id}
@@ -120,6 +153,7 @@ export function EventList({ onEdit }: EventListProps) {
             borderBottomColor: theme.border,
           }}
         >
+          {/* INFO SECTION */}
           <View style={{ flex: 1, paddingRight: 10 }}>
             <Text
               style={{ color: theme.text, fontSize: 16, fontWeight: "600" }}
@@ -129,10 +163,12 @@ export function EventList({ onEdit }: EventListProps) {
               {event.title}
             </Text>
             <Text style={{ color: theme.textSecondary, fontSize: 13 }}>
+              {/* Convert Firestore Timestamp to readable string */}
               {event.date?.toDate().toLocaleDateString()} • {event.department}
             </Text>
           </View>
 
+          {/* ACTION BUTTONS */}
           <View style={{ flexDirection: "row", alignItems: "center" }}>
             <TouchableOpacity
               onPress={() => onEdit(event)}
@@ -140,6 +176,7 @@ export function EventList({ onEdit }: EventListProps) {
             >
               <Ionicons name="pencil-outline" size={22} color={theme.primary} />
             </TouchableOpacity>
+
             <TouchableOpacity
               onPress={() => {
                 Alert.alert(t("confirmDelete"), t("deleteWarning"), [
@@ -148,8 +185,12 @@ export function EventList({ onEdit }: EventListProps) {
                     text: t("delete"),
                     style: "destructive",
                     onPress: async () => {
-                      await deleteEvent(event.id);
-                      fetchEvents();
+                      try {
+                        await deleteEvent(event.id);
+                        fetchEvents();
+                      } catch (error) {
+                        Alert.alert(t("errorTitle"), t("deleteFailed"));
+                      }
                     },
                   },
                 ]);

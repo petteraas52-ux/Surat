@@ -1,3 +1,19 @@
+/**
+ * CHILD DETAIL MODAL COMPONENT
+ * * ROLE:
+ * A comprehensive dashboard for a single child. It allows staff to check children
+ * in/out, manage dietary restrictions (allergies), and communicate via a
+ * timestamped comment feed.
+ * * KEY LOGIC:
+ * 1. Tokenized Allergy Management: Provides a custom UI for adding/removing
+ * allergies as "tokens," with immediate Firestore synchronization.
+ * 2. Feed Refresh Logic: Uses a 'refreshTrigger' state to force the CommentBox
+ * to re-fetch data specifically after a new comment is posted.
+ * 3. Compositional UI: Combines fixed header elements (profile, actions) with
+ * a scrollable content area (comments) to ensure the interface remains
+ * usable regardless of comment volume.
+ */
+
 import { updateChildAllergies } from "@/api/childrenApi";
 import { createComment } from "@/api/commentApi";
 import CommentBox from "@/components/commentBox";
@@ -31,6 +47,10 @@ interface ChildDetailModalProps {
   hideGuestButton?: boolean;
 }
 
+/**
+ * SUB-COMPONENT: ALLERGY MANAGER
+ * Handles the logic for adding and removing individual allergy strings.
+ */
 const AllergyManager: React.FC<{
   allergies: string[];
   onUpdate: (newAllergies: string[]) => void;
@@ -62,6 +82,8 @@ const AllergyManager: React.FC<{
           />
         )}
       </View>
+
+      {/* RENDER TOKENS */}
       <View style={styles.tokenContainer}>
         {allergies.map((allergy, index) => (
           <View
@@ -86,10 +108,15 @@ const AllergyManager: React.FC<{
           </View>
         ))}
       </View>
+
+      {/* INPUT FIELD */}
       <View
         style={[
           styles.allergyInputRow,
-          { borderColor: theme.border, backgroundColor: theme.inputBackground },
+          {
+            borderColor: theme.border,
+            backgroundColor: theme.inputBackground,
+          },
         ]}
       >
         <TextInput
@@ -121,7 +148,6 @@ export const ChildDetailModal: React.FC<ChildDetailModalProps> = ({
   isVisible,
   activeChild,
   onClose,
-  getAbsenceLabel,
   onOpenGuestLinkModal,
   onToggleCheckIn,
   hideGuestButton = false,
@@ -136,6 +162,7 @@ export const ChildDetailModal: React.FC<ChildDetailModalProps> = ({
   const [commentLoading, setCommentLoading] = useState(false);
   const [commentRefreshTrigger, setCommentRefreshTrigger] = useState(0);
 
+  // Sync internal state when activeChild changes
   useEffect(() => {
     if (activeChild && isVisible) {
       setLocalAllergies(activeChild.allergies || []);
@@ -151,7 +178,7 @@ export const ChildDetailModal: React.FC<ChildDetailModalProps> = ({
     try {
       await updateChildAllergies(activeChild.id, newAllergies);
     } catch (error) {
-      setLocalAllergies(activeChild.allergies || []);
+      setLocalAllergies(activeChild.allergies || []); // Revert on failure
     } finally {
       setIsSaving(false);
     }
@@ -168,7 +195,7 @@ export const ChildDetailModal: React.FC<ChildDetailModalProps> = ({
         createdByName: user.displayName ?? user.email ?? t("unknownUser"),
       });
       setCommentText("");
-      setCommentRefreshTrigger((prev) => prev + 1);
+      setCommentRefreshTrigger((prev) => prev + 1); // Notifies CommentBox to reload
     } catch (e) {
       console.error("Save failed", e);
     } finally {
@@ -193,6 +220,7 @@ export const ChildDetailModal: React.FC<ChildDetailModalProps> = ({
           <View
             style={[styles.overlayCard, { backgroundColor: theme.background }]}
           >
+            {/* 1. FIXED HEADER */}
             <View style={styles.fixedHeader}>
               <View style={styles.headerRow}>
                 <View
@@ -264,6 +292,7 @@ export const ChildDetailModal: React.FC<ChildDetailModalProps> = ({
               />
             </View>
 
+            {/* 2. SCROLLABLE COMMENT FEED */}
             <ScrollView
               style={styles.scrollArea}
               contentContainerStyle={styles.scrollContent}
@@ -276,6 +305,7 @@ export const ChildDetailModal: React.FC<ChildDetailModalProps> = ({
               />
             </ScrollView>
 
+            {/* 3. STICKY INPUT FOOTER */}
             <View
               style={[
                 styles.stickyFooter,
@@ -337,15 +367,26 @@ const styles = StyleSheet.create({
   },
   overlayCard: {
     width: "100%",
-    height: "85%",
-    borderRadius: 24,
+    height: "88%",
+    borderRadius: 28,
     padding: 20,
-    display: "flex",
+    elevation: 10,
   },
-  fixedHeader: { flexShrink: 0 },
-  scrollArea: { flex: 1, marginVertical: 8 },
-  scrollContent: { paddingBottom: 20 },
-  headerRow: { flexDirection: "row", alignItems: "center", marginBottom: 15 },
+  fixedHeader: {
+    flexShrink: 0,
+  },
+  scrollArea: {
+    flex: 1,
+    marginVertical: 8,
+  },
+  scrollContent: {
+    paddingBottom: 20,
+  },
+  headerRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 15,
+  },
   profilePictureContainer: {
     width: 60,
     height: 60,
@@ -353,24 +394,45 @@ const styles = StyleSheet.create({
     marginRight: 15,
     overflow: "hidden",
   },
-  infoBlock: { flex: 1 },
-  childName: { fontSize: 20, fontWeight: "700" },
-  actionRow: { flexDirection: "row", gap: 10, marginBottom: 5 },
+  infoBlock: {
+    flex: 1,
+  },
+  childName: {
+    fontSize: 20,
+    fontWeight: "700",
+  },
+  actionRow: {
+    flexDirection: "row",
+    gap: 10,
+    marginBottom: 5,
+  },
   actionButton: {
     flex: 1,
     paddingVertical: 12,
     borderRadius: 30,
     alignItems: "center",
   },
-  actionButtonText: { color: "#fff", fontWeight: "700", fontSize: 14 },
-  divider: { height: 1, marginVertical: 12 },
-  allergySection: { marginVertical: 4 },
+  actionButtonText: {
+    color: "#fff",
+    fontWeight: "700",
+    fontSize: 14,
+  },
+  divider: {
+    height: 1,
+    marginVertical: 12,
+  },
+  allergySection: {
+    marginVertical: 4,
+  },
   sectionHeaderRow: {
     flexDirection: "row",
     alignItems: "center",
     marginBottom: 8,
   },
-  sectionHeader: { fontSize: 16, fontWeight: "700" },
+  sectionHeader: {
+    fontSize: 16,
+    fontWeight: "700",
+  },
   tokenContainer: {
     flexDirection: "row",
     flexWrap: "wrap",
@@ -384,7 +446,11 @@ const styles = StyleSheet.create({
     paddingVertical: 5,
     borderRadius: 15,
   },
-  tokenText: { color: "#fff", fontSize: 12, fontWeight: "600" },
+  tokenText: {
+    color: "#fff",
+    fontSize: 12,
+    fontWeight: "600",
+  },
   allergyInputRow: {
     flexDirection: "row",
     alignItems: "center",
@@ -395,12 +461,18 @@ const styles = StyleSheet.create({
   allergyInput: {
     flex: 1,
     paddingHorizontal: 12,
-    paddingVertical: 8,
+    paddingVertical: 10,
     fontSize: 14,
     letterSpacing: 0,
   },
-  addAllergyButton: { padding: 4 },
-  stickyFooter: { flexShrink: 0, paddingTop: 15, borderTopWidth: 1 },
+  addAllergyButton: {
+    padding: 4,
+  },
+  stickyFooter: {
+    flexShrink: 0,
+    paddingTop: 15,
+    borderTopWidth: 1,
+  },
   commentInputRow: {
     flexDirection: "row",
     gap: 8,

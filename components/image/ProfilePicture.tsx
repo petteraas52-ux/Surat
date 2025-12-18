@@ -1,3 +1,16 @@
+/**
+ * PROFILE PICTURE COMPONENT
+ * * ROLE:
+ * A high-level component used across Child, Parent, and Employee profiles.
+ * It handles the full lifecycle of a profile image: Fetching (URL resolution),
+ * UI Feedback (Loading/Uploading), and UI interaction (Animations).
+ * * KEY LOGIC:
+ * 1. Image Resolution: Converts Firebase Storage paths into viewable HTTPS URLs.
+ * 2. Animated Feedback: When 'showEdit' is toggled, an overlay fades in/out to
+ * signal to the user that the image is now interactable.
+ * 3. Role-Based Upload: Dynamically calls the correct API based on 'userType'.
+ */
+
 import { updateChildProfileImage } from "@/api/childrenApi";
 import { getImageUrl, invalidateImageCache } from "@/api/imageApi";
 import { updateParentProfileImage } from "@/api/parentApi";
@@ -38,8 +51,14 @@ export default function ProfilePicture({
   const [loading, setLoading] = useState(true);
   const [isPressed, setIsPressed] = useState(false);
   const theme = useAppTheme();
+
+  // Animation Ref for the "Edit" hint
   const fadeAnim = useRef(new Animated.Value(0)).current;
 
+  /**
+   * INITIAL LOAD
+   * Resolves the storage path (e.g., "images/uid.jpg") into a public URL.
+   */
   useEffect(() => {
     async function loadImage() {
       if (initialImagePath) {
@@ -51,18 +70,20 @@ export default function ProfilePicture({
     loadImage();
   }, [initialImagePath]);
 
+  /**
+   * HINT ANIMATION
+   * Triggers a subtle "Edit" icon pulse when the parent component
+   * enters edit mode, helping with user discoverability.
+   */
   useEffect(() => {
     if (showEdit) {
-      // Fade in
       Animated.sequence([
         Animated.timing(fadeAnim, {
           toValue: 1,
           duration: 300,
           useNativeDriver: true,
         }),
-        // Hold synlig i 1.5 sekunder
         Animated.delay(1500),
-        // Fade out
         Animated.timing(fadeAnim, {
           toValue: 0,
           duration: 500,
@@ -70,47 +91,40 @@ export default function ProfilePicture({
         }),
       ]).start();
     } else {
-      // Reset animasjon når edit mode er av
       fadeAnim.setValue(0);
     }
   }, [showEdit]);
 
+  /**
+   * UPLOAD HANDLER
+   * Coordinates the file upload and document update in Firestore.
+   */
   async function handleImageSelected(imageUri: string) {
-    console.log("ProfilePicture: Handling image selection:", imageUri);
     setUploading(true);
 
     try {
-      // Kall update-funksjoner som returnerer den nye storage path
       let newStoragePath: string | null = null;
 
+      // Polymorphic API call based on userType
       if (userType === "parent") {
         newStoragePath = await updateParentProfileImage(userId, imageUri);
       } else if (userType === "child") {
         newStoragePath = await updateChildProfileImage(userId, imageUri);
       }
+      // Note: Add employee logic here if required
 
-      if (!newStoragePath) {
-        throw new Error("Failed to upload and update profile image");
-      }
+      if (!newStoragePath) throw new Error("Upload failed");
 
-      console.log(
-        "ProfilePicture: Image uploaded successfully. New path:",
-        newStoragePath
-      );
-
-      // Invalider cache for det gamle bildet
+      // Invalidate cache to ensure the user doesn't see the old image
       if (initialImagePath) {
         await invalidateImageCache(initialImagePath);
       }
 
-      // Last ned og vis det nye bildet fra Firebase Storage
+      // Refresh the UI with the new image
       const newImageUrl = await getImageUrl(newStoragePath);
-      if (newImageUrl) {
-        setImage(newImageUrl);
-        console.log("ProfilePicture: New image loaded and displayed");
-      }
+      if (newImageUrl) setImage(newImageUrl);
     } catch (error) {
-      console.error("ProfilePicture: Error uploading/updating image:", error);
+      console.error("ProfilePicture Error:", error);
     } finally {
       setUploading(false);
     }
@@ -118,7 +132,8 @@ export default function ProfilePicture({
 
   return (
     <View style={[styles.container, style]}>
-      <Modal visible={isCameraOpen}>
+      {/* SELECTION OVERLAY */}
+      <Modal visible={isCameraOpen} transparent animationType="fade">
         <SelectImageModal
           closeModal={() => setIsCameraOpen(false)}
           setImage={(imageUri) => {
@@ -127,6 +142,7 @@ export default function ProfilePicture({
           }}
         />
       </Modal>
+
       <Pressable
         style={styles.imageWrapper}
         onPress={() => showEdit && setIsCameraOpen(true)}
@@ -134,6 +150,7 @@ export default function ProfilePicture({
         onPressOut={() => setIsPressed(false)}
         disabled={!showEdit || uploading}
       >
+        {/* ACTUAL IMAGE OR PLACEHOLDER */}
         {image ? (
           <Image source={{ uri: image }} style={styles.image} />
         ) : (
@@ -141,12 +158,16 @@ export default function ProfilePicture({
             <Ionicons name="person-circle" size={45} color={theme.icon} />
           </View>
         )}
+
+        {/* LOADING INDICATOR */}
         {uploading && (
           <View style={styles.uploadingOverlay}>
             <ActivityIndicator size="large" color={theme.primary} />
           </View>
         )}
       </Pressable>
+
+      {/* EDIT HINT OVERLAY */}
       {showEdit && (isPressed || fadeAnim) && !uploading && (
         <Animated.View
           pointerEvents="none"
@@ -154,7 +175,7 @@ export default function ProfilePicture({
             styles.editOverlay,
             {
               backgroundColor: theme.imageEditOverlay,
-              opacity: isPressed ? 1 : fadeAnim, // Full opacity ved press, ellers animated
+              opacity: isPressed ? 1 : fadeAnim,
             },
           ]}
         >
@@ -163,11 +184,11 @@ export default function ProfilePicture({
               styles.editIconContainer,
               {
                 backgroundColor: theme.imageEditIconBackground,
-                borderColor: theme.primaryLight,
+                borderColor: theme.primary,
               },
             ]}
           >
-            <FontAwesome5 name="edit" size={24} color={theme.primaryLight} />
+            <FontAwesome5 name="edit" size={24} color={theme.primary} />
           </View>
         </Animated.View>
       )}
@@ -187,10 +208,6 @@ const styles = StyleSheet.create({
     height: "100%",
     overflow: "hidden",
   },
-  loadingContainer: {
-    justifyContent: "center",
-    alignItems: "center",
-  },
   placeholderContainer: {
     ...StyleSheet.absoluteFillObject,
     justifyContent: "center",
@@ -205,6 +222,7 @@ const styles = StyleSheet.create({
     ...StyleSheet.absoluteFillObject,
     justifyContent: "center",
     alignItems: "center",
+    backgroundColor: "rgba(0,0,0,0.3)",
   },
   editOverlay: {
     ...StyleSheet.absoluteFillObject,
@@ -218,9 +236,9 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     borderWidth: 2,
+    elevation: 8,
     shadowOpacity: 0.3,
     shadowRadius: 6,
     shadowOffset: { width: 0, height: 2 },
-    elevation: 8,
   },
 });

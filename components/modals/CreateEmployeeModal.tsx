@@ -1,3 +1,17 @@
+/**
+ * CREATE EMPLOYEE MODAL
+ * * ROLE:
+ * Orchestrates the dual-action of creating a Firebase Authentication user
+ * and a corresponding Firestore employee profile.
+ * * KEY LOGIC:
+ * 1. Admin Provisioning: Uses a specialized 'createAccountViaAdmin' API
+ * which typically handles user creation without logging the admin out.
+ * 2. Role-Based Access Control (RBAC): Implements a Role picker to define
+ * permissions (Admin vs. Employee) at the moment of account creation.
+ * 3. Form Sanitization: Enforces 'autoCapitalize="none"' for emails and
+ * 'keyboardType' optimizations for phones to ensure data validity.
+ */
+
 import { createAccountViaAdmin } from "@/api/adminApi";
 import { getAllDepartments } from "@/api/departmentApi";
 import { useAppTheme } from "@/hooks/useAppTheme";
@@ -8,6 +22,7 @@ import {
   ActivityIndicator,
   Alert,
   Pressable,
+  ScrollView,
   Text,
   TextInput,
   View,
@@ -16,6 +31,10 @@ import DropDownPicker from "react-native-dropdown-picker";
 import { styles } from "./commonStyles";
 
 export function CreateEmployeeModal() {
+  const { t } = useI18n();
+  const theme = useAppTheme();
+
+  // --- FORM STATE ---
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [email, setEmail] = useState("");
@@ -23,27 +42,22 @@ export function CreateEmployeeModal() {
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
 
-  // Department Dropdown State
+  // --- DROPDOWN STATE: DEPARTMENTS ---
   const [departments, setDepartments] = useState<DepartmentProps[]>([]);
   const [loadingDepts, setLoadingDepts] = useState(true);
-  const [open, setOpen] = useState(false);
-  const [selectedDepartment, setSelectedDepartment] = useState<string | null>(
-    null
-  );
+  const [deptOpen, setDeptOpen] = useState(false);
+  const [selectedDept, setSelectedDept] = useState<string | null>(null);
 
-  // --- NEW: Role Dropdown State ---
+  // --- DROPDOWN STATE: ROLES ---
   const [roleOpen, setRoleOpen] = useState(false);
   const [selectedRole, setSelectedRole] = useState<"admin" | "employee">(
     "employee"
   );
-  const roleItems = [
-    { label: "Employee", value: "employee" },
-    { label: "Admin", value: "admin" },
-  ];
-  // --------------------------------
 
-  const theme = useAppTheme();
-  const { t } = useI18n();
+  const roleItems = [
+    { label: t("roleEmployee"), value: "employee" },
+    { label: t("roleAdmin"), value: "admin" },
+  ];
 
   useEffect(() => {
     const fetchDepartments = async () => {
@@ -64,15 +78,18 @@ export function CreateEmployeeModal() {
     value: dept.name,
   }));
 
+  /**
+   * EXECUTE ACCOUNT PROVISIONING
+   * Creates Auth record first, then the Firestore Profile.
+   */
   const handleCreateEmployee = async () => {
     if (
       !firstName ||
       !lastName ||
       !email ||
       !phone ||
-      !selectedDepartment ||
-      !password ||
-      !selectedRole
+      !selectedDept ||
+      !password
     ) {
       Alert.alert(t("missingFieldsTitle"), t("missingFieldsMessage"));
       return;
@@ -80,17 +97,21 @@ export function CreateEmployeeModal() {
 
     try {
       setLoading(true);
+
+      // Standardizes full name for Auth record display name
+      const fullName = `${firstName.trim()} ${lastName.trim()}`;
+
       await createAccountViaAdmin(
-        email,
+        email.trim().toLowerCase(),
         password,
-        `${firstName} ${lastName}`,
+        fullName,
         selectedRole,
         {
-          firstName,
-          lastName,
-          eMail: email,
-          phone,
-          department: selectedDepartment,
+          firstName: firstName.trim(),
+          lastName: lastName.trim(),
+          eMail: email.trim().toLowerCase(),
+          phone: phone.trim(),
+          department: selectedDept,
           imageUri: "",
           role: selectedRole,
         }
@@ -98,11 +119,12 @@ export function CreateEmployeeModal() {
 
       Alert.alert(t("successTitle"), t("employeeCreatedMessage"));
 
+      // Reset form on success
       setFirstName("");
       setLastName("");
       setEmail("");
       setPhone("");
-      setSelectedDepartment(null);
+      setSelectedDept(null);
       setPassword("");
       setSelectedRole("employee");
     } catch (error: any) {
@@ -125,20 +147,25 @@ export function CreateEmployeeModal() {
   }
 
   return (
-    <View style={styles.container}>
+    <ScrollView
+      style={styles.container}
+      contentContainerStyle={{ paddingBottom: 60 }}
+      nestedScrollEnabled={true}
+    >
       <Text style={[styles.title, { color: theme.text }]}>
         {t("createEmployeeTitle")}
       </Text>
 
+      {/* ROLE SELECTION */}
       <Text style={[styles.label, { color: theme.text }]}>{t("Role")}:</Text>
-      <View style={{ zIndex: 2000 }}>
+      <View style={{ zIndex: 3000 }}>
         <DropDownPicker
           open={roleOpen}
           value={selectedRole}
           items={roleItems}
           setOpen={setRoleOpen}
           setValue={setSelectedRole}
-          onOpen={() => setOpen(false)}
+          onOpen={() => setDeptOpen(false)}
           style={[
             styles.input,
             {
@@ -155,6 +182,7 @@ export function CreateEmployeeModal() {
         />
       </View>
 
+      {/* PERSONAL INFO */}
       <Text style={[styles.label, { color: theme.text }]}>
         {t("firstName")}:
       </Text>
@@ -162,10 +190,12 @@ export function CreateEmployeeModal() {
         placeholder={t("firstName")}
         value={firstName}
         onChangeText={setFirstName}
+        placeholderTextColor={theme.placeholder}
         style={[
           styles.input,
           {
             backgroundColor: theme.inputBackground,
+            color: theme.text,
             borderColor: theme.border,
           },
         ]}
@@ -178,15 +208,18 @@ export function CreateEmployeeModal() {
         placeholder={t("lastName")}
         value={lastName}
         onChangeText={setLastName}
+        placeholderTextColor={theme.placeholder}
         style={[
           styles.input,
           {
             backgroundColor: theme.inputBackground,
+            color: theme.text,
             borderColor: theme.border,
           },
         ]}
       />
 
+      {/* CONTACT INFO */}
       <Text style={[styles.label, { color: theme.text }]}>{t("email")}:</Text>
       <TextInput
         placeholder={t("email")}
@@ -194,10 +227,12 @@ export function CreateEmployeeModal() {
         onChangeText={setEmail}
         autoCapitalize="none"
         keyboardType="email-address"
+        placeholderTextColor={theme.placeholder}
         style={[
           styles.input,
           {
             backgroundColor: theme.inputBackground,
+            color: theme.text,
             borderColor: theme.border,
           },
         ]}
@@ -209,29 +244,31 @@ export function CreateEmployeeModal() {
         value={phone}
         onChangeText={setPhone}
         keyboardType="phone-pad"
+        placeholderTextColor={theme.placeholder}
         style={[
           styles.input,
           {
             backgroundColor: theme.inputBackground,
+            color: theme.text,
             borderColor: theme.border,
           },
         ]}
       />
 
+      {/* DEPARTMENT SELECTION */}
       <Text style={[styles.label, { color: theme.text }]}>
         {t("department")}:
       </Text>
-      <View style={{ zIndex: 1000 }}>
+      <View style={{ zIndex: 2000 }}>
         <DropDownPicker
-          open={open}
-          value={selectedDepartment}
+          open={deptOpen}
+          value={selectedDept}
           items={deptItems}
-          setOpen={setOpen}
-          setValue={setSelectedDepartment}
+          setOpen={setDeptOpen}
+          setValue={setSelectedDept}
           onOpen={() => setRoleOpen(false)}
           placeholder={t("department")}
           searchable={true}
-          searchPlaceholder={t("searchParentPlaceholder")}
           listMode="SCROLLVIEW"
           style={[
             styles.input,
@@ -245,10 +282,11 @@ export function CreateEmployeeModal() {
             backgroundColor: theme.inputBackground,
             borderColor: theme.border,
           }}
-          containerStyle={{ marginBottom: open ? 160 : 15 }}
+          containerStyle={{ marginBottom: deptOpen ? 160 : 15 }}
         />
       </View>
 
+      {/* SECURITY */}
       <Text style={[styles.label, { color: theme.text }]}>
         {t("tempPassword")}:
       </Text>
@@ -257,10 +295,12 @@ export function CreateEmployeeModal() {
         value={password}
         onChangeText={setPassword}
         secureTextEntry
+        placeholderTextColor={theme.placeholder}
         style={[
           styles.input,
           {
             backgroundColor: theme.inputBackground,
+            color: theme.text,
             borderColor: theme.border,
           },
         ]}
@@ -281,6 +321,6 @@ export function CreateEmployeeModal() {
           {loading ? t("creating") : t("createEmployee")}
         </Text>
       </Pressable>
-    </View>
+    </ScrollView>
   );
 }

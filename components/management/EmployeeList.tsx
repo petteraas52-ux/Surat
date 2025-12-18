@@ -1,3 +1,17 @@
+/**
+ * EMPLOYEE LIST COMPONENT
+ * * ROLE:
+ * Allows administrative users to manage staff records. This includes
+ * searching, filtering by name or department, and providing entry points
+ * for editing or deleting employees.
+ * * KEY LOGIC:
+ * 1. Debounced Search: Updates the search query 500ms after the user stops
+ * typing to ensure the filter operation doesn't block the UI thread.
+ * 2. CRUD Integration: Connects to 'employeApi' for data fetching and removal.
+ * 3. Dynamic Filtering: Searches through both employee full names and
+ * their assigned departments.
+ */
+
 import { deleteEmployee, getAllEmployees } from "@/api/employeApi";
 import { styles } from "@/components/modals/commonStyles";
 import { useAppTheme } from "@/hooks/useAppTheme";
@@ -19,18 +33,26 @@ interface EmployeeListProps {
 }
 
 export function EmployeeList({ onEdit }: EmployeeListProps) {
+  // --- STATE ---
   const [employees, setEmployees] = useState<EmployeeProps[]>([]);
   const [displayQuery, setDisplayQuery] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
   const [isDebouncing, setIsDebouncing] = useState(false);
   const [loading, setLoading] = useState(true);
+
   const { t } = useI18n();
   const theme = useAppTheme();
 
+  // --- INITIAL LOAD ---
   useEffect(() => {
     fetchEmployees();
   }, []);
 
+  /**
+   * DEBOUNCE EFFECT
+   * Synchronizes the internal 'searchQuery' with the 'displayQuery'
+   * after a short delay to optimize list filtering performance.
+   */
   useEffect(() => {
     if (displayQuery !== searchQuery) {
       setIsDebouncing(true);
@@ -53,6 +75,10 @@ export function EmployeeList({ onEdit }: EmployeeListProps) {
     }
   };
 
+  /**
+   * DELETE HANDLER
+   * Confirms staff removal via native Alert and refreshes data on success.
+   */
   const handleDelete = (id: string) => {
     Alert.alert(t("confirmDelete"), t("deleteWarning"), [
       { text: t("cancel"), style: "cancel" },
@@ -71,6 +97,7 @@ export function EmployeeList({ onEdit }: EmployeeListProps) {
     ]);
   };
 
+  // --- FILTERING LOGIC ---
   const filtered = employees.filter(
     (e) =>
       `${e.firstName} ${e.lastName}`
@@ -79,7 +106,7 @@ export function EmployeeList({ onEdit }: EmployeeListProps) {
       e.department.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  if (loading)
+  if (loading) {
     return (
       <ActivityIndicator
         size="large"
@@ -87,9 +114,11 @@ export function EmployeeList({ onEdit }: EmployeeListProps) {
         style={{ marginTop: 20 }}
       />
     );
+  }
 
   return (
     <View style={{ paddingHorizontal: 20 }}>
+      {/* SEARCH INPUT AREA */}
       <View
         style={[
           styles.input,
@@ -104,6 +133,7 @@ export function EmployeeList({ onEdit }: EmployeeListProps) {
       >
         <TextInput
           placeholder={t("searchEmployeePlaceholder") || "Search employee..."}
+          placeholderTextColor={theme.placeholder}
           value={displayQuery}
           onChangeText={setDisplayQuery}
           style={{
@@ -112,6 +142,7 @@ export function EmployeeList({ onEdit }: EmployeeListProps) {
             height: "100%",
           }}
         />
+        {/* DEBOUNCE & CLEAR INDICATOR */}
         {isDebouncing ? (
           <ActivityIndicator size="small" color={theme.primary} />
         ) : displayQuery.length > 0 ? (
@@ -125,6 +156,7 @@ export function EmployeeList({ onEdit }: EmployeeListProps) {
         ) : null}
       </View>
 
+      {/* RENDERED EMPLOYEE ROWS */}
       {filtered.map((emp) => (
         <View
           key={emp.id}
@@ -137,6 +169,7 @@ export function EmployeeList({ onEdit }: EmployeeListProps) {
             borderBottomColor: theme.border,
           }}
         >
+          {/* EMPLOYEE INFO CONTAINER */}
           <View style={{ flex: 1, paddingRight: 10 }}>
             <Text
               style={{ color: theme.text, fontSize: 16, fontWeight: "600" }}
@@ -150,6 +183,7 @@ export function EmployeeList({ onEdit }: EmployeeListProps) {
             </Text>
           </View>
 
+          {/* ACTION BUTTONS (EDIT & DELETE) */}
           <View style={{ flexDirection: "row", alignItems: "center" }}>
             <TouchableOpacity
               onPress={() => onEdit(emp)}
