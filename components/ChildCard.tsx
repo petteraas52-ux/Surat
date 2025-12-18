@@ -38,14 +38,13 @@ export const ChildCard: React.FC<ChildCardProps> = ({
   const theme = useAppTheme();
   const isAbsent = !!absenceLabel;
 
-  // Dynamically compute card background based on state
   const dynamicCardStyle = [
     styles.card,
     {
-      backgroundColor: isAbsent
-        ? theme.card
-        : child.selected
+      backgroundColor: child.selected
         ? theme.cardSelected
+        : isAbsent
+        ? theme.card
         : theme.card,
       shadowColor: theme.shadow,
     },
@@ -113,7 +112,10 @@ export const ChildCard: React.FC<ChildCardProps> = ({
           {/* ABSENCE NOTIFICATION */}
           {isAbsent && (
             <Text
-              style={[styles.absenceLabelText, { color: theme.text }]}
+              style={[
+                styles.absenceLabelText,
+                { color: StaticColors.cardText },
+              ]}
               numberOfLines={1}
             >
               {absenceLabel}
