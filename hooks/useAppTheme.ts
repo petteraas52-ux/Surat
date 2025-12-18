@@ -16,8 +16,6 @@ export function useAppTheme() {
     pageHeaderText: useThemeColor({}, 'pageHeaderText'),
     // Primary colors
     primary: useThemeColor({}, 'primary'),
-    primaryDark: useThemeColor({}, 'primaryDark'),
-    primaryLight: useThemeColor({}, 'primaryLight'),
     secondary: useThemeColor({}, 'secondary'),
     
     // Status colors
