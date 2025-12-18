@@ -112,7 +112,7 @@ export function AdminEditModal({
               marginBottom: 20,
             }}
           >
-            <Text style={styles.title}>{t("edit")}</Text>
+            <Text style={[styles.title, {color: theme.text}]}>{t("edit")}</Text>
             <TouchableOpacity onPress={onClose}>
               <Text
                 style={{
@@ -133,7 +133,7 @@ export function AdminEditModal({
           >
             {type === "DEPARTMENT" && (
               <>
-                <Text style={styles.label}>{t("departmentName")}</Text>
+                <Text style={[styles.label, { color: theme.text }]}>{t("departmentName")}</Text>
                 <TextInput
                   style={[
                     styles.input,
@@ -150,7 +150,7 @@ export function AdminEditModal({
 
             {type !== "EVENT" && type !== "DEPARTMENT" && (
               <>
-                <Text style={styles.label}>{t("firstName")}</Text>
+                <Text style={[styles.label, { color: theme.text }]}>{t("firstName")}</Text>
                 <TextInput
                   style={[
                     styles.input,
@@ -165,7 +165,7 @@ export function AdminEditModal({
                   }
                 />
 
-                <Text style={styles.label}>{t("lastName")}</Text>
+                <Text style={[styles.label, { color: theme.text }]}>{t("lastName")}</Text>
                 <TextInput
                   style={[
                     styles.input,
@@ -184,7 +184,9 @@ export function AdminEditModal({
 
             {type === "EVENT" && (
               <>
-                <Text style={styles.label}>{t("title")}</Text>
+                <Text style={[styles.label, { color: theme.text }]}>
+                  {t("title")}
+                </Text>
                 <TextInput
                   style={[
                     styles.input,
@@ -196,7 +198,9 @@ export function AdminEditModal({
                   value={formData.title}
                   onChangeText={(v) => setFormData({ ...formData, title: v })}
                 />
-                <Text style={styles.label}>{t("description")}</Text>
+                <Text style={[styles.label, { color: theme.text }]}>
+                  {t("description")}
+                </Text>
                 <TextInput
                   multiline
                   style={[
@@ -217,7 +221,7 @@ export function AdminEditModal({
 
             {(type === "PARENT" || type === "EMPLOYEE") && (
               <>
-                <Text style={styles.label}>{t("phone")}</Text>
+                <Text style={[styles.label, { color: theme.text }]}>{t("phone")}</Text>
                 <TextInput
                   keyboardType="phone-pad"
                   style={[
@@ -235,7 +239,7 @@ export function AdminEditModal({
 
             {(type === "CHILD" || type === "EMPLOYEE" || type === "EVENT") && (
               <>
-                <Text style={styles.label}>{t("department")}:</Text>
+                <Text style={[styles.label, { color: theme.text }]}>{t("department")}:</Text>
                 <View style={{ zIndex: 1000 }}>
                   <DropDownPicker
                     open={open}

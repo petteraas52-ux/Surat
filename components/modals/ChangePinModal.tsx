@@ -75,7 +75,7 @@ export default function ChangePinModal({
           style={{ backgroundColor: "white", borderRadius: 12, padding: 16 }}
         >
           <Text style={{ fontSize: 18, fontWeight: "700", marginBottom: 12 }}>
-            Endre PIN
+            t{"changePin"}
           </Text>
 
           {loading ? (

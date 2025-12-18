@@ -91,9 +91,9 @@ export function CreateEventModal() {
       contentContainerStyle={{ paddingBottom: 60 }}
       nestedScrollEnabled={true}
     >
-      <Text style={styles.title}>{t("createEventTitle")}</Text>
+      <Text style={[styles.title, {color: theme.text}]}>{t("createEventTitle")}</Text>
 
-      <Text style={styles.label}>{t("title")}</Text>
+      <Text style={[styles.label, { color: theme.text }]}>{t("title")}</Text>
       <TextInput
         style={[
           styles.input,
@@ -105,7 +105,9 @@ export function CreateEventModal() {
         placeholderTextColor={theme.textSecondary}
       />
 
-      <Text style={styles.label}>{t("department")}</Text>
+      <Text style={[styles.label, { color: theme.text }]}>
+        {t("department")}
+      </Text>
       <View style={{ zIndex: 3000 }}>
         <DropDownPicker
           open={open}
@@ -132,7 +134,7 @@ export function CreateEventModal() {
         />
       </View>
 
-      <Text style={styles.label}>{t("date")}</Text>
+      <Text style={[styles.label, { color: theme.text }]}>{t("date")}</Text>
       <Pressable
         style={[
           styles.input,
@@ -156,7 +158,9 @@ export function CreateEventModal() {
         <Ionicons name="calendar-outline" size={20} color={theme.primary} />
       </Pressable>
 
-      <Text style={styles.label}>{t("description")}</Text>
+      <Text style={[styles.label, { color: theme.text }]}>
+        {t("description")}
+      </Text>
       <TextInput
         style={[
           styles.input,

@@ -251,7 +251,9 @@ export default function ProfileScreen() {
           style={[styles.button, { backgroundColor: theme.primary }]}
           onPress={() => setShowChangePin(true)}
         >
-          <Text style={[styles.buttonText, { color: "white" }]}>Endre PIN</Text>
+          <Text style={[styles.buttonText, { color: "white" }]}>
+            {t("changePin")}
+          </Text>
         </Pressable>
 
         <ChangePinModal

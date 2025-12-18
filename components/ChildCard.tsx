@@ -1,10 +1,10 @@
 import ProfilePicture from "@/components/image/ProfilePicture";
+import { StaticColors } from "@/constants/Colors";
 import { useAppTheme } from "@/hooks/useAppTheme";
 import { UIChild } from "@/hooks/useChildData";
 import { useI18n } from "@/hooks/useI18n";
 import React from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
-
 
 interface ChildCardProps {
   child: UIChild;
@@ -13,8 +13,6 @@ interface ChildCardProps {
   absenceLabel: string | null;
   hideSelectButton?: boolean;
 }
-
-
 
 export const ChildCard: React.FC<ChildCardProps> = ({
   child,
@@ -26,24 +24,22 @@ export const ChildCard: React.FC<ChildCardProps> = ({
   const { t } = useI18n();
   const theme = useAppTheme();
   const isAbsent = !!absenceLabel;
- 
+
   const dynamicCardStyle = [
     styles.card,
-    { 
-      backgroundColor: isAbsent 
-        ? theme.card + '6d' // semi-transparent when absent
-        : child.selected 
-          ? theme.cardSelected 
-          : theme.card,
-      shadowColor: theme.shadow 
+    {
+      backgroundColor: isAbsent
+        ? theme.card
+        : child.selected
+        ? theme.cardSelected
+        : theme.card,
+      shadowColor: theme.shadow,
     },
   ];
 
   const dynamicStatusTextStyle = [
     styles.statusText,
-    child.checkedIn 
-    ? { color: theme.success }  
-    : { color: theme.error },
+    child.checkedIn ? { color: theme.success } : { color: theme.error },
   ];
 
   return (
@@ -87,7 +83,7 @@ export const ChildCard: React.FC<ChildCardProps> = ({
 
         <View style={styles.textContainer}>
           <Text
-            style={[styles.nameText, { color: theme.text }]}
+            style={[styles.nameText, { color: StaticColors.cardText }]}
             numberOfLines={1}
           >
             {child.firstName} {child.lastName}
@@ -98,7 +94,10 @@ export const ChildCard: React.FC<ChildCardProps> = ({
           </Text>
 
           {isAbsent && (
-            <Text style={[styles.absenceLabelText, { color: theme.primaryLight }]} numberOfLines={1}>
+            <Text
+              style={[styles.absenceLabelText, { color: theme.primary }]}
+              numberOfLines={1}
+            >
               {absenceLabel}
             </Text>
           )}

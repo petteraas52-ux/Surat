@@ -27,8 +27,12 @@ export function ManageDepartmentsModal() {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>{t("addDepartment")}</Text>
-      <Text style={styles.label}>{t("departmentName")}</Text>
+      <Text style={[styles.title, { color: theme.text }]}>
+        {t("addDepartment")}
+      </Text>
+      <Text style={[styles.label, { color: theme.text }]}>
+        {t("departmentName")}
+      </Text>
       <TextInput
         placeholder={t("departmentNamePlaceholder")}
         value={newName}

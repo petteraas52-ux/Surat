@@ -158,5 +158,6 @@
   "choseChildrenButtonText": "Select children",
   "updateStatusText": "Update status",
   "languageModalHeader": "Select language",
-  "startdate": "Start date"
+  "startdate": "Start date",
+  "changePin": "Change PIN"
 }

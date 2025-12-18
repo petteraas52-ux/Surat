@@ -115,33 +115,61 @@ export function CreateChildModal() {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>{t("createChildTitle")}</Text>
+      <Text style={[styles.title, { color: theme.text }]}>
+        {t("createChildTitle")}
+      </Text>
 
-      <Text style={styles.label}>{t("firstName")}:</Text>
+      <Text style={[styles.label, { color: theme.text }]}>
+        {t("firstName")}:
+      </Text>
       <TextInput
         placeholder={t("firstName")}
         value={firstName}
         onChangeText={setFirstName}
-        style={styles.input}
+        style={[
+          styles.input,
+          {
+            backgroundColor: theme.inputBackground,
+            borderColor: theme.border,
+          },
+        ]}
       />
 
-      <Text style={styles.label}>{t("lastName")}:</Text>
+      <Text style={[styles.label, { color: theme.text }]}>
+        {t("lastName")}:
+      </Text>
       <TextInput
         placeholder={t("lastName")}
         value={lastName}
         onChangeText={setLastName}
-        style={styles.input}
+        style={[
+          styles.input,
+          {
+            backgroundColor: theme.inputBackground,
+            borderColor: theme.border,
+          },
+        ]}
       />
 
-      <Text style={styles.label}>{t("dateOfBirth")}:</Text>
+      <Text style={[styles.label, { color: theme.text }]}>
+        {t("dateOfBirth")}:
+      </Text>
       <TextInput
         placeholder={t("dateOfBirthPlaceholder")}
         value={dateOfBirth}
         onChangeText={setDateOfBirth}
-        style={styles.input}
+        style={[
+          styles.input,
+          {
+            backgroundColor: theme.inputBackground,
+            borderColor: theme.border,
+          },
+        ]}
       />
 
-      <Text style={styles.label}>{t("department")}:</Text>
+      <Text style={[styles.label, { color: theme.text }]}>
+        {t("department")}:
+      </Text>
       <View style={{ zIndex: 2000 }}>
         <DropDownPicker
           open={deptOpen}
@@ -169,7 +197,9 @@ export function CreateChildModal() {
         />
       </View>
 
-      <Text style={styles.label}>{t("assignParent")}:</Text>
+      <Text style={[styles.label, { color: theme.text }]}>
+        {t("assignParent")}:
+      </Text>
       <View style={{ zIndex: 1000 }}>
         <DropDownPicker
           open={parentOpen}

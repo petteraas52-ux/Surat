@@ -46,8 +46,8 @@ export const Colors = {
     warning: "#FFEB3B",
 
     // Card farger
-    card: "#5B5682",
-    cardSelected: "#9E92FF",
+    card: "#511a78ff",
+    cardSelected: "#7C2AB7",
     cardAbsent: "#FFEB3B",
     cardBackground: "#EEEEED",
     textOnCard: "#FFFFFF",
@@ -114,8 +114,8 @@ export const Colors = {
     warning: "#ffd93d",
 
     // Card farger
-    card: "#3a3550",
-    cardSelected: "#5a52a0",
+    card: "#511a78ff",
+    cardSelected: "#7C2AB7",
     cardAbsent: "#6b5b00",
     cardBackground: "#2a2435",
     textOnCard: "#FFFFFF",

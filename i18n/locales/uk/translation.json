@@ -158,5 +158,6 @@
   "choseChildrenButtonText": "Вибрати дітей",
   "updateStatusText": "Оновити статус",
   "languageModalHeader": "Вибрати мову",
-  "startdate": "Дата початку"
+  "startdate": "Дата початку",
+  "changePin": "Змінити PIN-код"
 }

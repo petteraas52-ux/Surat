@@ -126,9 +126,11 @@ export function CreateEmployeeModal() {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>{t("createEmployeeTitle")}</Text>
+      <Text style={[styles.title, { color: theme.text }]}>
+        {t("createEmployeeTitle")}
+      </Text>
 
-      <Text style={styles.label}>{t("Role")}:</Text>
+      <Text style={[styles.label, { color: theme.text }]}>{t("Role")}:</Text>
       <View style={{ zIndex: 2000 }}>
         <DropDownPicker
           open={roleOpen}
@@ -153,42 +155,72 @@ export function CreateEmployeeModal() {
         />
       </View>
 
-      <Text style={styles.label}>{t("firstName")}:</Text>
+      <Text style={[styles.label, { color: theme.text }]}>
+        {t("firstName")}:
+      </Text>
       <TextInput
         placeholder={t("firstName")}
         value={firstName}
         onChangeText={setFirstName}
-        style={styles.input}
+        style={[
+          styles.input,
+          {
+            backgroundColor: theme.inputBackground,
+            borderColor: theme.border,
+          },
+        ]}
       />
 
-      <Text style={styles.label}>{t("lastName")}:</Text>
+      <Text style={[styles.label, { color: theme.text }]}>
+        {t("lastName")}:
+      </Text>
       <TextInput
         placeholder={t("lastName")}
         value={lastName}
         onChangeText={setLastName}
-        style={styles.input}
+        style={[
+          styles.input,
+          {
+            backgroundColor: theme.inputBackground,
+            borderColor: theme.border,
+          },
+        ]}
       />
 
-      <Text style={styles.label}>{t("email")}:</Text>
+      <Text style={[styles.label, { color: theme.text }]}>{t("email")}:</Text>
       <TextInput
         placeholder={t("email")}
         value={email}
         onChangeText={setEmail}
         autoCapitalize="none"
         keyboardType="email-address"
-        style={styles.input}
+        style={[
+          styles.input,
+          {
+            backgroundColor: theme.inputBackground,
+            borderColor: theme.border,
+          },
+        ]}
       />
 
-      <Text style={styles.label}>{t("phone")}:</Text>
+      <Text style={[styles.label, { color: theme.text }]}>{t("phone")}:</Text>
       <TextInput
         placeholder={t("phone")}
         value={phone}
         onChangeText={setPhone}
         keyboardType="phone-pad"
-        style={styles.input}
+        style={[
+          styles.input,
+          {
+            backgroundColor: theme.inputBackground,
+            borderColor: theme.border,
+          },
+        ]}
       />
 
-      <Text style={styles.label}>{t("department")}:</Text>
+      <Text style={[styles.label, { color: theme.text }]}>
+        {t("department")}:
+      </Text>
       <View style={{ zIndex: 1000 }}>
         <DropDownPicker
           open={open}
@@ -217,13 +249,21 @@ export function CreateEmployeeModal() {
         />
       </View>
 
-      <Text style={styles.label}>{t("tempPassword")}:</Text>
+      <Text style={[styles.label, { color: theme.text }]}>
+        {t("tempPassword")}:
+      </Text>
       <TextInput
         placeholder={t("tempPassword")}
         value={password}
         onChangeText={setPassword}
         secureTextEntry
-        style={styles.input}
+        style={[
+          styles.input,
+          {
+            backgroundColor: theme.inputBackground,
+            borderColor: theme.border,
+          },
+        ]}
       />
 
       <Pressable
