@@ -3,7 +3,6 @@
   "child": "Barn",
   "selectLanguage": "Velg språk",
   "welcome": "Velkommen",
-
   "loginHelpText": "Logg inn for å sjekke inn/ut dine barn",
   "logInButtonText": "Logg inn",
   "email": "E-post",
@@ -12,34 +11,28 @@
   "placeholderPassword": "Skriv ditt passord",
   "loadingUser": "Laster inn din bruker...",
   "loading": "Laster, vennligst vent...",
-
   "notFoundPage": "Denne skjermen finnes ikke!",
   "notFoundPageBack": "Gå til hjem skjermen!",
   "tabTitleChildren": "Mine barn",
   "tabTitleProfile": "Profil",
-
   "loadingChildren": "Laster inn barnedata...",
   "childrenHeader": "Mine Barn",
   "upcommingEvent": "Kommende hendelse",
   "noEvents": "Ingen kommende arrangementer registrert.",
   "department": "Avdeling",
   "registerLeave": "Registrer fravær",
-
   "noUserLoggedIn": "Ingen bruker logget inn",
   "myProfileHeader": "Min profil",
   "name": "Navn",
   "phone": "Telefonnummer",
-
   "save": "Lagre",
   "edit": "Rediger",
   "logout": "Logg ut",
-
   "numOfChildren": "barn valgt",
   "sickToday": "Sykdom i dag",
   "vacation": "Ferie",
   "numOfDays": "antall dager",
   "registerVacation": "Registrer ferie",
-
   "createParentTitle": "Opprett foresatt",
   "firstName": "Fornavn",
   "lastName": "Etternavn",
@@ -133,35 +126,27 @@
   "contactSupport": "kontakt support!",
   "roleErrorContact": "Ta kontakt, feil tilgang!",
   "sick": "Syk",
-
   "addAllergy": "Legg til allergene",
   "noAllergies": "Ingen allergener",
   "allergies": "Allergener",
-
   "close": "Lukk",
   "calendarHeader": "Kalender og Arrangementer",
   "eventsPlural": "Arrangementer",
   "noEventsToday": "Ingen arrangementer denne dagen.",
   "noDateSelected": "Velg en dag i kalenderen for å se arrangementer.",
   "choseDate": "Velg dato",
-
   "checkOut": "Sjekk ut",
   "checkIn": "Sjekk inn",
-
   "checkedOut": "Sjekket ut",
   "checkedIn": "Sjekket inn",
-
   "guestPickup": "Gjeste-hent",
   "absence": "Fravær",
   "status": "Status",
-
   "guestLinkHelpText": "Fyll inn hvem som skal hente",
   "fetchChildrenText": "Hentebarn",
   "backButtonText": "Tilbake",
-
   "nameInputFieldPlaceholder": "Skriv navn",
   "phoneInputFieldPlaceholder": "Skriv telefonnummer",
-
   "sendGuestMessage": "Send hentemelding",
   "sending": "Sender",
   "send": "Send",
@@ -170,7 +155,6 @@
   "commentsComponentHeader": "Kommentarer",
   "noComments": "Ingen kommentarer enda",
   "unkownUser": "Ukjent bruker",
-
   "choseChildrenButtonText": "Velg barn",
   "updateStatusText": "Oppdater status",
   "languageModalHeader": "Velg språk",

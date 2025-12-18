@@ -11,34 +11,28 @@
   "placeholderPassword": "Enter your password",
   "loadingUser": "Loading your profile...",
   "loading": "Loading, please wait...",
-
   "notFoundPage": "This screen does not exist!",
   "notFoundPageBack": "Go to home screen!",
   "tabTitleChildren": "My children",
   "tabTitleProfile": "Profile",
-
   "loadingChildren": "Loading children data...",
   "childrenHeader": "My Children",
   "upcommingEvent": "Upcoming event",
   "noEvents": "No upcoming events registered.",
   "department": "Department",
   "registerLeave": "Register absence",
-
   "noUserLoggedIn": "No user logged in",
   "myProfileHeader": "My profile",
   "name": "Name",
   "phone": "Phone number",
-
   "save": "Save",
   "edit": "Edit",
   "logout": "Log out",
-
   "numOfChildren": "children selected",
   "sickToday": "Sick today",
   "vacation": "Vacation",
   "numOfDays": "number of days",
   "registerVacation": "Register vacation",
-
   "createParentTitle": "Create parent",
   "firstName": "First name",
   "lastName": "Last name",
@@ -131,31 +125,28 @@
   "roleErrorDescription": "You do not have access to this app!",
   "contactSupport": "Contact support!",
   "roleErrorContact": "Please contact support, incorrect access!",
-
+  "sick": "Sick",
+  "addAllergy": "Add allergy",
+  "noAllergies": "No allergies",
+  "allergies": "Allergies",
   "close": "Close",
   "calendarHeader": "Calendar and Events",
   "eventsPlural": "Events",
   "noEventsToday": "No events this day.",
   "noDateSelected": "Select a day in the calendar to view events.",
   "choseDate": "Select date",
-
   "checkOut": "Check out",
   "checkIn": "Check in",
-
   "checkedOut": "Checked out",
   "checkedIn": "Checked in",
-
   "guestPickup": "Guest pickup",
   "absence": "Absence",
   "status": "Status",
-
   "guestLinkHelpText": "Fill in who will pick up",
   "fetchChildrenText": "Pick-up child",
   "backButtonText": "Back",
-
   "nameInputFieldPlaceholder": "Enter name",
   "phoneInputFieldPlaceholder": "Enter phone number",
-
   "sendGuestMessage": "Send pickup message",
   "sending": "Sending",
   "send": "Send",
@@ -164,7 +155,6 @@
   "commentsComponentHeader": "Comments",
   "noComments": "No comments yet",
   "unkownUser": "Unknown user",
-
   "choseChildrenButtonText": "Select children",
   "updateStatusText": "Update status",
   "languageModalHeader": "Select language",
