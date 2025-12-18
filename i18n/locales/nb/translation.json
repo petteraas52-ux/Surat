@@ -4,7 +4,7 @@
   "selectLanguage": "Velg språk",
   "welcome": "Velkommen",
 
-  "logInHelpText": "Logg inn for å sjekke inn/ut dine barn",
+  "loginHelpText": "Logg inn for å sjekke inn/ut dine barn",
   "logInButtonText": "Logg inn",
   "email": "E-post",
   "placeholderEmail": "Skriv din e-postadresse",

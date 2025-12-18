@@ -3,7 +3,7 @@
   "child": "Barn",
   "selectLanguage": "Välj språk",
   "welcome": "Välkommen",
-  "logInHelpText": "Logga in för att checka in/ut dina barn",
+  "loginHelpText": "Logga in för att checka in/ut dina barn",
   "logInButtonText": "Logga in",
   "email": "E-post",
   "placeholderEmail": "Ange din e-post",

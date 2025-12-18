@@ -3,7 +3,7 @@
   "child": "Child",
   "selectLanguage": "Select language",
   "welcome": "Welcome",
-  "logInHelpText": "Log in to check in/out your children",
+  "loginHelpText": "Log in to check in/out your children",
   "logInButtonText": "Log in",
   "email": "Email",
   "placeholderEmail": "Enter your email",
