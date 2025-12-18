@@ -113,7 +113,7 @@ export const ChildCard: React.FC<ChildCardProps> = ({
           {/* ABSENCE NOTIFICATION */}
           {isAbsent && (
             <Text
-              style={[styles.absenceLabelText, { color: theme.primary }]}
+              style={[styles.absenceLabelText, { color: theme.text }]}
               numberOfLines={1}
             >
               {absenceLabel}
