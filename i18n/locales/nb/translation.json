@@ -134,6 +134,10 @@
   "roleErrorContact": "Ta kontakt, feil tilgang!",
   "sick": "Syk",
 
+  "addAllergy": "Legg til allergene",
+  "noAllergies": "Ingen allergener",
+  "allergies": "Allergener",
+
   "close": "Lukk",
   "calendarHeader": "Kalender og Arrangementer",
   "eventsPlural": "Arrangementer",

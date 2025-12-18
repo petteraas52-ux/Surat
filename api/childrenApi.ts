@@ -55,6 +55,14 @@ export const getChildrenForParent = async (
   }));
 };
 
+export const updateChildAllergies = async (
+  childId: string,
+  allergies: string[]
+) => {
+  const childRef = doc(db, "children", childId);
+  await updateDoc(childRef, { allergies });
+};
+
 export const updateChild = async (
   id: string,
   data: Partial<Omit<ChildProps, "id">>

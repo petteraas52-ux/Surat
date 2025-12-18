@@ -1,58 +1,38 @@
-import { createComment, getComments } from "@/api/commentApi";
+import { getComments } from "@/api/commentApi";
 import { useAppTheme } from "@/hooks/useAppTheme";
 import { useI18n } from "@/hooks/useI18n";
-import { useAuthSession } from "@/providers/authctx";
 import { Comment } from "@/types/commentData";
 import { useEffect, useState } from "react";
-import {
-  ActivityIndicator,
-  Pressable,
-  ScrollView,
-  StyleSheet,
-  Text,
-  TextInput,
-  View,
-} from "react-native";
+import { ActivityIndicator, StyleSheet, Text, View } from "react-native";
 
 type CommentBoxProps = {
   childId: string;
+  refreshTrigger: number;
 };
 
-export default function CommentBox({ childId }: CommentBoxProps) {
-  const { user } = useAuthSession();
+export default function CommentBox({
+  childId,
+  refreshTrigger,
+}: CommentBoxProps) {
   const { t } = useI18n();
   const theme = useAppTheme();
   const [comments, setComments] = useState<Comment[]>([]);
-  const [text, setText] = useState("");
-  const [loading, setLoading] = useState(false);
   const [initialLoading, setInitialLoading] = useState(true);
 
   async function loadComments() {
-    const data = await getComments(childId);
-    setComments(data);
-    setInitialLoading(false);
+    try {
+      const data = await getComments(childId);
+      setComments(data);
+    } catch (error) {
+      console.error("Error loading comments:", error);
+    } finally {
+      setInitialLoading(false);
+    }
   }
 
   useEffect(() => {
     loadComments();
-  }, [childId]);
-
-  async function handleCreateComment() {
-    if (!text.trim() || !user) return;
-
-    setLoading(true);
-
-    await createComment({
-      childId,
-      text: text.trim(),
-      createdById: user.uid,
-      createdByName: user.displayName ?? user.email ?? t("unkownUser"),
-    });
-
-    setText("");
-    await loadComments();
-    setLoading(false);
-  }
+  }, [childId, refreshTrigger]);
 
   if (initialLoading) {
     return (
@@ -68,99 +48,133 @@ export default function CommentBox({ childId }: CommentBoxProps) {
         {t("commentsComponentHeader")}
       </Text>
 
-      <ScrollView style={styles.list}>
+      <View style={styles.list}>
         {comments.length === 0 && (
           <Text style={[styles.noComments, { color: theme.textMuted }]}>
             {t("noComments")}
           </Text>
         )}
 
-        {comments.map((c) => (
-          <View
-            key={c.id}
-            style={[
-              styles.comment,
-              { backgroundColor: theme.commentBackground },
-            ]}
-          >
-            <Text style={[styles.commentText, { color: theme.commentText }]}>
-              {c.text}
-            </Text>
-            <Text style={[styles.meta, { color: theme.commentMeta }]}>
-              {c.createdByName} •{" "}
-              {c.createdAt
-                ? c.createdAt.toDate().toLocaleString("nb-NO")
-                : t("loadingTime")}
-            </Text>
-          </View>
-        ))}
-      </ScrollView>
+        {comments.map((c) => {
+          const initial = c.createdByName?.charAt(0).toUpperCase() || "?";
 
-      <View style={styles.inputRow}>
-        <TextInput
-          value={text}
-          onChangeText={setText}
-          placeholder={t("writeAComment")}
-          style={[
-            styles.input,
-            {
-              borderColor: theme.border,
-              backgroundColor: theme.inputBackground,
-              color: theme.text,
-            },
-          ]}
-          multiline
-        />
-        <Pressable
-          onPress={handleCreateComment}
-          disabled={loading || !text.trim()}
-          style={[
-            styles.button,
-            { backgroundColor: theme.primary },
-            (loading || !text.trim()) && styles.buttonDisabled,
-          ]}
-        >
-          {loading ? (
-            <ActivityIndicator />
-          ) : (
-            <Text style={styles.buttonText}>{t("send")}</Text>
-          )}
-        </Pressable>
+          return (
+            <View key={c.id} style={styles.commentWrapper}>
+              {/* Profile Initial Avatar */}
+              <View
+                style={[
+                  styles.avatar,
+                  { backgroundColor: theme.primary + "20" },
+                ]}
+              >
+                <Text style={[styles.avatarText, { color: theme.primary }]}>
+                  {initial}
+                </Text>
+              </View>
+
+              <View style={styles.contentWrapper}>
+                <View
+                  style={[
+                    styles.bubble,
+                    { backgroundColor: theme.commentBackground },
+                  ]}
+                >
+                  <Text style={[styles.userName, { color: theme.text }]}>
+                    {c.createdByName}
+                  </Text>
+                  <Text
+                    style={[styles.commentText, { color: theme.commentText }]}
+                  >
+                    {c.text}
+                  </Text>
+                </View>
+
+                <Text style={[styles.meta, { color: theme.commentMeta }]}>
+                  {c.createdAt?.toDate
+                    ? c.createdAt.toDate().toLocaleString("nb-NO", {
+                        hour: "2-digit",
+                        minute: "2-digit",
+                        day: "2-digit",
+                        month: "2-digit",
+                      })
+                    : t("loadingTime")}
+                </Text>
+              </View>
+            </View>
+          );
+        })}
       </View>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { marginTop: 16, gap: 8, flex: 1 },
-  header: { fontSize: 18, fontWeight: "700", marginBottom: 6 },
-  list: { maxHeight: 300, marginBottom: 10 },
-  comment: {
-    padding: 10,
-    borderRadius: 8,
-    marginBottom: 8,
+  container: {
+    width: "100%",
+    paddingTop: 10,
   },
-  commentText: { fontSize: 14, marginBottom: 4 },
-  meta: { fontSize: 11 },
-  noComments: { textAlign: "center", marginTop: 10 },
-  inputRow: { flexDirection: "row", gap: 8, alignItems: "center" },
-  input: {
+  header: {
+    fontSize: 14,
+    fontWeight: "700",
+    marginBottom: 16,
+    textTransform: "uppercase",
+    letterSpacing: 1,
+  },
+  list: {
+    width: "100%",
+  },
+  commentWrapper: {
+    flexDirection: "row",
+    marginBottom: 20,
+    gap: 12,
+  },
+  avatar: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    justifyContent: "center",
+    alignItems: "center",
+    marginTop: 2,
+  },
+  avatarText: {
+    fontWeight: "700",
+    fontSize: 14,
+  },
+  contentWrapper: {
     flex: 1,
-    borderWidth: 1,
-    borderRadius: 8,
-    paddingHorizontal: 8,
-    paddingVertical: 6,
-    minHeight: 40,
   },
-  button: {
-    paddingHorizontal: 16,
+  bubble: {
+    paddingHorizontal: 14,
     paddingVertical: 10,
-    borderRadius: 8,
+    borderRadius: 16,
+    borderTopLeftRadius: 2,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 2,
+    elevation: 1,
   },
-  buttonText: {
-    color: "white",
-    fontWeight: "600",
+  userName: {
+    fontSize: 12,
+    fontWeight: "700",
+    marginBottom: 2,
   },
-  buttonDisabled: { opacity: 0.6 },
-  center: { alignItems: "center", marginTop: 20 },
+  commentText: {
+    fontSize: 14,
+    lineHeight: 20,
+  },
+  meta: {
+    fontSize: 10,
+    marginTop: 4,
+    marginLeft: 4,
+  },
+  noComments: {
+    textAlign: "center",
+    marginVertical: 30,
+    fontStyle: "italic",
+  },
+  center: {
+    alignItems: "center",
+    padding: 30,
+  },
 });
