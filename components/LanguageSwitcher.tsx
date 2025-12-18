@@ -34,7 +34,7 @@ export function LanguageSwitcher() {
   return (
     <>
       <TouchableOpacity
-        style={[styles.button, { backgroundColor: theme.primaryLight }]}
+        style={[styles.button, { backgroundColor: theme.primary }]}
         onPress={() => setModalVisible(true)}
         activeOpacity={0.7}
       >
