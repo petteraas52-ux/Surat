@@ -191,6 +191,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 14,
     paddingVertical: 12,
     fontSize: 16,
+    letterSpacing: 0,
   },
   button: {
     marginTop: 10,
