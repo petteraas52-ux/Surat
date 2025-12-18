@@ -351,12 +351,14 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     height: 45,
     marginBottom: 15,
+    letterSpacing: 0,
   },
   searchInput: {
     flex: 1,
     fontSize: 16,
     height: "100%",
     marginLeft: 8,
+    letterSpacing: 0,
   },
   chipScroll: {
     marginBottom: 10,

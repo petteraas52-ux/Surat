@@ -1,5 +1,3 @@
-// modules/commonStyles.ts
-
 import { StyleSheet } from "react-native";
 
 export const styles = StyleSheet.create({
@@ -16,7 +14,6 @@ export const styles = StyleSheet.create({
     fontWeight: "bold",
     marginBottom: 25,
   },
-
   label: {
     fontWeight: "700",
     marginTop: 16,
@@ -29,6 +26,7 @@ export const styles = StyleSheet.create({
     fontSize: 16,
     borderWidth: 1,
     borderColor: "#ddd",
+    letterSpacing: 0,
   },
   descriptionInput: {
     height: 100,
@@ -50,7 +48,6 @@ export const styles = StyleSheet.create({
     alignItems: "center",
     marginTop: 4,
   },
-
   createButton: {
     backgroundColor: "#57507F",
     padding: 16,
