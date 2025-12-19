@@ -37,6 +37,7 @@ cd ..
 npx expo start
 
 ```
+The installation script might take a while to run, please be patient.<
 
 ### Test Credentials
 
